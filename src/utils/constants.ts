@@ -10,6 +10,8 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   ADMIN: '/admin',
   VERIFY_EMAIL: '/verify-email',
+  TWO_FACTOR_SETUP: '/2fa/setup',
+  TWO_FACTOR_VERIFY: '/2fa/verify',
 } as const
 
 // ── Storage Keys ──

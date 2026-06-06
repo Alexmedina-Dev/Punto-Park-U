@@ -80,6 +80,22 @@ const userSchema = new mongoose.Schema(
     resetTokenExpiry: {
       type: Date,
     },
+    // ── Two-Factor Authentication fields ───────────────────────────
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    twoFactorSecret: {
+      type: String,
+    },
+    twoFactorTempSecret: {
+      type: String,
+    },
+    backupCodes: [
+      {
+        type: String,
+      },
+    ],
   },
   {
     timestamps: true,
@@ -155,10 +171,57 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// ── toJSON transform: never expose password ─────────────────────────
+// ── 2FA: enable two-factor authentication ─────────────────────────
+userSchema.methods.enableTwoFactor = function (secret) {
+  this.twoFactorSecret = secret;
+  this.twoFactorTempSecret = undefined;
+  this.twoFactorEnabled = true;
+};
+
+// ── 2FA: disable two-factor authentication ────────────────────────
+userSchema.methods.disableTwoFactor = function () {
+  this.twoFactorSecret = undefined;
+  this.twoFactorTempSecret = undefined;
+  this.backupCodes = [];
+  this.twoFactorEnabled = false;
+};
+
+// ── 2FA: set temp secret during setup ─────────────────────────────
+userSchema.methods.setTwoFactorTempSecret = function (secret) {
+  this.twoFactorTempSecret = secret;
+};
+
+// ── 2FA: hash and store backup codes ──────────────────────────────
+userSchema.methods.hashAndStoreBackupCodes = async function (codes) {
+  const salts = await Promise.all(codes.map(() => bcrypt.genSalt(10)));
+  this.backupCodes = await Promise.all(
+    codes.map((code, i) => bcrypt.hash(code, salts[i]))
+  );
+};
+
+// ── 2FA: verify a backup code (returns the index if valid) ────────
+userSchema.methods.verifyBackupCode = async function (candidateCode) {
+  for (let i = 0; i < this.backupCodes.length; i++) {
+    const match = await bcrypt.compare(candidateCode, this.backupCodes[i]);
+    if (match) return i; // return index so caller can mark as used
+  }
+  return -1;
+};
+
+// ── 2FA: mark a backup code as used (replace with consumed marker) ─
+userSchema.methods.markBackupCodeUsed = function (index) {
+  if (index >= 0 && index < this.backupCodes.length) {
+    this.backupCodes[index] = '__consumed__';
+  }
+};
+
+// ── toJSON transform: never expose password, 2FA secrets, or backup codes ─
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
+  delete obj.twoFactorSecret;
+  delete obj.twoFactorTempSecret;
+  delete obj.backupCodes;
   return obj;
 };
 

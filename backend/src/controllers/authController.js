@@ -7,6 +7,7 @@ const User = require('../models/User');
 
 const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY = '7d';
+const TEMP_TOKEN_EXPIRY = '5m';
 
 const generateAccessToken = (user) => {
   return jwt.sign(
@@ -21,6 +22,15 @@ const generateRefreshToken = (user) => {
     { id: user._id },
     config.jwtRefreshSecret,
     { expiresIn: REFRESH_TOKEN_EXPIRY }
+  );
+};
+
+// Short-lived token that proves password step — used before 2FA challenge
+const generateTempToken = (user) => {
+  return jwt.sign(
+    { id: user._id, purpose: '2fa' },
+    config.jwtSecret,
+    { expiresIn: TEMP_TOKEN_EXPIRY }
   );
 };
 
@@ -168,6 +178,17 @@ const login = async (req, res, next) => {
         error: 'Email not verified. Please verify your email before logging in.',
         needsVerification: true,
         email: user.email,
+      });
+    }
+
+    // Check 2FA — if enabled, return a tempToken instead of full JWT
+    if (user.twoFactorEnabled) {
+      const tempToken = generateTempToken(user);
+
+      return res.status(200).json({
+        user: formatUserResponse(user),
+        requiresTwoFactor: true,
+        tempToken,
       });
     }
 

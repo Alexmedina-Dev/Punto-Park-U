@@ -1,11 +1,13 @@
 import { create } from 'zustand'
-import type { User, LoginCredentials, RegisterData } from '@/types'
+import type { User, LoginCredentials, RegisterData, AuthResponse, LoginResponse2FA } from '@/types'
 import {
   loginService,
   registerService,
   logoutService,
   forgotPasswordService,
   resetPasswordService,
+  verify2FAService,
+  verifyBackupCodeService,
 } from '@/services/auth.service'
 import { STORAGE_KEYS } from '@/utils/constants'
 import { withRetry, showErrorToast } from '@/utils/errorHandler'
@@ -19,8 +21,12 @@ interface AuthState {
   isLoading: boolean
   error: string | null
 
+  // 2FA state
+  requiresTwoFactor: boolean
+  tempToken: string | null
+
   // Actions
-  login: (credentials: LoginCredentials) => Promise<boolean>
+  login: (credentials: LoginCredentials) => Promise<boolean | LoginResponse2FA>
   logout: () => void
   register: (data: RegisterData) => Promise<boolean | { needsVerification: boolean; email: string }>
   setUser: (user: User | null) => void
@@ -29,6 +35,11 @@ interface AuthState {
   handleOAuthCallback: (token: string, refreshToken: string, user: User) => void
   forgotPassword: (email: string) => Promise<{ success: boolean; message: string }>
   resetPassword: (token: string, password: string) => Promise<{ success: boolean; message: string }>
+
+  // 2FA Actions
+  complete2FALogin: (user: User, token: string, refreshToken: string) => void
+  clearTwoFactorState: () => void
+  setTwoFactorTempToken: (tempToken: string) => void
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -38,17 +49,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
   isLoading: false,
   error: null,
+  requiresTwoFactor: false,
+  tempToken: null,
 
   login: async (credentials) => {
-    set({ isLoading: true, error: null })
+    set({ isLoading: true, error: null, requiresTwoFactor: false, tempToken: null })
     try {
       const response = await withRetry(() => loginService(credentials))
-      const { user, token } = response
+
+      // Check if 2FA is required
+      const twoFactorResponse = response as LoginResponse2FA
+      if (twoFactorResponse.requiresTwoFactor && twoFactorResponse.tempToken) {
+        // Store tempToken, do NOT authenticate fully
+        set({
+          user: twoFactorResponse.user,
+          tempToken: twoFactorResponse.tempToken,
+          requiresTwoFactor: true,
+          isLoading: false,
+          error: null,
+          isAuthenticated: false,
+        })
+        return twoFactorResponse
+      }
+
+      // Normal login (no 2FA)
+      const authResponse = response as AuthResponse
+      const { user, token } = authResponse
 
       // Persist to localStorage
-      localStorage.setItem(STORAGE_KEYS.TOKEN, token)
-      if (response.refreshToken) {
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken)
+      if (token) {
+        localStorage.setItem(STORAGE_KEYS.TOKEN, token)
+      }
+      if (authResponse.refreshToken) {
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, authResponse.refreshToken)
       }
       if (user) {
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
@@ -56,11 +89,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       set({
         user,
-        token,
+        token: token || null,
         isAuthenticated: true,
         isAdmin: user?.rol === 'admin',
         isLoading: false,
         error: null,
+        requiresTwoFactor: false,
+        tempToken: null,
       })
 
       return true
@@ -80,7 +115,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         errorMsg = error.message
       }
 
-      set({ error: errorMsg, isLoading: false })
+      set({ error: errorMsg, isLoading: false, requiresTwoFactor: false, tempToken: null })
       return false
     }
   },
@@ -263,5 +298,37 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
       localStorage.removeItem(STORAGE_KEYS.USER)
     }
+  },
+
+  // ── 2FA Actions ─────────────────────────────────────────────────
+
+  complete2FALogin: (user, token, refreshToken) => {
+    localStorage.setItem(STORAGE_KEYS.TOKEN, token)
+    if (refreshToken) {
+      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+    }
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
+
+    set({
+      user,
+      token,
+      isAuthenticated: true,
+      isAdmin: user.rol === 'admin',
+      isLoading: false,
+      error: null,
+      requiresTwoFactor: false,
+      tempToken: null,
+    })
+  },
+
+  clearTwoFactorState: () => {
+    set({
+      requiresTwoFactor: false,
+      tempToken: null,
+    })
+  },
+
+  setTwoFactorTempToken: (tempToken) => {
+    set({ tempToken })
   },
 }))
