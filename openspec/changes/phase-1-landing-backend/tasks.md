@@ -71,13 +71,19 @@ Chain strategy: pending
 
 ## Phase 5: Landing Page Interactions (Batch 5)
 
-- [ ] 5.1 Create `src/hooks/useScrollSpy.ts` — IntersectionObserver hook tracking section visibility at 35% threshold, returns active section ID; handles multiple sections by highest intersection ratio.
-- [ ] 5.2 Create `src/hooks/useCounter.ts` — accepts target value, returns animated number from 0 to target over ~800ms with easing; triggered by IntersectionObserver.
-- [ ] 5.3 Create `src/hooks/useLiveClock.ts` — returns `new Date().toLocaleTimeString("es-CO")` updating every second; cleans up interval on unmount.
-- [ ] 5.4 Update `src/components/layout/Header.tsx` — replace static hamburger icon with animated SVG vehicle morph (car → moto → bike) cycling on each toggle; use `appStore.isMobileMenuOpen`; lock body scroll when open; `MobileNav` links close overlay then scroll after 520ms.
-- [ ] 5.5 Integrate `useScrollSpy` into `Header.tsx` — apply `text-primary` to active nav link matching observed section; desktop anchor links smooth-scroll with header height + 15px offset.
-- [ ] 5.6 Update `src/components/layout/Footer.tsx` — display live timestamp via `useLiveClock` in a new footer element.
-- [ ] 5.7 Update `src/components/landing/AvailabilitySection` (or `LandingPage` Availability cards) — wire `useCounter` to animate stat numbers on scroll-into-view.
+- [x] 5.1 Create `src/hooks/useAnimations.ts` — IntersectionObserver hook for scroll-triggered animations (fade-in, slide-up, slide-left, scale-in); configurable threshold/delay; stagger animation support; scroll progress indicator.
+- [x] 5.2 Create `src/hooks/useCounter.ts` — accepts target value, returns animated number from 0 to target over configurable duration (~1200ms) with multiple easing functions including easeOutQuad, easeOutCubic, easeOutBounce; triggered on visibility.
+- [x] 5.3 Create `src/hooks/useLiveClock.ts` — returns formatted "hh:mm:ss AM/PM" timestamp updating every second; locale/format configurable; cleans up interval on unmount.
+- [x] 5.4 Update `src/components/layout/Header.tsx` — replace static hamburger icon with CSS animated 3-line morph (top/middle/bottom lines animate to X shape); `MobileNav` links close overlay then scroll after 300ms.
+- [x] 5.5 Integrate scroll-spy into `Header.tsx` — existing IntersectionObserver applies `text-primary` class to active nav link matching observed section; desktop anchor links smooth-scroll with header height + 15px offset.
+- [x] 5.6 Update `src/components/layout/Footer.tsx` — display live timestamp via `useLiveClock` in brand section.
+- [x] 5.7 Update `src/components/sections/AvailabilitySection.tsx` — wire `useCounter` to animate gauge stat numbers on scroll-into-view; wire `useLiveClock` for "Última Sync" timestamp.
+- [x] 5.8 Create `src/components/AnimatedSection.tsx` — reusable wrapper component for scroll-triggered section animations.
+- [x] 5.9 Create `src/components/ScrollProgress.tsx` — fixed top progress bar indicating scroll position.
+- [x] 5.10 Update `tailwind.config.js` — add all animation keyframes (fade-in, slide-up, slide-left/right, scale-in, slide-down, hamburger-spin).
+- [x] 5.11 Update `src/index.css` — add animation helper classes (hidden states, delays, stagger children, hover-scale, img-zoom, mobile-nav-enter/exit, prefers-reduced-motion).
+- [x] 5.12 Update `src/pages/LandingPage.tsx` — integrate ScrollProgress, wrap sections with AnimatedSection, debounce scroll events.
+- [x] 5.13 Update individual sections — add stagger animations, hover effects, image zoom, parallax hero background.
 
 ## Phase 6: Integration + Verification (Batch 6)
 

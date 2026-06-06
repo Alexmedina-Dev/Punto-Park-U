@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useAppStore } from '@/stores/appStore'
+import { useLiveClock } from '@/hooks/useLiveClock'
+import { useCounter } from '@/hooks/useCounter'
 
 interface GaugeData {
   icon: string
@@ -13,6 +15,13 @@ function GaugeChart({ used, total, icon, label }: GaugeData) {
   const displayPercentage = Math.round(percentage)
   // SVG circumference for r=15.9155 is ~100
   const dashArray = percentage
+
+  // Animated available count
+  const available = total - used
+  const { displayValue } = useCounter({
+    target: available,
+    duration: 1200,
+  })
 
   return (
     <div className="flex flex-col items-center gap-3" data-testid={`gauge-${label.toLowerCase()}`}>
@@ -38,8 +47,8 @@ function GaugeChart({ used, total, icon, label }: GaugeData) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="material-symbols-outlined text-2xl text-primary mb-1">{icon}</span>
-          <span className="text-xl font-black text-on-bg font-headline">
-            {total - used}
+          <span className="text-xl font-black text-on-bg font-headline" data-testid={`gauge-count-${label.toLowerCase()}`}>
+            {displayValue}
             <span className="text-sm font-normal text-on-surface-var">/{total}</span>
           </span>
         </div>
@@ -50,24 +59,10 @@ function GaugeChart({ used, total, icon, label }: GaugeData) {
   )
 }
 
-function LiveTimestamp() {
-  const [time, setTime] = useState('--:--:--')
-
-  useEffect(() => {
-    const update = () => {
-      setTime(new Date().toLocaleTimeString('es-CO'))
-    }
-    update()
-    const interval = setInterval(update, 1000)
-    return () => clearInterval(interval)
-  }, [])
-
-  return <span>{time}</span>
-}
-
 export function AvailabilitySection() {
   const availability = useAppStore((state) => state.availability)
   const fetchAvailability = useAppStore((state) => state.fetchAvailability)
+  const { time } = useLiveClock()
 
   useEffect(() => {
     fetchAvailability()
@@ -95,9 +90,6 @@ export function AvailabilitySection() {
       total: stats?.bikes.total ?? 10,
     },
   ]
-
-  const totalUsed = gauges.reduce((sum, g) => sum + g.used, 0)
-  const totalAvailable = gauges.reduce((sum, g) => sum + g.total, 0)
 
   return (
     <section
@@ -129,18 +121,18 @@ export function AvailabilitySection() {
               <span className="material-symbols-outlined text-base animate-spin-custom">sync</span>
               <span>Actualizando...</span>
             </div>
-            <p className="text-xs text-on-surface-var/60 mt-1">
-              Última Sync: <LiveTimestamp />
+            <p className="text-xs text-on-surface-var/60 mt-1" data-testid="live-timestamp">
+              Última Sync: <span suppressHydrationWarning>{time}</span>
             </p>
           </div>
         </div>
 
         {/* Gauges */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 stagger-children">
           {gauges.map((gauge) => (
             <div
               key={gauge.label}
-              className="glass rounded-xl p-8 flex flex-col items-center"
+              className="glass rounded-xl p-8 flex flex-col items-center animate-scale-in hover-scale"
               data-testid={`gauge-card-${gauge.label.toLowerCase()}`}
             >
               <GaugeChart {...gauge} />

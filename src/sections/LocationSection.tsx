@@ -46,7 +46,7 @@ export function LocationSection() {
         {/* Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           {/* Info Card */}
-          <div className="glass rounded-xl p-6 sm:p-8" data-testid="location-info-card">
+          <div className="glass rounded-xl p-6 sm:p-8 animate-slide-up hover-scale" data-testid="location-info-card">
             <div className="flex items-start gap-4 mb-6">
               <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10">
                 <span className="material-symbols-outlined text-primary text-2xl">location_on</span>
@@ -87,13 +87,14 @@ export function LocationSection() {
           </div>
 
           {/* Map */}
-          <div className="relative" data-testid="location-map">
+          <div className="relative animate-slide-right" data-testid="location-map">
             <div className="absolute -inset-2 bg-primary/10 rounded-2xl blur-xl" />
             {!mapError ? (
               <img
                 src="/images/Google AI/mapa.png"
                 alt="Mapa de ubicación de Punto Park U en Bogotá"
-                className="relative rounded-xl w-full h-auto"
+                className="relative rounded-xl w-full h-auto hover-scale"
+                loading="lazy"
                 onError={() => setMapError(true)}
               />
             ) : (

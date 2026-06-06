@@ -139,16 +139,32 @@ export function Header() {
             )}
           </div>
 
-          {/* Mobile menu toggle */}
+          {/* Mobile menu toggle — CSS animated hamburger */}
           <button
             onClick={toggleMobileMenu}
-            className="lg:hidden p-2 text-on-surface-var hover:text-on-bg transition-colors"
+            className={`lg:hidden p-2 text-on-surface-var hover:text-on-bg transition-colors ${
+              isMobileMenuOpen ? 'hamburger-open' : ''
+            }`}
             aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
             data-testid="mobile-menu-toggle"
           >
-            <span className="material-symbols-outlined text-2xl">
-              {isMobileMenuOpen ? 'close' : 'menu'}
-            </span>
+            <div className="w-6 h-5 relative flex flex-col justify-center gap-[5px]">
+              <span
+                className={`hamburger-line hamburger-line-top block h-[2px] w-full rounded-full bg-current transition-all duration-300 ease-out origin-center ${
+                  isMobileMenuOpen ? 'rotate-45 translate-y-[3.5px]' : ''
+                }`}
+              />
+              <span
+                className={`hamburger-line hamburger-line-middle block h-[2px] w-full rounded-full bg-current transition-all duration-300 ease-out ${
+                  isMobileMenuOpen ? 'opacity-0 scale-x-0' : ''
+                }`}
+              />
+              <span
+                className={`hamburger-line hamburger-line-bottom block h-[2px] w-full rounded-full bg-current transition-all duration-300 ease-out origin-center ${
+                  isMobileMenuOpen ? '-rotate-45 -translate-y-[3.5px]' : ''
+                }`}
+              />
+            </div>
           </button>
         </div>
       </nav>
