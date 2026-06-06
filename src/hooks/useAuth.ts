@@ -14,12 +14,19 @@ export function useAuth() {
 
   const login = useCallback(
     async (username: string, password: string) => {
-      const success = await store.login({ username, password })
-      if (success) {
+      const result = await store.login({ username, password })
+
+      // If result is an object with requiresTwoFactor, it's a 2FA challenge
+      if (result && typeof result === 'object' && 'requiresTwoFactor' in result) {
+        navigate('/2fa/verify')
+        return result
+      }
+
+      if (result) {
         showSuccessToast('¡Bienvenido!')
         navigate(ROUTES.DASHBOARD)
       }
-      return success
+      return result
     },
     [store, navigate]
   )
@@ -60,9 +67,13 @@ export function useAuth() {
     isAdmin: store.isAdmin,
     isLoading: store.isLoading,
     error: store.error,
+    requiresTwoFactor: store.requiresTwoFactor,
+    tempToken: store.tempToken,
     login,
     register,
     logout,
     clearError: store.clearError,
+    complete2FALogin: store.complete2FALogin,
+    clearTwoFactorState: store.clearTwoFactorState,
   }
 }

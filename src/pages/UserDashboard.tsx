@@ -1,13 +1,34 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout'
 import { Card, Button, Badge } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
+import { get2FAStatusService } from '@/services/auth.service'
 
 type UserTab = 'dashboard' | 'vehicles' | 'reservations' | 'profile'
 
 export function UserDashboard() {
+  const navigate = useNavigate()
   const { user, logout, isLoading } = useAuth()
   const [activeTab, setActiveTab] = useState<UserTab>('dashboard')
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
+  const [backupCodesCount, setBackupCodesCount] = useState(0)
+
+  useEffect(() => {
+    if (activeTab === 'profile') {
+      load2FAStatus()
+    }
+  }, [activeTab])
+
+  const load2FAStatus = async () => {
+    try {
+      const status = await get2FAStatusService()
+      setTwoFactorEnabled(status.twoFactorEnabled)
+      setBackupCodesCount(status.backupCodesCount)
+    } catch {
+      // Silently fail - 2FA status is not critical
+    }
+  }
 
   const tabs: { key: UserTab; label: string; icon: string }[] = [
     { key: 'dashboard', label: 'Resumen', icon: 'dashboard' },
@@ -131,8 +152,9 @@ export function UserDashboard() {
         )}
 
         {activeTab === 'profile' && (
-          <Card variant="glass" title="Mi Perfil">
-            <div className="space-y-4">
+          <div className="space-y-6">
+            {/* User Info */}
+            <Card variant="glass" title="Mi Perfil">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-on-surface-var mb-1">
@@ -175,8 +197,58 @@ export function UserDashboard() {
                   </div>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+
+            {/* 2FA Settings */}
+            <Card variant="glass" title="Seguridad de la Cuenta">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-primary text-xl">
+                      security
+                    </span>
+                    <div>
+                      <p className="font-medium text-on-bg">
+                        Autenticación de Dos Factores (2FA)
+                      </p>
+                      <p className="text-sm text-on-surface-var">
+                        {twoFactorEnabled
+                          ? `Protegido — ${backupCodesCount} códigos de respaldo disponibles`
+                          : 'Añade una capa extra de seguridad a tu cuenta'}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={twoFactorEnabled ? 'success' : 'info'}>
+                    {twoFactorEnabled ? 'Activado' : 'Desactivado'}
+                  </Badge>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  {twoFactorEnabled ? (
+                    <>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => navigate('/2fa/setup')}
+                      >
+                        <span className="material-symbols-outlined text-sm">settings</span>
+                        Administrar 2FA
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => navigate('/2fa/setup')}
+                    >
+                      <span className="material-symbols-outlined text-sm">security</span>
+                      Activar 2FA
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          </div>
         )}
       </div>
     </Layout>

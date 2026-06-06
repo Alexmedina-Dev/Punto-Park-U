@@ -20,6 +20,14 @@ const AdminDashboard = lazy(() =>
   import('@/pages/AdminDashboard').then((m) => ({ default: m.AdminDashboard }))
 )
 
+// Lazy-loaded 2FA pages
+const TwoFactorSetupPage = lazy(() =>
+  import('@/pages/TwoFactorSetupPage').then((m) => ({ default: m.TwoFactorSetupPage }))
+)
+const TwoFactorVerifyPage = lazy(() =>
+  import('@/pages/TwoFactorVerifyPage').then((m) => ({ default: m.TwoFactorVerifyPage }))
+)
+
 export function AppRoutes() {
   return (
     <BrowserRouter>
@@ -32,6 +40,26 @@ export function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+
+        {/* 2FA Routes */}
+        <Route
+          path="/2fa/setup"
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner size="lg" text="Cargando..." />}>
+                <TwoFactorSetupPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/2fa/verify"
+          element={
+            <Suspense fallback={<LoadingSpinner size="lg" text="Cargando..." />}>
+              <TwoFactorVerifyPage />
+            </Suspense>
+          }
+        />
 
         {/* Protected Routes with lazy loading */}
         <Route

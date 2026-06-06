@@ -152,3 +152,39 @@ export interface RegisterData {
   confirmPassword: string
   email?: string
 }
+
+// ── 2FA Types ──
+
+export interface TwoFactorStatus {
+  twoFactorEnabled: boolean
+  backupCodesCount: number
+}
+
+export interface TwoFactorSetupData {
+  secret: string
+  qrCode: string
+  otpauthUrl: string
+}
+
+export interface TwoFactorVerifySetupResponse {
+  message: string
+  backupCodes: string[]
+  user: User
+}
+
+export interface TwoFactorVerifyResponse {
+  user: User
+  token: string
+  accessToken: string
+  refreshToken: string
+}
+
+export interface TwoFactorBackupCodesResponse {
+  backupCodes: string[]
+}
+
+export interface LoginResponse2FA {
+  user: User
+  requiresTwoFactor: true
+  tempToken: string
+}

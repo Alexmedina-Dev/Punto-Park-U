@@ -7,6 +7,7 @@ const errorHandler = require('./middleware/errorHandler');
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth');
 const oauthRoutes = require('./routes/oauth');
+const twoFactorRoutes = require('./routes/twoFactor');
 
 const app = express();
 
@@ -52,6 +53,9 @@ app.use('/api/auth', authRoutes);
 
 // OAuth routes (Google, etc.)
 app.use('/api/oauth', oauthRoutes);
+
+// 2FA routes (under /api/auth/2fa)
+app.use('/api/auth/2fa', twoFactorRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────
 app.use((req, res) => {
