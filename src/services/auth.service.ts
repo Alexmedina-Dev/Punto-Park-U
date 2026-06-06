@@ -113,6 +113,24 @@ export async function refreshTokenService(token: string): Promise<AuthResponse> 
 }
 
 /**
+ * Request a password reset email (simulated — logs token to console).
+ */
+export async function forgotPasswordService(email: string): Promise<{ message: string }> {
+  const { data } = await api.post('/auth/forgot-password', { email })
+  const resp = data as Record<string, unknown>
+  return { message: (resp.message as string) || 'If an account with that email exists, a reset link has been sent.' }
+}
+
+/**
+ * Reset password using a reset token.
+ */
+export async function resetPasswordService(token: string, password: string): Promise<{ message: string }> {
+  const { data } = await api.post('/auth/reset-password', { token, password })
+  const resp = data as Record<string, unknown>
+  return { message: (resp.message as string) || 'Password has been reset successfully' }
+}
+
+/**
  * Get the currently authenticated user's profile.
  */
 export async function getProfileService(): Promise<User> {

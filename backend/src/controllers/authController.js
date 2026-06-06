@@ -203,4 +203,85 @@ const refresh = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, me, refresh };
+// ── POST /api/auth/forgot-password ────────────────────────────────
+
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      return res.status(400).json({ error: 'Please provide a valid email address' });
+    }
+
+    // Always return the same success message (anti-enumeration)
+    const successMessage = 'If an account with that email exists, a reset link has been sent.';
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      // Anti-enumeration: same response even if email not found
+      console.log(`[forgot-password] No user found for email: ${email}`);
+      return res.status(200).json({ success: true, message: successMessage });
+    }
+
+    // Generate and save reset token
+    const resetToken = await user.setResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Log token to console for simulation (mock email)
+    const resetUrl = `${config.frontendUrl}/reset-password?token=${resetToken}`;
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('  PASSWORD RESET — SIMULATED EMAIL');
+    console.log(`  To:   ${user.email}`);
+    console.log(`  Link: ${resetUrl}`);
+    console.log(`  Token expires: ${user.resetTokenExpiry}`);
+    console.log('═══════════════════════════════════════════════════════');
+
+    res.status(200).json({ success: true, message: successMessage });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── POST /api/auth/reset-password ─────────────────────────────────
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+    // Validate token
+    if (!token) {
+      return res.status(400).json({ error: 'Reset token is required' });
+    }
+
+    // Validate password
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Find user with valid (non-expired) reset token
+    const user = await User.findOne({
+      resetTokenExpiry: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    // Verify the token matches
+    const isValidToken = await user.verifyResetToken(token);
+    if (!isValidToken) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    // Update password (pre-save hook will hash it)
+    user.password = password;
+    user.clearResetToken();
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password has been reset successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, login, me, refresh, forgotPassword, resetPassword };

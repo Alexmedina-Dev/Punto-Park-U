@@ -62,11 +62,41 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/^3\d{9}$/, 'Phone must be a valid Colombian number (e.g., 3001234567)'],
     },
+    // ── Password Reset fields ─────────────────────────────────────
+    resetToken: {
+      type: String,
+    },
+    resetTokenExpiry: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// ── Instance method: set reset token ──────────────────────────────
+userSchema.methods.setResetToken = async function () {
+  const crypto = require('crypto');
+  const token = crypto.randomBytes(32).toString('hex');
+  const salt = await bcrypt.genSalt(10);
+  this.resetToken = await bcrypt.hash(token, salt);
+  this.resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  return token; // return plain token (to be sent to user via email)
+};
+
+// ── Instance method: verify reset token ──────────────────────────
+userSchema.methods.verifyResetToken = async function (candidateToken) {
+  if (!this.resetToken || !this.resetTokenExpiry) return false;
+  if (this.resetTokenExpiry < new Date()) return false;
+  return bcrypt.compare(candidateToken, this.resetToken);
+};
+
+// ── Instance method: clear reset token ───────────────────────────
+userSchema.methods.clearResetToken = function () {
+  this.resetToken = undefined;
+  this.resetTokenExpiry = undefined;
+};
 
 // ── Indexes ─────────────────────────────────────────────────────────
 userSchema.index({ email: 1 });
