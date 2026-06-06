@@ -1,7 +1,7 @@
 import React from 'react'
 
 export type CardVariant = 'default' | 'glass'
-export type CardPadding = 'sm' | 'md' | 'lg'
+export type CardPadding = 'none' | 'sm' | 'md' | 'lg'
 
 export interface CardProps {
   title?: string
@@ -18,6 +18,7 @@ const variantClasses: Record<CardVariant, string> = {
 }
 
 const paddingClasses: Record<CardPadding, string> = {
+  none: '',
   sm: 'p-4',
   md: 'p-6',
   lg: 'p-8',
