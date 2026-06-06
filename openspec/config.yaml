@@ -1,0 +1,93 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  Punto Park U — OpenSpec Configuration                         ║
+# ║  Project: punto-park-u                                          ║
+# ║  Mode: openspec                                                 ║
+# ║  Created: 2026-06-06                                            ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+schema: spec-driven
+
+context: |
+  Project: Punto Park U
+  Type: Migration from vanilla HTML/CSS/JS to React + TypeScript
+  Purpose: Educational project (SENA)
+  
+  Frontend: React 18 + TypeScript + Vite + Tailwind CSS v3.4 + Zustand + React Router v6 + Axios + Chart.js
+  Backend:  Node.js + Express + MongoDB Atlas + JWT + bcryptjs + socket.io
+  AI:       Python 3.11+ (FastAPI, OpenCV, EasyOCR, YOLOv8n, Scikit-learn, Prophet)
+  
+  Architecture: SPA frontend (React), REST API + WebSocket backend (Node.js),
+    microservices for Flux AI modules (Python/FastAPI)
+  
+  Design: Dark mode, glassmorphism, neumorphism, responsive, Material Symbols
+  Fonts:  Manrope, Space Grotesk
+  
+  Reference project: C:\Projects\Punto-Park-U-Web (vanilla, do NOT modify)
+  
+  Testing: None (will be added later)
+  Strict TDD: false
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Reference the existing vanilla implementation when migrating features
+    - Document the migration delta (what stays, what changes, what's new)
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Document migration delta: what changes from vanilla to React
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+    - Specify component tree for new React features
+    - Consider TypeScript learning curve for the developer
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+    - Reference user's React (JavaScript) experience, note TypeScript newness
+  apply:
+    - Follow React + TypeScript best practices
+    - Use functional components with hooks
+    - Apply Tailwind CSS utility classes for styling
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+
+testing:
+  enabled: false
+  strict_tdd: false
+  reason: "User explicitly chose to add testing later. No test runner configured."
+  framework: ""
+  runner: ""
+  coverage: false
+  type_checker: ""
+  linter: ""
+  formatter: ""
+
+domains:
+  landing:
+    description: Landing page — hero, why-us, about, pricing, availability, flux-ai, location, footer
+    source: index.html
+  auth:
+    description: Login, registration, password recovery, JWT session management
+    source: Login/
+  admin:
+    description: Admin dashboard — panels, reports, tariff management, PDF/Excel export
+    source: Administrador/
+  user-panel:
+    description: User panel — vehicles, reservations, profile, history
+    source: Login/Pantalla Usuario/
+  reservations:
+    description: Parking spot assignment, real-time availability, WebSocket updates
+    source: (new)
+  flux-ai:
+    description: Flux AI system — computer vision, intelligent assignment, predictive analytics
+    source: plan-flux-ai.txt
+  api:
+    description: Backend REST API — users CRUD, vehicles, reservations, auth, reports
+    source: (new)
