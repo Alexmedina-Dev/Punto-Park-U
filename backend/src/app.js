@@ -6,7 +6,6 @@ const config = require('./config');
 const errorHandler = require('./middleware/errorHandler');
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth');
-const publicRoutes = require('./routes/public');
 
 const app = express();
 
@@ -49,9 +48,6 @@ app.use('/api', indexRoutes);
 
 // Auth routes (placeholder — will be implemented in Batch 2)
 app.use('/api/auth', authRoutes);
-
-// Public routes (placeholder — will be implemented in Batch 3)
-app.use('/api', publicRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────
 app.use((req, res) => {
