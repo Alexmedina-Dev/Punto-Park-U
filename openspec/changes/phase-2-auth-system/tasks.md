@@ -185,32 +185,32 @@ Chain strategy: feature-branch-chain
 
 ---
 
-## Batch 6: RBAC
+## Batch 6: RBAC [x]
 
-**6.1** Update User model role enum to `['admin', 'operator', 'user', 'guest']`
+**6.1 [x]** Update User model role enum to `['admin', 'operator', 'user', 'guest']`
 - Files: `backend/src/models/User.js`
 - Dependencies: 1.1
 - AC: Default `"user"`; existing roles preserved; guest not assignable via registration
 
-**6.2** Create `requireRole` and `requireRoles` middleware with hierarchy
+**6.2 [x]** Create `requireRole` and `requireRoles` middleware with hierarchy
 - Files: `backend/src/middleware/requireRole.js`
 - Dependencies: 6.1
 - AC: `admin` inherits `operator` and `user`; `operator` inherits `user`; returns 403/401 as spec'd
 
-**6.3** Refactor `requireAdmin` to use `requireRole('admin')`
+**6.3 [x]** Refactor `requireAdmin` to use `requireRole('admin')`
 - Files: `backend/src/middleware/requireAdmin.js`
 - Dependencies: 6.2
 - AC: Behavior unchanged; no regression on existing routes
 
-**6.4** Add admin role endpoints `GET /api/users` and `PUT /api/users/:id/role`
-- Files: `backend/src/controllers/authController.js`, `backend/src/routes/auth.js`
+**6.4 [x]** Add admin role endpoints and user management routes
+- Files: `backend/src/routes/users.js`, `backend/src/controllers/userController.js`, `backend/src/app.js`
 - Dependencies: 6.2
-- AC: Filter by role; validate enum; self-demotion blocked; non-admin → 403
+- AC: Filter by role; validate enum; self-demotion blocked; non-admin → 403; users endpoint with search/pagination
 
-**6.5** Update frontend types and add admin role service helpers
-- Files: `src/types/index.ts`, `src/services/admin.service.ts`, `src/stores/adminStore.ts`
+**6.5 [x]** Update frontend types, store, and add role management services
+- Files: `src/types/index.ts`, `src/services/auth.service.ts`, `src/stores/authStore.ts`, `src/components/ui/Badge.tsx`
 - Dependencies: 6.4
-- AC: Type `'admin' | 'operator' | 'user' | 'guest'`; store actions for role management
+- AC: Type `'admin' | 'operator' | 'user' | 'guest'`; store actions for role management; role badges
 
 ---
 
@@ -221,10 +221,10 @@ Chain strategy: feature-branch-chain
 - Dependencies: Batches 1–6
 - AC: Covers OAuth callback simulation, password reset, email verify, 2FA challenge, session revoke, RBAC hierarchy
 
-**7.2** Wire all new frontend routes in AppRoutes with guards
-- Files: `src/routes/AppRoutes.tsx`, `src/components/ProtectedRoute.tsx` (if needed)
+**7.2 [x]** Wire all new frontend routes in AppRoutes with guards
+- Files: `src/routes/AppRoutes.tsx`, `src/components/ProtectedRoute.tsx`, `src/pages/AdminUsersPage.tsx`
 - Dependencies: Batches 1–6
-- AC: All routes accessible; unauthenticated redirects to login; role guards applied where needed
+- AC: All routes accessible; unauthenticated redirects to login; role guards applied where needed; admin users page with table/stats
 
 **7.3** Final review: env examples, dependency lockfiles, and README update
 - Files: `backend/.env.example`, `README.md`

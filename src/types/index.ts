@@ -53,6 +53,8 @@ export interface RetryConfig {
 
 export type VehicleType = 'car' | 'moto' | 'bike'
 
+export type UserRole = 'admin' | 'operator' | 'user' | 'guest'
+
 export interface User {
   id: string
   username: string
@@ -60,9 +62,38 @@ export interface User {
   nombres: string
   apellidos: string
   cedula: string
-  fechaNacimiento: string
-  rol: 'user' | 'admin'
+  fechaNacimiento?: string
+  rol: UserRole
+  role?: UserRole
+  phone?: string
+  isVerified?: boolean
+  authProvider?: string
   googlePicture?: string
+  createdAt?: string
+}
+
+export interface UserStats {
+  admin: number
+  operator: number
+  user: number
+  guest: number
+  total: number
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean
+  data: T[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasMore: boolean
+  }
+}
+
+export interface UpdateRolePayload {
+  role: UserRole
 }
 
 export interface Vehicle {

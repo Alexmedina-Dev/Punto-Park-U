@@ -33,6 +33,11 @@ const SessionsPage = lazy(() =>
   import('@/pages/SessionsPage').then((m) => ({ default: m.SessionsPage }))
 )
 
+// Lazy-loaded admin users page
+const AdminUsersPage = lazy(() =>
+  import('@/pages/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage }))
+)
+
 export function AppRoutes() {
   return (
     <BrowserRouter>
@@ -95,6 +100,16 @@ export function AppRoutes() {
             <ProtectedRoute requireAdmin>
               <Suspense fallback={<LoadingSpinner size="lg" text="Cargando panel..." />}>
                 <AdminDashboard />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute requireAdmin>
+              <Suspense fallback={<LoadingSpinner size="lg" text="Cargando usuarios..." />}>
+                <AdminUsersPage />
               </Suspense>
             </ProtectedRoute>
           }

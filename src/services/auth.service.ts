@@ -353,3 +353,73 @@ export async function getSessionStatsService(): Promise<import('@/types').Sessio
   }
   throw new Error('Failed to get session stats')
 }
+
+// ── User Management Services ───────────────────────────────────────────
+
+/**
+ * Get all users with optional filters (admin/operator only).
+ */
+export async function getUsersService(params?: {
+  role?: string
+  search?: string
+  page?: number
+  limit?: number
+}): Promise<import('@/types').PaginatedResponse<import('@/types').User>> {
+  const { data } = await api.get('/users', { params })
+  return data as import('@/types').PaginatedResponse<import('@/types').User>
+}
+
+/**
+ * Get a single user by ID (admin/operator/self).
+ */
+export async function getUserService(id: string): Promise<import('@/types').User> {
+  const { data } = await api.get(`/users/${id}`)
+  const resp = data as Record<string, unknown>
+  if (resp.success && resp.data) {
+    return resp.data as import('@/types').User
+  }
+  throw new Error('Failed to get user')
+}
+
+/**
+ * Update a user's profile (admin/self).
+ */
+export async function updateUserService(id: string, updates: Record<string, unknown>): Promise<import('@/types').User> {
+  const { data } = await api.put(`/users/${id}`, updates)
+  const resp = data as Record<string, unknown>
+  if (resp.success && resp.data) {
+    return resp.data as import('@/types').User
+  }
+  throw new Error('Failed to update user')
+}
+
+/**
+ * Update a user's role (admin only).
+ */
+export async function updateUserRoleService(id: string, role: import('@/types').UserRole): Promise<{ id: string; role: import('@/types').UserRole }> {
+  const { data } = await api.put(`/users/${id}/role`, { role })
+  const resp = data as Record<string, unknown>
+  if (resp.success && resp.data) {
+    return resp.data as { id: string; role: import('@/types').UserRole }
+  }
+  throw new Error('Failed to update role')
+}
+
+/**
+ * Delete a user (admin only).
+ */
+export async function deleteUserService(id: string): Promise<void> {
+  await api.delete(`/users/${id}`)
+}
+
+/**
+ * Get user stats (admin only).
+ */
+export async function getUserStatsService(): Promise<import('@/types').UserStats> {
+  const { data } = await api.get('/users/stats')
+  const resp = data as Record<string, unknown>
+  if (resp.success && resp.data) {
+    return resp.data as import('@/types').UserStats
+  }
+  throw new Error('Failed to get user stats')
+}

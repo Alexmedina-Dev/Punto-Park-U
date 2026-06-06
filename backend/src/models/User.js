@@ -54,7 +54,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
+      enum: ['admin', 'operator', 'user', 'guest'],
       default: 'user',
     },
     phone: {
@@ -147,6 +147,41 @@ userSchema.methods.clearVerificationToken = function () {
   this.verificationToken = undefined;
   this.verificationTokenExpiry = undefined;
 };
+
+// ── Role hierarchy (higher index = more permissions) ──────────────
+const ROLE_HIERARCHY = ['guest', 'user', 'operator', 'admin'];
+
+/**
+ * Check if the user has at least the given target role (hierarchy-aware).
+ * @param {string} targetRole - The role to check against
+ * @returns {boolean}
+ */
+userSchema.methods.hasRole = function (targetRole) {
+  const userIdx = ROLE_HIERARCHY.indexOf(this.role);
+  const targetIdx = ROLE_HIERARCHY.indexOf(targetRole);
+  if (userIdx === -1 || targetIdx === -1) return false;
+  return userIdx >= targetIdx;
+};
+
+// ── Role helper methods ────────────────────────────────────────────
+userSchema.methods.isAdmin = function () {
+  return this.role === 'admin';
+};
+
+userSchema.methods.isOperator = function () {
+  return this.role === 'operator' || this.role === 'admin';
+};
+
+userSchema.methods.isUser = function () {
+  return true; // all authenticated users except guest are "user" level or higher
+};
+
+userSchema.methods.isGuest = function () {
+  return this.role === 'guest';
+};
+
+// ── Static: roles that can be assigned via API ──────────────────────
+userSchema.statics.assignableRoles = ['admin', 'operator', 'user', 'guest'];
 
 // ── Indexes ─────────────────────────────────────────────────────────
 userSchema.index({ email: 1 });

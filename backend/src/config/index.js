@@ -18,6 +18,8 @@ const config = {
   sessionTimeout: parseInt(process.env.SESSION_TIMEOUT, 10) || 30,           // minutes
   activityHeartbeatInterval: parseInt(process.env.ACTIVITY_HEARTBEAT_INTERVAL, 10) || 5, // minutes
   cleanupInterval: parseInt(process.env.SESSION_CLEANUP_INTERVAL, 10) || 60, // minutes
+  // Admin
+  adminEmail: process.env.ADMIN_EMAIL || 'admin@puntoparku.com',
 };
 
 const requiredVars = ['jwtSecret', 'jwtRefreshSecret'];
