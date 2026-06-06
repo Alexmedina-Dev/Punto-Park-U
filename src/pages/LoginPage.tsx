@@ -90,6 +90,15 @@ export function LoginPage() {
               data-testid="login-password"
             />
 
+            <div className="flex justify-end -mt-2">
+              <a
+                href="/forgot-password"
+                className="text-sm text-primary hover:text-primary-fixed transition-colors"
+              >
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
+
             <Button
               type="submit"
               variant="primary"

@@ -1,5 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const requireAuth = require('../middleware/requireAuth');
@@ -66,6 +67,46 @@ const loginValidation = [
   }),
 ];
 
+// ── Password reset validation ────────────────────────────────────────
+
+const forgotPasswordValidation = [
+  body('email')
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Please provide a valid email address')
+    .normalizeEmail(),
+];
+
+const resetPasswordValidation = [
+  body('token')
+    .notEmpty()
+    .withMessage('Reset token is required'),
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters'),
+];
+
+// ── Rate limiters ────────────────────────────────────────────────────
+
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3,                   // 3 attempts per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many password reset requests. Please try again in 15 minutes.' },
+});
+
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3,                   // 3 attempts per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many reset attempts. Please try again in 15 minutes.' },
+});
+
 // ── Routes ───────────────────────────────────────────────────────────
 
 router.post('/register', registerValidation, authController.register);
@@ -76,5 +117,9 @@ router.post('/refresh', authController.refresh);
 router.post('/logout', (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });
+
+// Password recovery (rate limited)
+router.post('/forgot-password', forgotPasswordLimiter, forgotPasswordValidation, authController.forgotPassword);
+router.post('/reset-password', resetPasswordLimiter, resetPasswordValidation, authController.resetPassword);
 
 module.exports = router;

@@ -1,6 +1,12 @@
 import { create } from 'zustand'
 import type { User, LoginCredentials, RegisterData } from '@/types'
-import { loginService, registerService, logoutService } from '@/services/auth.service'
+import {
+  loginService,
+  registerService,
+  logoutService,
+  forgotPasswordService,
+  resetPasswordService,
+} from '@/services/auth.service'
 import { STORAGE_KEYS } from '@/utils/constants'
 import { withRetry, showErrorToast } from '@/utils/errorHandler'
 import axios from 'axios'
@@ -21,6 +27,8 @@ interface AuthState {
   clearError: () => void
   restoreSession: () => void
   handleOAuthCallback: (token: string, refreshToken: string, user: User) => void
+  forgotPassword: (email: string) => Promise<{ success: boolean; message: string }>
+  resetPassword: (token: string, password: string) => Promise<{ success: boolean; message: string }>
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -152,6 +160,58 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isLoading: false,
       error: null,
     })
+  },
+
+  forgotPassword: async (email) => {
+    set({ isLoading: true, error: null })
+    try {
+      const response = await forgotPasswordService(email)
+      set({ isLoading: false })
+      return { success: true, message: response.message }
+    } catch (error) {
+      let message = 'Error al solicitar restablecimiento de contraseña'
+
+      if (axios.isAxiosError(error)) {
+        const serverError = error.response?.data?.error
+        if (serverError) {
+          message = serverError
+        }
+        if (!error.response) {
+          message = 'Error de conexión. Verifica tu conexión a internet.'
+        }
+      } else if (error instanceof Error) {
+        message = error.message
+      }
+
+      set({ error: message, isLoading: false })
+      return { success: false, message }
+    }
+  },
+
+  resetPassword: async (token, password) => {
+    set({ isLoading: true, error: null })
+    try {
+      const response = await resetPasswordService(token, password)
+      set({ isLoading: false })
+      return { success: true, message: response.message }
+    } catch (error) {
+      let message = 'Error al restablecer la contraseña'
+
+      if (axios.isAxiosError(error)) {
+        const serverError = error.response?.data?.error
+        if (serverError) {
+          message = serverError
+        }
+        if (!error.response) {
+          message = 'Error de conexión. Verifica tu conexión a internet.'
+        }
+      } else if (error instanceof Error) {
+        message = error.message
+      }
+
+      set({ error: message, isLoading: false })
+      return { success: false, message }
+    }
   },
 
   restoreSession: () => {
