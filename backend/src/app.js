@@ -8,6 +8,7 @@ const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth');
 const oauthRoutes = require('./routes/oauth');
 const twoFactorRoutes = require('./routes/twoFactor');
+const sessionRoutes = require('./routes/sessions');
 
 const app = express();
 
@@ -56,6 +57,9 @@ app.use('/api/oauth', oauthRoutes);
 
 // 2FA routes (under /api/auth/2fa)
 app.use('/api/auth/2fa', twoFactorRoutes);
+
+// Session routes
+app.use('/api/sessions', sessionRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────
 app.use((req, res) => {

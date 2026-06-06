@@ -2,6 +2,7 @@ const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const User = require('../models/User');
+const { createSession } = require('./sessionController');
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -126,6 +127,9 @@ const googleCallback = async (req, res, next) => {
     // Generate JWT tokens
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
+
+    // Create session record
+    await createSession(req, user._id, accessToken, refreshToken);
 
     // Encode user data as base64 for the URL
     const userData = formatUserResponse(user);

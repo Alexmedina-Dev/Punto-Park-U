@@ -188,3 +188,26 @@ export interface LoginResponse2FA {
   requiresTwoFactor: true
   tempToken: string
 }
+
+// ── Session Types ──
+
+export interface SessionData {
+  id: string
+  userId: string
+  ipAddress: string
+  userAgent: string
+  device: string
+  createdAt: string
+  lastActiveAt: string
+  expiresAt: string
+  isCurrent: boolean
+  isExpired: boolean
+  isInactive: boolean
+}
+
+export interface SessionStats {
+  total: number
+  active: number
+  revoked: number
+  expired: number
+}

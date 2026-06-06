@@ -151,37 +151,37 @@ Chain strategy: feature-branch-chain
 
 ---
 
-## Batch 5: Session Management
+## Batch 5: Session Management [x]
 
-**5.1** Create Session model (`backend/src/models/Session.js`)
+**5.1 [x]** Create Session model (`backend/src/models/Session.js`)
 - Files: `backend/src/models/Session.js`
 - Dependencies: None
-- AC: Schema matches spec; indexes on `userId`, `refreshTokenHash`, `isActive`
+- AC: Schema matches spec; indexes on `userId`, `token`, `revokedAt`, `expiresAt`
 
-**5.2** Update login, refresh, and logout to create/revoke sessions
-- Files: `backend/src/controllers/authController.js`
+**5.2 [x]** Update login, refresh, and logout to create/revoke sessions
+- Files: `backend/src/controllers/authController.js`, `backend/src/controllers/oauthController.js`, `backend/src/controllers/twoFactorController.js`
 - Dependencies: 5.1
-- AC: Login creates Session; refresh marks old inactive + creates new; logout marks inactive
+- AC: Login creates Session; refresh updates token; logout revokes session
 
-**5.3** Create session activity middleware and inactivity timeout check
-- Files: `backend/src/middleware/sessionActivity.js`, `backend/src/middleware/requireAuth.js`
+**5.3 [x]** Update requireAuth with session checking and inactivity timeout
+- Files: `backend/src/middleware/requireAuth.js`
 - Dependencies: 5.2
-- AC: Updates `lastActivity` on authed requests; refresh rejects stale sessions with 401
+- AC: Checks session exists, not revoked, not expired, inactive < 30min; updates lastActiveAt
 
-**5.4** Implement `GET /api/auth/sessions`, `DELETE /api/auth/sessions/:id`, `DELETE /api/auth/sessions`
-- Files: `backend/src/controllers/authController.js`, `backend/src/routes/auth.js`
+**5.4 [x]** Implement session CRUD endpoints (`GET /api/sessions`, `DELETE /api/sessions/:id`, `DELETE /api/sessions`, `POST /api/sessions/activity`, `GET /api/sessions/stats`)
+- Files: `backend/src/controllers/sessionController.js`, `backend/src/routes/sessions.js`, `backend/src/app.js`
 - Dependencies: 5.3
 - AC: Lists active sessions with `isCurrent`; revokes others; blocks self-revoke; 404 for others' sessions
 
-**5.5** Create session cleanup utility and schedule hourly cleanup
-- Files: `backend/src/utils/sessionCleanup.js`
+**5.5 [x]** Create session cleanup job and schedule hourly cleanup
+- Files: `backend/src/jobs/sessionCleanup.js`, `backend/src/server.js`
 - Dependencies: 5.1
-- AC: Marks sessions >7 days inactive; runs every hour via `setInterval`/`node-cron`
+- AC: Deletes expired sessions; runs every hour via `setInterval`
 
-**5.6** Create SessionManagement page and wire route
-- Files: `src/pages/SessionManagement.tsx`, `src/routes/AppRoutes.tsx`, `src/services/auth.service.ts`, `src/types/index.ts`
+**5.6 [x]** Create SessionsPage and wire route
+- Files: `src/pages/SessionsPage.tsx`, `src/routes/AppRoutes.tsx`, `src/services/auth.service.ts`, `src/types/index.ts`, `src/stores/authStore.ts`, `src/hooks/useSessionActivity.ts`, `src/pages/UserDashboard.tsx`
 - Dependencies: 5.4
-- AC: Shows session list; revoke single / all others; refresh after action
+- AC: Shows session list; revoke single / all others; refresh after action; activity heartbeat; inactivity auto-logout
 
 ---
 

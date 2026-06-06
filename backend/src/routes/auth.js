@@ -114,9 +114,7 @@ router.post('/login', loginValidation, authController.login);
 router.get('/me', requireAuth, authController.me);
 router.get('/profile', requireAuth, authController.me);
 router.post('/refresh', authController.refresh);
-router.post('/logout', (req, res) => {
-  res.json({ success: true, message: 'Logged out successfully' });
-});
+router.post('/logout', requireAuth, authController.logout);
 
 // ── Email verification rate limiters ───────────────────────────────
 

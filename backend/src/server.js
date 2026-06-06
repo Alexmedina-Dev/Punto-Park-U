@@ -1,10 +1,14 @@
 const app = require('./app');
 const config = require('./config');
 const connectDB = require('./config/database');
+const { startCleanupJob } = require('./jobs/sessionCleanup');
 
 const startServer = async () => {
   // Attempt MongoDB connection (graceful on failure)
   await connectDB();
+
+  // Start session cleanup job
+  startCleanupJob(config.cleanupInterval || 60);
 
   const server = app.listen(config.port, () => {
     console.log(`[server] Punto Park U API running on port ${config.port} (${config.nodeEnv})`);

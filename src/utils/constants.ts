@@ -12,6 +12,7 @@ export const ROUTES = {
   VERIFY_EMAIL: '/verify-email',
   TWO_FACTOR_SETUP: '/2fa/setup',
   TWO_FACTOR_VERIFY: '/2fa/verify',
+  SESSIONS: '/sessions',
 } as const
 
 // ── Storage Keys ──
@@ -35,6 +36,10 @@ export const RETRY_CONFIG = {
 // ── Parking ──
 export const VEHICLE_TYPES = ['car', 'moto', 'bike'] as const
 export const PARKING_ZONES = ['A', 'B', 'C'] as const
+
+// ── Session ──
+export const SESSION_TIMEOUT = parseInt(import.meta.env.VITE_SESSION_TIMEOUT || '30', 10) * 60 * 1000
+export const ACTIVITY_HEARTBEAT_INTERVAL = parseInt(import.meta.env.VITE_ACTIVITY_HEARTBEAT_INTERVAL || '5', 10) * 60 * 1000
 
 // ── Brands ──
 export const APP_NAME = 'PUNTO PARK U'

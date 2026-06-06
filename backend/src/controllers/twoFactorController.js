@@ -3,6 +3,7 @@ const QRCode = require('qrcode');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const User = require('../models/User');
+const { createSession } = require('./sessionController');
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -205,6 +206,9 @@ const verify2FA = async (req, res, next) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
+    // Create session record
+    await createSession(req, user._id, accessToken, refreshToken);
+
     res.status(200).json({
       success: true,
       data: {
@@ -219,7 +223,7 @@ const verify2FA = async (req, res, next) => {
   }
 };
 
-// ── POST /api/auth/2fa/disable ───────────────────────────────────────
+// ── POST /api/auth/2fa/verify-backup ───────────────────────────────────────
 
 const disable2FA = async (req, res, next) => {
   try {
@@ -328,6 +332,9 @@ const verifyBackupCode = async (req, res, next) => {
     // Generate full JWT tokens
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
+
+    // Create session record
+    await createSession(req, user._id, accessToken, refreshToken);
 
     res.status(200).json({
       success: true,
