@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Layout } from '@/components/layout'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -62,7 +63,15 @@ export function LoginPage() {
           {/* Server error message */}
           {error && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400 text-center">
-              {error}
+              <p>{error}</p>
+              {error.toLowerCase().includes('verif') && (
+                <Link
+                  to="/verify-email"
+                  className="mt-2 inline-block text-primary hover:text-primary-fixed transition-colors underline"
+                >
+                  Reenviar verificación
+                </Link>
+              )}
             </div>
           )}
 
@@ -91,12 +100,12 @@ export function LoginPage() {
             />
 
             <div className="flex justify-end -mt-2">
-              <a
-                href="/forgot-password"
+              <Link
+                to="/forgot-password"
                 className="text-sm text-primary hover:text-primary-fixed transition-colors"
               >
                 ¿Olvidaste tu contraseña?
-              </a>
+              </Link>
             </div>
 
             <Button
@@ -151,12 +160,12 @@ export function LoginPage() {
 
           <p className="mt-4 text-center text-sm text-on-surface-var">
             ¿No tienes cuenta?{' '}
-            <a
-              href="/register"
+            <Link
+              to="/register"
               className="text-primary hover:text-primary-fixed transition-colors"
             >
               Regístrate
-            </a>
+            </Link>
           </p>
         </Card>
       </div>

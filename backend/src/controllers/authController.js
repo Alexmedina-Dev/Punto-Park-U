@@ -94,16 +94,36 @@ const register = async (req, res, next) => {
       role: 'user',
     });
 
-    // Generate tokens
+    // Email verification handling
+    if (!config.strictEmailVerification) {
+      // If strict mode disabled, mark as verified immediately
+      user.isVerified = true;
+      await user.save({ validateBeforeSave: false });
+    } else {
+      // If strict mode enabled, send verification email
+      await sendVerificationEmail(user);
+    }
+
+    // Generate tokens (only returned when strict mode is off,
+    // otherwise user must verify first)
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    res.status(201).json({
+    const response = {
       user: formatUserResponse(user),
       token: accessToken,
       accessToken,
       refreshToken,
-    });
+    };
+
+    // If strict mode, don't return tokens — user must verify email first
+    if (config.strictEmailVerification) {
+      delete response.token;
+      delete response.accessToken;
+      delete response.refreshToken;
+    }
+
+    res.status(201).json(response);
   } catch (err) {
     next(err);
   }
@@ -140,6 +160,15 @@ const login = async (req, res, next) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Check email verification (strict mode)
+    if (config.strictEmailVerification && !user.isVerified) {
+      return res.status(403).json({
+        error: 'Email not verified. Please verify your email before logging in.',
+        needsVerification: true,
+        email: user.email,
+      });
     }
 
     // Generate tokens
@@ -199,6 +228,125 @@ const refresh = async (req, res, next) => {
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Invalid refresh token' });
     }
+    next(err);
+  }
+};
+
+// ── Helper: send verification email (mock — logs to console) ─────
+
+const sendVerificationEmail = async (user) => {
+  const token = await user.generateVerificationToken();
+  await user.save({ validateBeforeSave: false });
+
+  const verifyUrl = `${config.frontendUrl}/verify-email?token=${token}`;
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('  EMAIL VERIFICATION — SIMULATED EMAIL');
+  console.log(`  To:   ${user.email}`);
+  console.log(`  Link: ${verifyUrl}`);
+  console.log(`  Token expires: ${user.verificationTokenExpiry}`);
+  console.log('═══════════════════════════════════════════════════════');
+};
+
+// ── POST /api/auth/verify/send ───────────────────────────────────
+
+const sendVerification = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      return res.status(400).json({ error: 'Please provide a valid email address' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found with that email address' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ error: 'Email is already verified' });
+    }
+
+    await sendVerificationEmail(user);
+
+    res.status(200).json({
+      success: true,
+      message: 'If an account with that email exists, a verification link has been sent.',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── GET /api/auth/verify/:token (query param also accepted) ─────
+
+const verifyEmail = async (req, res, next) => {
+  try {
+    // Support both param token and query param token
+    const token = req.params.token || req.query.token;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Verification token is required' });
+    }
+
+    // Find user with valid (non-expired) verification token
+    const user = await User.findOne({
+      verificationTokenExpiry: { $gt: new Date() },
+      isVerified: false,
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired verification token' });
+    }
+
+    const isValidToken = await user.verifyEmailToken(token);
+    if (!isValidToken) {
+      return res.status(400).json({ error: 'Invalid or expired verification token' });
+    }
+
+    // Mark as verified and clear token
+    user.isVerified = true;
+    user.clearVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully. You can now log in.',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── POST /api/auth/verify/resend ────────────────────────────────
+
+const resendVerification = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      return res.status(400).json({ error: 'Please provide a valid email address' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      // Anti-enumeration: same response even if email not found
+      return res.status(200).json({
+        success: true,
+        message: 'If an account with that email exists, a verification link has been sent.',
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ error: 'Email is already verified' });
+    }
+
+    await sendVerificationEmail(user);
+
+    res.status(200).json({
+      success: true,
+      message: 'If an account with that email exists, a verification link has been sent.',
+    });
+  } catch (err) {
     next(err);
   }
 };
@@ -284,4 +432,14 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, me, refresh, forgotPassword, resetPassword };
+module.exports = {
+  register,
+  login,
+  me,
+  refresh,
+  sendVerification,
+  verifyEmail,
+  resendVerification,
+  forgotPassword,
+  resetPassword,
+};

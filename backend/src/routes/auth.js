@@ -118,6 +118,31 @@ router.post('/logout', (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });
 
+// ── Email verification rate limiters ───────────────────────────────
+
+const verificationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 2,                   // 2 attempts per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many verification requests. Please try again in 1 hour.' },
+});
+
+const resendVerificationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 2,                   // 2 attempts per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many resend attempts. Please try again in 1 hour.' },
+});
+
+// ── Email verification routes (rate limited) ──────────────────────
+
+router.post('/verify/send', verificationLimiter, authController.sendVerification);
+router.get('/verify/:token', authController.verifyEmail);
+router.get('/verify', authController.verifyEmail); // also accept ?token= query param
+router.post('/verify/resend', resendVerificationLimiter, authController.resendVerification);
+
 // Password recovery (rate limited)
 router.post('/forgot-password', forgotPasswordLimiter, forgotPasswordValidation, authController.forgotPassword);
 router.post('/reset-password', resetPasswordLimiter, resetPasswordValidation, authController.resetPassword);

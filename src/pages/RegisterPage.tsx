@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Layout } from '@/components/layout'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -18,6 +19,8 @@ export function RegisterPage() {
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [registrationDone, setRegistrationDone] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState('')
   const { register, isLoading, error, clearError } = useAuth()
 
   const handleGoogleRegister = () => {
@@ -81,7 +84,11 @@ export function RegisterPage() {
     e.preventDefault()
     clearError()
     if (!validateForm()) return
-    await register(formData)
+    const result = await register(formData)
+    if (typeof result === 'object' && 'needsVerification' in result) {
+      setRegistrationDone(true)
+      setRegisteredEmail(result.email)
+    }
   }
 
   return (
@@ -92,6 +99,37 @@ export function RegisterPage() {
             Registro
           </h1>
 
+          {/* Registration done — show verification message */}
+          {registrationDone ? (
+            <div className="py-4 text-center">
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl text-primary">✉</span>
+              </div>
+              <h2 className="text-xl font-bold text-primary mb-2 font-headline">
+                ¡Registro exitoso!
+              </h2>
+              <p className="text-on-surface-var mb-4">
+                Hemos enviado un link de verificación a{' '}
+                <strong className="text-primary">{registeredEmail || 'tu email'}</strong>.
+                Por favor revisa tu bandeja de entrada para verificar tu cuenta.
+              </p>
+              <p className="text-sm text-on-surface-var mb-4">
+                ¿No recibiste el email?{' '}
+                <Link
+                  to="/verify-email"
+                  className="text-primary hover:text-primary-fixed transition-colors"
+                >
+                  Reenviar verificación
+                </Link>
+              </p>
+              <Link to="/login">
+                <Button variant="primary" className="w-full">
+                  Ir a Iniciar Sesión
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <>
           {/* Server error message */}
           {error && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400 text-center">
@@ -232,6 +270,8 @@ export function RegisterPage() {
               Inicia sesión
             </a>
           </p>
+          </>
+          )}
         </Card>
       </div>
     </Layout>

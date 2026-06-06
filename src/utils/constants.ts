@@ -9,6 +9,7 @@ export const ROUTES = {
   REGISTER: '/register',
   DASHBOARD: '/dashboard',
   ADMIN: '/admin',
+  VERIFY_EMAIL: '/verify-email',
 } as const
 
 // ── Storage Keys ──

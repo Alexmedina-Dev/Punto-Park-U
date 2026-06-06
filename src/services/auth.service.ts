@@ -58,7 +58,7 @@ export async function loginService(credentials: LoginCredentials): Promise<AuthR
  * Register a new user account.
  * Sends data in frontend format — backend handles mapping.
  */
-export async function registerService(registerData: RegisterData): Promise<{ user: User }> {
+export async function registerService(registerData: RegisterData): Promise<{ user: User; token?: string; accessToken?: string; refreshToken?: string }> {
   const { data } = await api.post('/auth/register', {
     nombres: registerData.nombres,
     apellidos: registerData.apellidos,
@@ -85,7 +85,12 @@ export async function registerService(registerData: RegisterData): Promise<{ use
     localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
   }
 
-  return { user: responseData.user as User }
+  return {
+    user: responseData.user as User,
+    token: responseData.token as string | undefined,
+    accessToken: responseData.accessToken as string | undefined,
+    refreshToken: responseData.refreshToken as string | undefined,
+  }
 }
 
 /**
@@ -128,6 +133,33 @@ export async function resetPasswordService(token: string, password: string): Pro
   const { data } = await api.post('/auth/reset-password', { token, password })
   const resp = data as Record<string, unknown>
   return { message: (resp.message as string) || 'Password has been reset successfully' }
+}
+
+/**
+ * Send a verification email (mock — logs token to console).
+ */
+export async function sendVerificationService(email: string): Promise<{ message: string }> {
+  const { data } = await api.post('/auth/verify/send', { email })
+  const resp = data as Record<string, unknown>
+  return { message: (resp.message as string) || 'Verification email sent.' }
+}
+
+/**
+ * Verify email using a token.
+ */
+export async function verifyEmailService(token: string): Promise<{ message: string }> {
+  const { data } = await api.get(`/auth/verify/${token}`)
+  const resp = data as Record<string, unknown>
+  return { message: (resp.message as string) || 'Email verified successfully.' }
+}
+
+/**
+ * Resend verification email (mock — logs token to console).
+ */
+export async function resendVerificationService(email: string): Promise<{ message: string }> {
+  const { data } = await api.post('/auth/verify/resend', { email })
+  const resp = data as Record<string, unknown>
+  return { message: (resp.message as string) || 'Verification email resent.' }
 }
 
 /**

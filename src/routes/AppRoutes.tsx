@@ -10,6 +10,7 @@ import { RegisterPage } from '@/pages/RegisterPage'
 import { OAuthCallback } from '@/pages/OAuthCallback'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
+import { VerifyEmailPage } from '@/pages/VerifyEmailPage'
 
 // Lazy-loaded dashboard pages
 const UserDashboard = lazy(() =>
@@ -30,6 +31,7 @@ export function AppRoutes() {
         <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
         {/* Protected Routes with lazy loading */}
         <Route
