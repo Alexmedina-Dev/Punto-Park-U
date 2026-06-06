@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { User, LoginCredentials, RegisterData, AuthResponse, LoginResponse2FA, SessionData } from '@/types'
+import type { User, LoginCredentials, RegisterData, AuthResponse, LoginResponse2FA, SessionData, UserRole } from '@/types'
 import {
   loginService,
   registerService,
@@ -16,10 +16,21 @@ import { STORAGE_KEYS } from '@/utils/constants'
 import { withRetry, showErrorToast, showSuccessToast } from '@/utils/errorHandler'
 import axios from 'axios'
 
+const ROLE_HIERARCHY: Record<UserRole, number> = {
+  guest: 0,
+  user: 1,
+  operator: 2,
+  admin: 3,
+}
+
 interface AuthState {
   user: User | null
   isAuthenticated: boolean
   isAdmin: boolean
+  isOperator: boolean
+  isUser: boolean
+  isGuest: boolean
+  userRole: UserRole | null
   token: string | null
   isLoading: boolean
   error: string | null
@@ -42,6 +53,7 @@ interface AuthState {
   handleOAuthCallback: (token: string, refreshToken: string, user: User) => void
   forgotPassword: (email: string) => Promise<{ success: boolean; message: string }>
   resetPassword: (token: string, password: string) => Promise<{ success: boolean; message: string }>
+  hasRole: (targetRole: UserRole) => boolean
 
   // 2FA Actions
   complete2FALogin: (user: User, token: string, refreshToken: string) => void
@@ -54,10 +66,18 @@ interface AuthState {
   revokeAllOtherSessions: () => Promise<boolean>
 }
 
+function getRole(user: User | null): UserRole {
+  return (user?.rol || user?.role || 'guest') as UserRole
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isAdmin: false,
+  isOperator: false,
+  isUser: false,
+  isGuest: false,
+  userRole: null,
   token: null,
   isLoading: false,
   error: null,
@@ -101,11 +121,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
       }
 
+      const role = getRole(user)
       set({
         user,
         token: token || null,
         isAuthenticated: true,
-        isAdmin: user?.rol === 'admin',
+        isAdmin: role === 'admin',
+        isOperator: role === 'admin' || role === 'operator',
+        isUser: role !== 'guest',
+        isGuest: role === 'guest',
+        userRole: role,
         isLoading: false,
         error: null,
         requiresTwoFactor: false,
@@ -150,6 +175,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       user: null,
       isAuthenticated: false,
       isAdmin: false,
+      isOperator: false,
+      isUser: false,
+      isGuest: false,
+      userRole: null,
       token: null,
       error: null,
     })
@@ -181,11 +210,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
       }
 
+      const role = getRole(user)
       set({
         user,
         token,
         isAuthenticated: true,
-        isAdmin: user?.rol === 'admin',
+        isAdmin: role === 'admin',
+        isOperator: role === 'admin' || role === 'operator',
+        isUser: role !== 'guest',
+        isGuest: role === 'guest',
+        userRole: role,
         isLoading: false,
         error: null,
       })
@@ -212,10 +246,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   setUser: (user) => {
+    const role = getRole(user)
     set({
       user,
       isAuthenticated: !!user,
-      isAdmin: user?.rol === 'admin',
+      isAdmin: role === 'admin',
+      isOperator: role === 'admin' || role === 'operator',
+      isUser: role !== 'guest',
+      isGuest: role === 'guest',
+      userRole: role,
     })
   },
 
@@ -231,11 +270,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
 
+    const role = getRole(user)
     set({
       user,
       token,
       isAuthenticated: true,
-      isAdmin: user.rol === 'admin',
+      isAdmin: role === 'admin',
+      isOperator: role === 'admin' || role === 'operator',
+      isUser: role !== 'guest',
+      isGuest: role === 'guest',
+      userRole: role,
       isLoading: false,
       error: null,
     })
@@ -300,11 +344,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (token && userJson) {
         const user = JSON.parse(userJson) as User
+        const role = getRole(user)
         set({
           user,
           token,
           isAuthenticated: true,
-          isAdmin: user.rol === 'admin',
+          isAdmin: role === 'admin',
+          isOperator: role === 'admin' || role === 'operator',
+          isUser: role !== 'guest',
+          isGuest: role === 'guest',
+          userRole: role,
         })
       }
     } catch {
@@ -323,11 +372,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
 
+    const role = getRole(user)
     set({
       user,
       token,
       isAuthenticated: true,
-      isAdmin: user.rol === 'admin',
+      isAdmin: role === 'admin',
+      isOperator: role === 'admin' || role === 'operator',
+      isUser: role !== 'guest',
+      isGuest: role === 'guest',
+      userRole: role,
       isLoading: false,
       error: null,
       requiresTwoFactor: false,
@@ -344,6 +398,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setTwoFactorTempToken: (tempToken) => {
     set({ tempToken })
+  },
+
+  hasRole: (targetRole) => {
+    const role = getRole(get().user)
+    return (ROLE_HIERARCHY[role] || 0) >= (ROLE_HIERARCHY[targetRole] || 0)
   },
 
   // ── Session Actions ─────────────────────────────────────────────────

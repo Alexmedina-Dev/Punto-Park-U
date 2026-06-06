@@ -61,6 +61,10 @@ app.use('/api/auth/2fa', twoFactorRoutes);
 // Session routes
 app.use('/api/sessions', sessionRoutes);
 
+// User management routes (admin/operator)
+const userRoutes = require('./routes/users');
+app.use('/api/users', userRoutes);
+
 // ── 404 handler ───────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found` });
