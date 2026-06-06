@@ -6,6 +6,7 @@ const config = require('./config');
 const errorHandler = require('./middleware/errorHandler');
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth');
+const oauthRoutes = require('./routes/oauth');
 
 const app = express();
 
@@ -46,8 +47,11 @@ app.get('/', (req, res) => {
 // Health check
 app.use('/api', indexRoutes);
 
-// Auth routes (placeholder — will be implemented in Batch 2)
+// Auth routes
 app.use('/api/auth', authRoutes);
+
+// OAuth routes (Google, etc.)
+app.use('/api/oauth', oauthRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────
 app.use((req, res) => {

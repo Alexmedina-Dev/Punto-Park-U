@@ -62,6 +62,7 @@ export interface User {
   cedula: string
   fechaNacimiento: string
   rol: 'user' | 'admin'
+  googlePicture?: string
 }
 
 export interface Vehicle {
