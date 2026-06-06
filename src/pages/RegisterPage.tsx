@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/stores/authStore'
-import { toast } from 'sonner'
 import { Layout } from '@/components/layout'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/hooks/useAuth'
 
 export function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -18,11 +16,10 @@ export function RegisterPage() {
     confirmPassword: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const navigate = useNavigate()
-  const { register, isLoading } = useAuthStore()
+  const { register, isLoading, error, clearError } = useAuth()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
     // Clear error when user types
     if (errors[e.target.name]) {
       setErrors((prev) => {
@@ -75,15 +72,9 @@ export function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    clearError()
     if (!validateForm()) return
-
-    const success = await register(formData)
-    if (success) {
-      toast.success('¡Registro exitoso!')
-      navigate('/login')
-    } else {
-      toast.error('Error al registrar usuario')
-    }
+    await register(formData)
   }
 
   return (
@@ -93,6 +84,13 @@ export function RegisterPage() {
           <h1 className="text-3xl font-bold text-primary mb-6 text-center font-headline">
             Registro
           </h1>
+
+          {/* Server error message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400 text-center">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -181,7 +179,10 @@ export function RegisterPage() {
 
           <p className="mt-4 text-center text-sm text-on-surface-var">
             ¿Ya tienes cuenta?{' '}
-            <a href="/login" className="text-primary hover:text-primary-fixed transition-colors">
+            <a
+              href="/login"
+              className="text-primary hover:text-primary-fixed transition-colors"
+            >
               Inicia sesión
             </a>
           </p>

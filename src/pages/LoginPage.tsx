@@ -1,18 +1,15 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/stores/authStore'
-import { toast } from 'sonner'
 import { Layout } from '@/components/layout'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/hooks/useAuth'
 
 export function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({})
-  const navigate = useNavigate()
-  const { login, isLoading } = useAuthStore()
+  const { login, isLoading, error, clearError } = useAuth()
 
   const validate = () => {
     const newErrors: { username?: string; password?: string } = {}
@@ -28,14 +25,22 @@ export function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    clearError()
     if (!validate()) return
+    await login(username, password)
+  }
 
-    const success = await login({ username, password })
-    if (success) {
-      toast.success('¡Bienvenido!')
-      navigate('/dashboard')
-    } else {
-      toast.error('Usuario o contraseña incorrectos')
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value)
+    if (errors.username) {
+      setErrors((prev) => ({ ...prev, username: undefined }))
+    }
+  }
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    if (errors.password) {
+      setErrors((prev) => ({ ...prev, password: undefined }))
     }
   }
 
@@ -47,12 +52,19 @@ export function LoginPage() {
             Iniciar Sesión
           </h1>
 
+          {/* Server error message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400 text-center">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Usuario"
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={handleUsernameChange}
               placeholder="Ingresa tu usuario"
               error={errors.username}
               icon="person"
@@ -63,7 +75,7 @@ export function LoginPage() {
               label="Contraseña"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               placeholder="Ingresa tu contraseña"
               error={errors.password}
               icon="lock"
@@ -84,7 +96,10 @@ export function LoginPage() {
 
           <p className="mt-4 text-center text-sm text-on-surface-var">
             ¿No tienes cuenta?{' '}
-            <a href="/register" className="text-primary hover:text-primary-fixed transition-colors">
+            <a
+              href="/register"
+              className="text-primary hover:text-primary-fixed transition-colors"
+            >
               Regístrate
             </a>
           </p>
