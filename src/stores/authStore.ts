@@ -22,7 +22,7 @@ interface AuthState {
   // Actions
   login: (credentials: LoginCredentials) => Promise<boolean>
   logout: () => void
-  register: (data: RegisterData) => Promise<boolean>
+  register: (data: RegisterData) => Promise<boolean | { needsVerification: boolean; email: string }>
   setUser: (user: User | null) => void
   clearError: () => void
   restoreSession: () => void
@@ -109,8 +109,38 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   register: async (data) => {
     set({ isLoading: true, error: null })
     try {
-      await withRetry(() => registerService(data))
-      set({ isLoading: false, error: null })
+      const response = await withRetry(() => registerService(data))
+
+      // If strict mode, response has user but no tokens — needs verification
+      if (response && !response.token && !response.accessToken) {
+        set({ isLoading: false, error: null })
+        return { needsVerification: true, email: response.user?.email || data.username || '' }
+      }
+
+      // Normal flow: store tokens and user
+      const token = response.token || response.accessToken || ''
+      const refreshToken = response.refreshToken
+      const user = response.user
+
+      if (token) {
+        localStorage.setItem(STORAGE_KEYS.TOKEN, token)
+      }
+      if (refreshToken) {
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+      }
+      if (user) {
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
+      }
+
+      set({
+        user,
+        token,
+        isAuthenticated: true,
+        isAdmin: user?.rol === 'admin',
+        isLoading: false,
+        error: null,
+      })
+
       return true
     } catch (error) {
       let errorMsg = 'Error al registrar usuario'

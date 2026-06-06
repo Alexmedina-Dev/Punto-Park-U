@@ -34,12 +34,16 @@ export function useAuth() {
       password: string
       confirmPassword: string
     }) => {
-      const success = await store.register(data)
-      if (success) {
-        showSuccessToast('¡Registro exitoso!')
-        navigate(ROUTES.LOGIN)
+      const result = await store.register(data)
+      if (result) {
+        // Check if registration returned needsVerification (strict mode)
+        const needsVerification = typeof result === 'object' && 'needsVerification' in result
+        if (!needsVerification) {
+          showSuccessToast('¡Registro exitoso!')
+          navigate(ROUTES.DASHBOARD)
+        }
       }
-      return success
+      return result as boolean | { needsVerification: boolean; email: string }
     },
     [store, navigate]
   )

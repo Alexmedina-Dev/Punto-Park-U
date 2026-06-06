@@ -62,6 +62,17 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/^3\d{9}$/, 'Phone must be a valid Colombian number (e.g., 3001234567)'],
     },
+    // ── Email Verification fields ─────────────────────────────────
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+    },
+    verificationTokenExpiry: {
+      type: Date,
+    },
     // ── Password Reset fields ─────────────────────────────────────
     resetToken: {
       type: String,
@@ -96,6 +107,29 @@ userSchema.methods.verifyResetToken = async function (candidateToken) {
 userSchema.methods.clearResetToken = function () {
   this.resetToken = undefined;
   this.resetTokenExpiry = undefined;
+};
+
+// ── Instance method: generate verification token ────────────────
+userSchema.methods.generateVerificationToken = async function () {
+  const crypto = require('crypto');
+  const token = crypto.randomBytes(32).toString('hex');
+  const salt = await bcrypt.genSalt(10);
+  this.verificationToken = await bcrypt.hash(token, salt);
+  this.verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  return token; // return plain token (to be sent to user via email)
+};
+
+// ── Instance method: verify verification token ───────────────────
+userSchema.methods.verifyEmailToken = async function (candidateToken) {
+  if (!this.verificationToken || !this.verificationTokenExpiry) return false;
+  if (this.verificationTokenExpiry < new Date()) return false;
+  return bcrypt.compare(candidateToken, this.verificationToken);
+};
+
+// ── Instance method: clear verification token ───────────────────
+userSchema.methods.clearVerificationToken = function () {
+  this.verificationToken = undefined;
+  this.verificationTokenExpiry = undefined;
 };
 
 // ── Indexes ─────────────────────────────────────────────────────────
