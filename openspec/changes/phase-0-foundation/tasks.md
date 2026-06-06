@@ -61,6 +61,35 @@ Chain strategy: stacked-to-main
 
 - [x] 5.1 `src/main.tsx`: entry point with `React.StrictMode` — deps: 3.5 — effort: XS — risk: Low
 - [x] 5.2 `index.html`: fonts, favicon, default `class="dark"` — effort: XS — risk: Low
-- [ ] 5.3 `npm run dev`: verify clean start, alias resolves — deps: 5.1 — effort: S — risk: Low
+- [x] 5.3 `npm run dev`: verify clean start, alias resolves — deps: 5.1 — effort: S — risk: Low
 - [x] 5.4 `npm run build` + `tsc --noEmit`: zero errors — deps: 5.1 — effort: S — risk: Low
-- [ ] 5.5 Visual walkthrough: dark mode, primitives, routes, ErrorBoundary — deps: 5.3 — effort: M — risk: Low
+- [x] 5.5 Visual walkthrough: dark mode, primitives, routes, ErrorBoundary — deps: 5.3 — effort: M — risk: Low
+
+## Phase 6: Service Layer & API Integration (PR #3)
+
+- [x] 6.1 `src/services/auth.service.ts` — Auth API calls (login, register, logout, refresh)
+- [x] 6.2 `src/services/parking.service.ts` — Parking data API calls (tariffs, schedule, availability)
+- [x] 6.3 `src/services/admin.service.ts` — Admin API calls (reports, stats, users)
+- [x] 6.4 Update `src/services/api.ts` — Response interceptors and error handling
+- [x] 6.5 `src/hooks/useAuth.ts` — useAuth hook with login/logout/register
+- [x] 6.6 `src/hooks/useParkingData.ts` — Hook for parking data
+- [x] 6.7 `src/hooks/useLocalStorage.ts` — Hook for localStorage operations
+- [x] 6.8 Update stores to use services instead of mock data
+
+## Phase 7: Page Polish & Error Handling
+
+- [x] 7.1 Update LandingPage — Full sections (hero, why-us, about, pricing, availability, flux-ai, location)
+- [x] 7.2 Update LoginPage — Use useAuth hook, show loading states, server errors
+- [x] 7.3 Update RegisterPage — Use useAuth hook, redirect after success
+- [x] 7.4 Update UserDashboard — Navigation tabs, user stats, profile info
+- [x] 7.5 Update AdminDashboard — Admin stats, quick actions, navigation tabs
+- [x] 7.6 `src/utils/errorHandler.ts` — Centralized error handling with retry logic
+
+## Phase 8: Final Polish
+
+- [x] 8.1 Update `index.html` — Meta tags, OG tags, favicon, title
+- [x] 8.2 Add `.env.example` — Example environment variables
+- [x] 8.3 Add `src/utils/constants.ts` — App constants (API URLs, routes, etc.)
+- [x] 8.4 Add `src/utils/formatters.ts` — Date, currency, time formatters
+- [x] 8.5 TypeScript check — zero type errors
+- [x] 8.6 Build verification — successful production build

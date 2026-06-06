@@ -1,3 +1,54 @@
+// ── API Response Types ──
+
+export interface ApiResponse<T> {
+  success: boolean
+  data: T
+  message?: string
+}
+
+export interface ApiError {
+  success: false
+  message: string
+  errors?: Record<string, string[]>
+}
+
+export interface AuthResponse {
+  user: User
+  token: string
+}
+
+export interface AdminStats {
+  totalVehicles: number
+  totalRevenue: number
+  occupancyRate: number
+  totalUsers: number
+  activeReservations: number
+  revenueToday: number
+  entriesToday: number
+}
+
+export interface ReportData {
+  labels: string[]
+  datasets: {
+    label: string
+    data: number[]
+    color: string
+  }[]
+}
+
+export interface UserStats {
+  totalVehicles: number
+  activeReservations: number
+  totalReservations: number
+  pendingPayments: number
+}
+
+export interface RetryConfig {
+  maxRetries: number
+  baseDelay: number
+  maxDelay: number
+}
+
 export type VehicleType = 'car' | 'moto' | 'bike'
 
 export interface User {
