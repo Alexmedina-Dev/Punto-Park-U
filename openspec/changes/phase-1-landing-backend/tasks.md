@@ -39,17 +39,17 @@ Chain strategy: pending
 
 ## Phase 2: Backend Models + Auth (Batch 2)
 
-- [ ] 2.1 Create `backend/src/models/User.js` — Mongoose schema with `name`, `email` (unique, lowercase), `cedula` (unique), `password`, `role` (enum: `user`/`admin`, default `user`), `phone`; `timestamps: true`; `pre('save')` bcryptjs hash (salt ≥10) skipping if unchanged; `toJSON` transform removing `password`; index on `email` and `cedula`.
-- [ ] 2.2 Create `backend/src/models/Vehicle.js` — schema with `plate`, `type` (enum: `car`/`moto`/`suv`/`bike`), `brand`, `model`, `color`, `owner` (ref User); `timestamps: true`; index on `plate`.
-- [ ] 2.3 Create `backend/src/models/ParkingSpot.js` — schema with `code`, `zone` (enum: `A`/`B`/`C`), `type` (enum: `car`/`moto`/`bike`), `status` (enum: `available`/`occupied`/`reserved`, default `available`); `timestamps: true`; index on `code`.
-- [ ] 2.4 Create `backend/src/models/Reservation.js` — schema with `user`, `vehicle`, `spot` (all ObjectId refs), `entryTime`, `exitTime`, `status` (enum: `active`/`completed`/`cancelled`); `timestamps: true`; index on `status`.
-- [ ] 2.5 Create `backend/src/models/Tariff.js` — schema with `vehicleType` (enum), `hourlyRate`, `dailyRate`, `monthlyRate` (all Number, COP); `timestamps: true`.
-- [ ] 2.6 Create `backend/src/models/Schedule.js` — schema with `weekdayOpen`, `weekdayClose`, `sundayOpen`, `sundayClose` (all String "HH:mm"); `timestamps: true`.
-- [ ] 2.7 Create `backend/src/controllers/authController.js` — `register` (hash password, create User, return 201 with `{ user, accessToken, refreshToken }`), `login` (compare bcrypt, return 200 with tokens), `me` (return 200 with user profile, no password), `refresh` (verify refresh token, return new `accessToken`).
-- [ ] 2.8 Create `backend/src/middleware/requireAuth.js` — verify `Authorization: Bearer <token>` via `jwt.verify`, attach `req.user = { id, email, role }`, or return 401 `{ error: "Authentication required" }`.
-- [ ] 2.9 Create `backend/src/middleware/requireAdmin.js` — extend `requireAuth`, check `req.user.role === 'admin'`, return 403 `{ error: "Admin access required" }` otherwise.
-- [ ] 2.10 Create `backend/src/routes/auth.js` — mount `POST /register`, `POST /login`, `GET /me` (with `requireAuth`), `POST /refresh`.
-- [ ] 2.11 Wire `authRoutes` into `app.js` under `/api/auth`.
+- [x] 2.1 Create `backend/src/models/User.js` — Mongoose schema with `name`, `email` (unique, lowercase), `cedula` (unique), `password`, `role` (enum: `user`/`admin`, default `user`), `phone`; `timestamps: true`; `pre('save')` bcryptjs hash (salt ≥10) skipping if unchanged; `toJSON` transform removing `password`; index on `email` and `cedula`.
+- [x] 2.2 Create `backend/src/models/Vehicle.js` — schema with `plate`, `type` (enum: `car`/`moto`/`suv`/`bike`), `brand`, `model`, `color`, `owner` (ref User); `timestamps: true`; index on `plate`.
+- [x] 2.3 Create `backend/src/models/ParkingSpot.js` — schema with `code`, `zone` (enum: `A`/`B`/`C`), `type` (enum: `car`/`moto`/`bike`), `status` (enum: `available`/`occupied`/`reserved`, default `available`); `timestamps: true`; index on `code`.
+- [x] 2.4 Create `backend/src/models/Reservation.js` — schema with `user`, `vehicle`, `spot` (all ObjectId refs), `entryTime`, `exitTime`, `status` (enum: `active`/`completed`/`cancelled`); `timestamps: true`; index on `status`.
+- [x] 2.5 Create `backend/src/models/Tariff.js` — schema with `vehicleType` (enum), `hourlyRate`, `dailyRate`, `monthlyRate` (all Number, COP); `timestamps: true`.
+- [x] 2.6 Create `backend/src/models/Schedule.js` — schema with `weekdayOpen`, `weekdayClose`, `sundayOpen`, `sundayClose` (all String "HH:mm"); `timestamps: true`.
+- [x] 2.7 Create `backend/src/controllers/authController.js` — `register` (hash password, create User, return 201 with `{ user, accessToken, refreshToken }`), `login` (compare bcrypt, return 200 with tokens), `me` (return 200 with user profile, no password), `refresh` (verify refresh token, return new `accessToken`).
+- [x] 2.8 Create `backend/src/middleware/requireAuth.js` — verify `Authorization: Bearer <token>` via `jwt.verify`, attach `req.user = { id, email, role }`, or return 401 `{ error: "Authentication required" }`.
+- [x] 2.9 Create `backend/src/middleware/requireAdmin.js` — extend `requireAuth`, check `req.user.role === 'admin'`, return 403 `{ error: "Admin access required" }` otherwise.
+- [x] 2.10 Update `backend/src/routes/auth.js` — mount `POST /register`, `POST /login`, `GET /me` (with `requireAuth`), `POST /refresh`.
+- [x] 2.11 Wire `authRoutes` into `app.js` under `/api/auth`.
 
 ## Phase 3: Backend Public API (Batch 3)
 
