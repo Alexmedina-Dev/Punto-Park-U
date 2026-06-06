@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 
@@ -11,6 +11,7 @@ import { OAuthCallback } from '@/pages/OAuthCallback'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { VerifyEmailPage } from '@/pages/VerifyEmailPage'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 
 // Lazy-loaded dashboard pages
 const UserDashboard = lazy(() =>
@@ -115,8 +116,8 @@ export function AppRoutes() {
           }
         />
 
-        {/* 404 Redirect — catch all unmatched routes */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* 404 Page — catch all unmatched routes */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   )
