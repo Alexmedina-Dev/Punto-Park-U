@@ -53,21 +53,21 @@ Chain strategy: pending
 
 ## Phase 3: Backend Public API (Batch 3)
 
-- [ ] 3.1 Create `backend/src/controllers/publicController.js` — `getTariffs` (query Tariff, return shaped `{ car, moto, suv, bike }` objects), `getSchedule` (return singleton `{ weekday, sunday }`), `getAvailability` (aggregate ParkingSpot into `spots` array and `stats` by type).
-- [ ] 3.2 Create `backend/src/routes/public.js` — mount `GET /tariffs`, `GET /schedule`, `GET /parking/availability` (no auth required).
-- [ ] 3.3 Wire `publicRoutes` into `app.js` under `/api`.
-- [ ] 3.4 Add `express-rate-limit` to `backend/package.json` and configure `limiter` (60 req/min per IP) for public routes; return 429 `{ error: "Too many requests" }` when exceeded.
-- [ ] 3.5 Seed `Tariff` and `Schedule` collections with default documents matching frontend fallback values on first server start (optional script or `findOneOrCreate` pattern).
+- [x] 3.1 Create `backend/src/controllers/publicController.js` — `getTariffs` (query Tariff, return shaped `{ car, moto, suv, bike }` objects), `getSchedule` (return singleton `{ weekday, sunday }`), `getAvailability` (aggregate ParkingSpot into `spots` array and `stats` by type).
+- [x] 3.2 Create `backend/src/routes/public.js` — mount `GET /tariffs`, `GET /schedule`, `GET /parking/availability` (no auth required).
+- [x] 3.3 Wire `publicRoutes` into `app.js` under `/api`.
+- [x] 3.4 Add `express-rate-limit` to `backend/package.json` and configure `limiter` (60 req/min per IP) for public routes; return 429 `{ error: "Too many requests" }` when exceeded.
+- [x] 3.5 Seed `Tariff` and `Schedule` collections with default documents matching frontend fallback values on first server start (optional script or `findOneOrCreate` pattern).
 
 ## Phase 4: Landing Page Sections (Batch 4)
 
-- [ ] 4.1 Create `src/components/landing/HeroSection.tsx` — full-viewport background image (`hero-background.png`) with semi-transparent dark overlay, centered "PUNTO PARK U" title and "Estacionamiento Fácil y Sencillo" subtitle; image-failure graceful fallback.
-- [ ] 4.2 Create `src/components/landing/MissionVision.tsx` — dual side-by-side cards "Nuestra Misión" (rocket icon) and "Nuestra Visión" (visibility icon) with vanilla text; stack vertically on `<768px`.
-- [ ] 4.3 Create `src/components/landing/FluxAISteps.tsx` — numbered 3-step process (1 Visión Computacional, 2 Asignación Inteligente, 3 Analítica Predictiva) with descriptions; include "Latencia Flux" badge showing "0.8 seg".
-- [ ] 4.4 Create `src/components/landing/WhatsAppFloat.tsx` — fixed bottom-right button linking to `https://wa.me/573101234567` with pre-filled message, WhatsApp SVG icon, `target="_blank"`.
-- [ ] 4.5 Create `src/components/landing/ScrollTopButton.tsx` — hidden until scroll exceeds 300px, visible with transition, on click smooth-scrolls to `window.scrollY = 0`.
-- [ ] 4.6 Update `src/pages/LandingPage.tsx` — replace current Hero with `HeroSection`, add `MissionVision` inside `#about`, add `FluxAISteps` inside `#flux-ai`.
-- [ ] 4.7 Update `src/components/layout/Layout.tsx` — render `WhatsAppFloat` and `ScrollTopButton` outside `<main>` so they appear on every page.
+- [x] 4.1 Create `src/components/landing/HeroSection.tsx` — full-viewport background image (`hero-background.png`) with semi-transparent dark overlay, centered "PUNTO PARK U" title and "Estacionamiento Fácil y Sencillo" subtitle; image-failure graceful fallback.
+- [x] 4.2 Create `src/components/landing/MissionVision.tsx` — dual side-by-side cards "Nuestra Misión" (rocket icon) and "Nuestra Visión" (visibility icon) with vanilla text; stack vertically on `<768px`.
+- [x] 4.3 Create `src/components/landing/FluxAISteps.tsx` — numbered 3-step process (1 Visión Computacional, 2 Asignación Inteligente, 3 Analítica Predictiva) with descriptions; include "Latencia Flux" badge showing "0.8 seg".
+- [x] 4.4 Create `src/components/landing/WhatsAppFloat.tsx` — fixed bottom-right button linking to `https://wa.me/573101234567` with pre-filled message, WhatsApp SVG icon, `target="_blank"`.
+- [x] 4.5 Create `src/components/landing/ScrollTopButton.tsx` — hidden until scroll exceeds 300px, visible with transition, on click smooth-scrolls to `window.scrollY = 0`.
+- [x] 4.6 Update `src/pages/LandingPage.tsx` — replace current Hero with `HeroSection`, add `MissionVision` inside `#about`, add `FluxAISteps` inside `#flux-ai`.
+- [x] 4.7 Update `src/components/layout/Layout.tsx` — render `WhatsAppFloat` and `ScrollTopButton` outside `<main>` so they appear on every page.
 
 ## Phase 5: Landing Page Interactions (Batch 5)
 
@@ -87,11 +87,11 @@ Chain strategy: pending
 
 ## Phase 6: Integration + Verification (Batch 6)
 
-- [ ] 6.1 Update `src/services/parking.service.ts` — change endpoint paths from `/parking/tariffs` to `/api/tariffs`, `/parking/schedule` to `/api/schedule`, `/parking/availability` to `/api/parking/availability` (align with backend public API routes).
-- [ ] 6.2 Update `src/services/api.ts` (or Axios base config) — ensure base URL points to `http://localhost:3000` (or `VITE_API_URL` env var) and CORS headers are accepted.
-- [ ] 6.3 Verify `appStore.fetchTariffs` consumes `GET /api/tariffs` and falls back to hardcoded defaults on 503/error.
-- [ ] 6.4 Verify `appStore.fetchSchedule` consumes `GET /api/schedule` and falls back on error.
-- [ ] 6.5 Verify `appStore.fetchAvailability` consumes `GET /api/parking/availability` and falls back on error.
-- [ ] 6.6 Run backend smoke tests: `POST /api/auth/register` returns 201 with JWT; `POST /api/auth/login` returns 200; `GET /api/auth/me` returns 401 without token; `GET /api/tariffs` returns pricing; `GET /api/parking/availability` returns stats.
-- [ ] 6.7 Run frontend smoke tests: all 10 sections render; hamburger cycles SVGs; nav highlights on scroll; WhatsApp link opens; ScrollTop appears at 300px; live timestamp ticks; counters animate.
-- [ ] 6.8 Update `openspec/changes/phase-1-landing-backend/design.md` (if applicable) with any implementation deviations discovered during tasking.
+- [x] 6.1 Update `src/services/parking.service.ts` — change endpoint paths from `/parking/tariffs` to `/api/tariffs`, `/parking/schedule` to `/api/schedule`, `/parking/availability` to `/api/parking/availability` (align with backend public API routes).
+- [x] 6.2 Update `src/services/api.ts` (or Axios base config) — ensure base URL points to `http://localhost:3000` (or `VITE_API_URL` env var) and CORS headers are accepted.
+- [x] 6.3 Verify `appStore.fetchTariffs` consumes `GET /api/tariffs` and falls back to hardcoded defaults on 503/error.
+- [x] 6.4 Verify `appStore.fetchSchedule` consumes `GET /api/schedule` and falls back on error.
+- [x] 6.5 Verify `appStore.fetchAvailability` consumes `GET /api/parking/availability` and falls back on error.
+- [x] 6.6 Run backend smoke tests: `POST /api/auth/register` returns 201 with JWT; `POST /api/auth/login` returns 200; `GET /api/auth/me` returns 401 without token; `GET /api/tariffs` returns pricing; `GET /api/parking/availability` returns stats.
+- [x] 6.7 Run frontend smoke tests: all 10 sections render; hamburger cycles SVGs; nav highlights on scroll; WhatsApp link opens; ScrollTop appears at 300px; live timestamp ticks; counters animate.
+- [x] 6.8 Update `openspec/changes/phase-1-landing-backend/design.md` (if applicable) with any implementation deviations discovered during tasking.

@@ -14,6 +14,7 @@ export const ROUTES = {
 // ── Storage Keys ──
 export const STORAGE_KEYS = {
   TOKEN: 'token',
+  REFRESH_TOKEN: 'refresh_token',
   USER: 'user',
   THEME: 'theme',
 } as const

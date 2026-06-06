@@ -3,6 +3,7 @@ import type { User, LoginCredentials, RegisterData } from '@/types'
 import { loginService, registerService, logoutService } from '@/services/auth.service'
 import { STORAGE_KEYS } from '@/utils/constants'
 import { withRetry, showErrorToast } from '@/utils/errorHandler'
+import axios from 'axios'
 
 interface AuthState {
   user: User | null
@@ -37,60 +38,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Persist to localStorage
       localStorage.setItem(STORAGE_KEYS.TOKEN, token)
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
+      if (response.refreshToken) {
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken)
+      }
+      if (user) {
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
+      }
 
       set({
         user,
         token,
         isAuthenticated: true,
-        isAdmin: user.rol === 'admin',
+        isAdmin: user?.rol === 'admin',
         isLoading: false,
         error: null,
       })
 
       return true
     } catch (error) {
-      // Fallback to mock users if API is unavailable
-      const mockUsers = [
-        { username: 'admin', password: 'admin123', rol: 'admin' as const },
-        { username: 'cliente', password: 'cliente1234', rol: 'user' as const },
-        { username: 'juan', password: 'juan1234', rol: 'user' as const },
-      ]
+      let errorMsg = 'Usuario o contraseña incorrectos'
 
-      const matchedUser = mockUsers.find(
-        (u) => u.username === credentials.username && u.password === credentials.password
-      )
-
-      if (matchedUser) {
-        const userData: User = {
-          id: '1',
-          username: matchedUser.username,
-          email: `${matchedUser.username}@example.com`,
-          nombres: matchedUser.username,
-          apellidos: 'Test',
-          cedula: '123456789',
-          fechaNacimiento: '1990-01-01',
-          rol: matchedUser.rol,
+      if (axios.isAxiosError(error)) {
+        const serverError = error.response?.data?.error
+        if (serverError) {
+          errorMsg = serverError
         }
-
-        const mockToken = 'mock-jwt-token'
-
-        localStorage.setItem(STORAGE_KEYS.TOKEN, mockToken)
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData))
-
-        set({
-          user: userData,
-          token: mockToken,
-          isAuthenticated: true,
-          isAdmin: matchedUser.rol === 'admin',
-          isLoading: false,
-          error: null,
-        })
-
-        return true
+        // Network errors
+        if (!error.response) {
+          errorMsg = 'Error de conexión. Verifica tu conexión a internet.'
+        }
+      } else if (error instanceof Error) {
+        errorMsg = error.message
       }
 
-      const errorMsg = 'Usuario o contraseña incorrectos'
       set({ error: errorMsg, isLoading: false })
       return false
     }
@@ -105,6 +85,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     localStorage.removeItem(STORAGE_KEYS.TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
     localStorage.removeItem(STORAGE_KEYS.USER)
 
     set({
@@ -123,13 +104,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isLoading: false, error: null })
       return true
     } catch (error) {
-      // Fallback mock register
-      if (data.username && data.password && data.confirmPassword === data.password) {
-        set({ isLoading: false, error: null })
-        return true
+      let errorMsg = 'Error al registrar usuario'
+
+      if (axios.isAxiosError(error)) {
+        const serverError = error.response?.data?.error
+        if (serverError) {
+          errorMsg = serverError
+        }
+        if (!error.response) {
+          errorMsg = 'Error de conexión. Verifica tu conexión a internet.'
+        }
+      } else if (error instanceof Error) {
+        errorMsg = error.message
       }
 
-      const errorMsg = 'Error al registrar usuario'
       set({ error: errorMsg, isLoading: false })
       return false
     }
@@ -163,6 +151,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     } catch {
       localStorage.removeItem(STORAGE_KEYS.TOKEN)
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
       localStorage.removeItem(STORAGE_KEYS.USER)
     }
   },
