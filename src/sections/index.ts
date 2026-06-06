@@ -1,0 +1,7 @@
+export { HeroSection } from './HeroSection'
+export { WhyUsSection } from './WhyUsSection'
+export { AboutSection } from './AboutSection'
+export { PricingSection } from './PricingSection'
+export { AvailabilitySection } from './AvailabilitySection'
+export { FluxAISection } from './FluxAISection'
+export { LocationSection } from './LocationSection'

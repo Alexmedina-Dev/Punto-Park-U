@@ -1,396 +1,90 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Layout } from '@/components/layout'
-import { Card } from '@/components/ui'
-import { useParkingData } from '@/hooks/useParkingData'
-import { formatCurrency } from '@/utils/formatters'
+import {
+  HeroSection,
+  WhyUsSection,
+  AboutSection,
+  PricingSection,
+  AvailabilitySection,
+  FluxAISection,
+  LocationSection,
+} from '@/sections'
+import { useAppStore } from '@/stores/appStore'
 
 export function LandingPage() {
-  const { tariffs, schedule, availability, fetchTariffs, fetchSchedule, fetchAvailability } =
-    useParkingData()
+  const { fetchTariffs, fetchSchedule, fetchAvailability } = useAppStore()
+  const [showScrollTop, setShowScrollTop] = useState(false)
 
+  // Fetch parking data on mount
   useEffect(() => {
     fetchTariffs()
     fetchSchedule()
     fetchAvailability()
   }, [fetchTariffs, fetchSchedule, fetchAvailability])
 
-  const stats = availability?.stats
-  const totalUsed = stats
-    ? stats.cars.used + stats.motos.used + stats.bikes.used
-    : 0
-  const totalAvailable = stats
-    ? stats.cars.total + stats.motos.total + stats.bikes.total
-    : 0
+  // Scroll to top button visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.pageYOffset > 300)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <Layout>
-      {/* ═══ Hero Section ═══ */}
-      <section className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div
-          className="glass rounded-lg px-8 py-12 text-center max-w-md"
-          data-testid="welcome-card"
+      {/* Sections */}
+      <HeroSection />
+      <WhyUsSection />
+      <AboutSection />
+      <PricingSection />
+      <AvailabilitySection />
+      <FluxAISection />
+      <LocationSection />
+
+      {/* ── WhatsApp Float Button ── */}
+      <a
+        href="https://wa.me/573101234567?text=Hola,%20necesito%20información%20sobre%20el%20parqueadero"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-all duration-200 hover:scale-110"
+        title="Contáctenos por WhatsApp"
+        aria-label="WhatsApp"
+        data-testid="whatsapp-float"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          className="w-7 h-7 fill-white"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <h1 className="text-4xl font-black text-primary mb-4 font-headline">
-            PUNTO PARK U
-          </h1>
-          <p className="text-on-surface-var font-body">
-            Estacionamiento Fácil y Sencillo
-          </p>
-          <div className="mt-6 flex gap-4 justify-center">
-            <a
-              href="/login"
-              className="px-6 py-2 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-fixed transition-colors"
-            >
-              Iniciar Sesión
-            </a>
-            <a
-              href="/register"
-              className="px-6 py-2 border border-outline text-on-surface rounded-lg hover:bg-surface-container transition-colors"
-            >
-              Registrarse
-            </a>
-          </div>
-        </div>
-      </section>
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+        </svg>
+      </a>
 
-      {/* ═══ Why Us Section ═══ */}
-      <section className="py-16" id="why">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12 font-headline">
-            Tu<br /><span className="text-primary">Aliado</span>
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card variant="glass" title="Vigilancia 24/7" className="text-center">
-              <p className="text-sm text-on-surface-var">
-                Sistemas de monitoreo avanzado que garantizan que tu vehículo está
-                vigilado cada segundo del día.
-              </p>
-            </Card>
-            <Card variant="glass" title="Espacios Seguros" className="text-center">
-              <p className="text-sm text-on-surface-var">
-                Celdas amplias e integridad estructural diseñadas para todo tipo de
-                vehículos con máxima seguridad.
-              </p>
-            </Card>
-            <Card variant="glass" title="Tarifas Accesibles" className="text-center">
-              <p className="text-sm text-on-surface-var">
-                Precios competitivos adaptados al núcleo urbano de Bogotá sin
-                comprometer la calidad del servicio.
-              </p>
-            </Card>
-            <Card variant="glass" title="Ubicación Privilegiada" className="text-center">
-              <p className="text-sm text-on-surface-var">
-                Posicionamiento estratégico en zonas de alto tráfico para máxima
-                comodidad y acceso rápido.
-              </p>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ About Section ═══ */}
-      <section className="py-16" id="about">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <h2 className="text-3xl font-bold font-headline mb-6">
-                Nuestra Historia
-                <br />
-                <span className="text-primary text-lg font-normal">
-                  De lo Analógico a lo Digital
-                </span>
-              </h2>
-              <p className="text-on-surface-var leading-relaxed">
-                PUNTO PARK U nació observando los tradicionales parqueaderos de
-                balasto y luz amarilla de Bogotá. Reconocimos la necesidad de
-                evolucionar esa experiencia manual y lenta hacia un ecosistema
-                digital. Hoy, hemos transformado el concepto de parqueo
-                convencional en una solución inteligente, rápida y 100% confiable
-                para la ciudad moderna.
-              </p>
-            </div>
-            <div className="relative">
-              <div className="absolute -inset-1 bg-primary/20 rounded-lg blur-xl" />
-              <img
-                src="/images/Google AI/historia.png"
-                alt="Parqueadero tradicional de Bogotá"
-                className="relative rounded-lg w-full"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ Pricing Section ═══ */}
-      <section className="py-16" id="pricing">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12 font-headline">
-            Tarifas Según <br />
-            <span className="text-primary">tu medio de transporte</span>
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card variant="glass" className="text-center">
-              <h3 className="text-primary font-bold text-lg mb-2">Automóvil</h3>
-              <p className="text-2xl font-bold text-on-bg mb-4">
-                {tariffs ? formatCurrency(tariffs.car.hour) : '$3.000'}{' '}
-                <span className="text-sm text-on-surface-var">/ hora</span>
-              </p>
-              <ul className="text-sm text-on-surface-var space-y-2">
-                <li>✓ Parqueo Cubierto</li>
-                <li>✓ Acceso Fácil</li>
-                <li>✓ Vigilancia 24/7</li>
-              </ul>
-            </Card>
-            <Card variant="glass" className="text-center">
-              <h3 className="text-primary font-bold text-lg mb-2">
-                Motocicleta
-              </h3>
-              <p className="text-2xl font-bold text-on-bg mb-4">
-                {tariffs ? formatCurrency(tariffs.moto.hour) : '$1.500'}{' '}
-                <span className="text-sm text-on-surface-var">/ hora</span>
-              </p>
-              <ul className="text-sm text-on-surface-var space-y-2">
-                <li>✓ Zona Exclusiva</li>
-                <li>✓ Ingreso Rápido</li>
-                <li>✓ Cámaras 24/7</li>
-              </ul>
-            </Card>
-            <Card variant="glass" className="text-center">
-              <h3 className="text-primary font-bold text-lg mb-2">
-                Camioneta / SUV
-              </h3>
-              <p className="text-2xl font-bold text-on-bg mb-4">$3.500{' '}
-                <span className="text-sm text-on-surface-var">/ hora</span>
-              </p>
-              <ul className="text-sm text-on-surface-var space-y-2">
-                <li>✓ Espacios Amplios</li>
-                <li>✓ Alta Comodidad</li>
-                <li>✓ Acceso Preferencial</li>
-              </ul>
-            </Card>
-            <Card variant="glass" className="text-center">
-              <h3 className="text-primary font-bold text-lg mb-2">Bicicleta</h3>
-              <p className="text-2xl font-bold text-on-bg mb-4">
-                {tariffs ? formatCurrency(tariffs.bike.hour) : '$1.000'}{' '}
-                <span className="text-sm text-on-surface-var">/ hora</span>
-              </p>
-              <ul className="text-sm text-on-surface-var space-y-2">
-                <li>✓ Rack Seguro</li>
-                <li>✓ Zona Protegida</li>
-                <li>✓ Lockers</li>
-              </ul>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ Availability Section ═══ */}
-      <section className="py-16" id="availability">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold font-headline mb-4">
-              Disponibilidad
-              <br />
-              <span className="text-primary">en Tiempo Real</span>
-            </h2>
-            <p className="text-on-surface-var max-w-xl mx-auto">
-              Consulta la disponibilidad actual de nuestro parqueadero antes de
-              visitarnos.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-            <Card variant="glass" className="text-center">
-              <div className="text-3xl font-bold text-primary mb-1">
-                {stats ? `${stats.cars.total - stats.cars.used}/${stats.cars.total}` : '15/15'}
-              </div>
-              <div className="text-sm text-on-surface-var">Automóviles</div>
-              <div className="mt-2 w-full bg-surface-low rounded-full h-2">
-                <div
-                  className="bg-primary rounded-full h-2 transition-all"
-                  style={{
-                    width: stats
-                      ? `${((stats.cars.total - stats.cars.used) / stats.cars.total) * 100}%`
-                      : '50%',
-                  }}
-                />
-              </div>
-            </Card>
-            <Card variant="glass" className="text-center">
-              <div className="text-3xl font-bold text-primary mb-1">
-                {stats ? `${stats.motos.total - stats.motos.used}/${stats.motos.total}` : '10/10'}
-              </div>
-              <div className="text-sm text-on-surface-var">Motocicletas</div>
-              <div className="mt-2 w-full bg-surface-low rounded-full h-2">
-                <div
-                  className="bg-primary rounded-full h-2 transition-all"
-                  style={{
-                    width: stats
-                      ? `${((stats.motos.total - stats.motos.used) / stats.motos.total) * 100}%`
-                      : '50%',
-                  }}
-                />
-              </div>
-            </Card>
-            <Card variant="glass" className="text-center">
-              <div className="text-3xl font-bold text-primary mb-1">
-                {stats ? `${stats.bikes.total - stats.bikes.used}/${stats.bikes.total}` : '5/5'}
-              </div>
-              <div className="text-sm text-on-surface-var">Bicicletas</div>
-              <div className="mt-2 w-full bg-surface-low rounded-full h-2">
-                <div
-                  className="bg-primary rounded-full h-2 transition-all"
-                  style={{
-                    width: stats
-                      ? `${((stats.bikes.total - stats.bikes.used) / stats.bikes.total) * 100}%`
-                      : '50%',
-                  }}
-                />
-              </div>
-            </Card>
-          </div>
-
-          <div className="text-center">
-            <p className="text-sm text-on-surface-var">
-              {totalAvailable - totalUsed} de {totalAvailable} espacios disponibles
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ Flux AI Section ═══ */}
-      <section className="py-16" id="flux-ai">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div className="relative">
-              <div className="absolute -inset-1 bg-primary/10 rounded-lg blur-xl" />
-              <img
-                src="/images/Google AI/flux-ai.png"
-                alt="Flux AI - Inteligencia Artificial para parqueaderos"
-                className="relative rounded-lg w-full"
-              />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold font-headline mb-4">
-                Flux{' '}
-                <span className="text-primary">
-                  AI
-                </span>
-              </h2>
-              <p className="text-on-surface-var leading-relaxed mb-4">
-                Nuestro sistema de Inteligencia Artificial optimiza la asignación
-                de espacios, predice la demanda y garantiza la máxima eficiencia
-                operativa.
-              </p>
-              <ul className="space-y-2 text-sm text-on-surface-var">
-                <li className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-base">
-                    vision
-                  </span>
-                  Visión por computadora para reconocimiento de placas
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-base">
-                    analytics
-                  </span>
-                  Predicción de demanda con Machine Learning
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-base">
-                    smart_toy
-                  </span>
-                  Asignación inteligente de espacios
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ Location Section ═══ */}
-      <section className="py-16" id="locations">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold font-headline mb-4">
-              Ubicación
-              <br />
-              <span className="text-primary">Estratégica</span>
-            </h2>
-            <p className="text-on-surface-var max-w-xl mx-auto">
-              Encuéntranos en el corazón de la zona rosa de Bogotá, garantizando
-              acceso rápido a los puntos clave de la ciudad.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card variant="glass" className="space-y-4">
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary">
-                  location_on
-                </span>
-                <div>
-                  <h3 className="font-bold text-on-bg">Sede Principal</h3>
-                  <p className="text-sm text-on-surface-var">
-                    Calle 82 # 15 - 35, Bogotá
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-2 text-sm text-on-surface-var">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-base">
-                    schedule
-                  </span>
-                  <span>
-                    Lun – Sáb:{' '}
-                    {schedule
-                      ? `${schedule.weekday.open} – ${schedule.weekday.close}`
-                      : '7:00 a.m. – 7:00 p.m.'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-base">
-                    schedule
-                  </span>
-                  <span>
-                    Dom:{' '}
-                    {schedule
-                      ? `${schedule.sunday.open} – ${schedule.sunday.close}`
-                      : '9:00 a.m. – 5:00 p.m.'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-base">
-                    shield
-                  </span>
-                  <span>Zona de Alta Seguridad</span>
-                </div>
-              </div>
-
-              <a
-                href="https://maps.app.goo.gl/gMQosEQEMPEKAqg57"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors text-sm font-bold"
-              >
-                <span className="material-symbols-outlined text-base">
-                  near_me
-                </span>
-                Cómo Llegar
-              </a>
-            </Card>
-
-            <div className="relative">
-              <div className="absolute -inset-1 bg-primary/10 rounded-lg blur-xl" />
-              <img
-                src="/images/Google AI/mapa.png"
-                alt="Mapa de ubicación de Punto Park U en Bogotá"
-                className="relative rounded-lg w-full"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── Scroll to Top Button ── */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-6 left-6 z-50 flex items-center justify-center w-12 h-12 bg-surface-container border border-outline/20 rounded-full shadow-lg hover:bg-surface-high transition-all duration-300 ${
+          showScrollTop
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
+        title="Volver arriba"
+        aria-label="Volver arriba"
+        data-testid="scroll-top-btn"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-6 h-6 fill-on-surface"
+          viewBox="0 0 24 24"
+        >
+          <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z" />
+        </svg>
+      </button>
     </Layout>
   )
 }
