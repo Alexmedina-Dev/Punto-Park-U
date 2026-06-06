@@ -74,20 +74,21 @@ export function PricingSection() {
             <span className="text-primary">tu medio de transporte</span>
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
           {PRICING_CARDS.map((card) => (
             <Card
               key={card.title}
               variant="glass"
               padding="none"
-              className="overflow-hidden text-center"
+              className="overflow-hidden text-center animate-slide-up hover-scale"
               data-testid={`pricing-card-${card.title.toLowerCase().replace(/[\s/]+/g, '-')}`}
             >
-              <div className="aspect-[4/3] overflow-hidden">
+              <div className="aspect-[4/3] overflow-hidden img-hover-zoom">
                 <img
                   src={card.image}
                   alt={card.alt}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
               <div className="p-6">

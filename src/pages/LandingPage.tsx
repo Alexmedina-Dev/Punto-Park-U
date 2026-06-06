@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Layout } from '@/components/layout'
 import {
   HeroSection,
@@ -9,11 +9,14 @@ import {
   FluxAISection,
   LocationSection,
 } from '@/sections'
+import { AnimatedSection } from '@/components/AnimatedSection'
+import { ScrollProgress } from '@/components/ScrollProgress'
 import { useAppStore } from '@/stores/appStore'
 
 export function LandingPage() {
   const { fetchTariffs, fetchSchedule, fetchAvailability } = useAppStore()
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const scrollRef = useRef<number | null>(null)
 
   // Fetch parking data on mount
   useEffect(() => {
@@ -22,13 +25,21 @@ export function LandingPage() {
     fetchAvailability()
   }, [fetchTariffs, fetchSchedule, fetchAvailability])
 
-  // Scroll to top button visibility
+  // Scroll to top button visibility (debounced)
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollTop(window.pageYOffset > 300)
+      if (scrollRef.current !== null) {
+        cancelAnimationFrame(scrollRef.current)
+      }
+      scrollRef.current = requestAnimationFrame(() => {
+        setShowScrollTop(window.pageYOffset > 300)
+      })
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (scrollRef.current !== null) cancelAnimationFrame(scrollRef.current)
+    }
   }, [])
 
   const scrollToTop = () => {
@@ -37,14 +48,35 @@ export function LandingPage() {
 
   return (
     <Layout>
-      {/* Sections */}
+      {/* Scroll Progress Indicator */}
+      <ScrollProgress />
+
+      {/* Sections — each wrapped in animation container */}
       <HeroSection />
-      <WhyUsSection />
-      <AboutSection />
-      <PricingSection />
-      <AvailabilitySection />
-      <FluxAISection />
-      <LocationSection />
+
+      <AnimatedSection animation="slide-up" delay={100}>
+        <WhyUsSection />
+      </AnimatedSection>
+
+      <AnimatedSection animation="slide-up" delay={150}>
+        <AboutSection />
+      </AnimatedSection>
+
+      <AnimatedSection animation="slide-up" delay={100}>
+        <PricingSection />
+      </AnimatedSection>
+
+      <AnimatedSection animation="slide-up" delay={150}>
+        <AvailabilitySection />
+      </AnimatedSection>
+
+      <AnimatedSection animation="slide-up" delay={100}>
+        <FluxAISection />
+      </AnimatedSection>
+
+      <AnimatedSection animation="slide-up" delay={150}>
+        <LocationSection />
+      </AnimatedSection>
 
       {/* ── WhatsApp Float Button ── */}
       <a

@@ -77,4 +77,129 @@ img {
   .animate-spin-custom {
     animation: spin 3s linear infinite;
   }
+
+  /* ── Scroll Animation Helpers ── */
+
+  /* Pre-animation hidden states (applied before IntersectionObserver triggers) */
+  .anim-hidden-fade {
+    opacity: 0;
+  }
+  .anim-hidden-slide-up {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .anim-hidden-slide-left {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  .anim-hidden-slide-right {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  .anim-hidden-scale {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  /* Visible state — plays the Tailwind animation */
+  .anim-visible {
+    opacity: 1;
+    transform: translate(0) scale(1);
+  }
+
+  /* Animation delay utilities */
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+  .animate-delay-600 { animation-delay: 600ms; }
+  .animate-delay-700 { animation-delay: 700ms; }
+  .animate-delay-800 { animation-delay: 800ms; }
+  .animate-delay-900 { animation-delay: 900ms; }
+  .animate-delay-1000 { animation-delay: 1000ms; }
+
+  /* Stagger animation for card lists */
+  .stagger-children > :nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > :nth-child(2) { animation-delay: 100ms; }
+  .stagger-children > :nth-child(3) { animation-delay: 200ms; }
+  .stagger-children > :nth-child(4) { animation-delay: 300ms; }
+  .stagger-children > :nth-child(5) { animation-delay: 400ms; }
+  .stagger-children > :nth-child(6) { animation-delay: 500ms; }
+
+  /* Hover scale effect for cards and images */
+  .hover-scale {
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+    will-change: transform;
+  }
+  .hover-scale:hover {
+    transform: scale(1.03);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Image hover zoom */
+  .img-hover-zoom {
+    overflow: hidden;
+  }
+  .img-hover-zoom img {
+    transition: transform 0.4s ease-out;
+    will-change: transform;
+  }
+  .img-hover-zoom:hover img {
+    transform: scale(1.08);
+  }
+
+  /* Hamburger animation */
+  .hamburger-line {
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  }
+  .hamburger-open .hamburger-line-top {
+    transform: rotate(45deg) translate(4px, 4px);
+  }
+  .hamburger-open .hamburger-line-middle {
+    opacity: 0;
+  }
+  .hamburger-open .hamburger-line-bottom {
+    transform: rotate(-45deg) translate(4px, -4px);
+  }
+
+  /* Mobile nav slide */
+  .mobile-nav-enter {
+    animation: slide-down 0.3s ease-out both;
+  }
+  .mobile-nav-exit {
+    animation: slide-down 0.25s ease-in reverse both;
+  }
+
+  /* Scroll progress bar */
+  .scroll-progress {
+    transform-origin: left center;
+    will-change: transform;
+  }
+
+  /* Reduced motion — respect user preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .anim-hidden-fade,
+    .anim-hidden-slide-up,
+    .anim-hidden-slide-left,
+    .anim-hidden-slide-right,
+    .anim-hidden-scale {
+      opacity: 1;
+      transform: none;
+    }
+    .stagger-children > * {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .hover-scale:hover {
+      transform: none;
+    }
+    .img-hover-zoom img {
+      transition: none;
+    }
+    .img-hover-zoom:hover img {
+      transform: none;
+    }
+  }
 }

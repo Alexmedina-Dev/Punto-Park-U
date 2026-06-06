@@ -1,5 +1,8 @@
+import { useLiveClock } from '@/hooks/useLiveClock'
+
 export function Footer() {
   const currentYear = new Date().getFullYear()
+  const { time } = useLiveClock()
 
   return (
     <footer id="footer" className="bg-surface-low border-t border-outline/10" data-testid="footer">
@@ -32,6 +35,11 @@ export function Footer() {
             <p className="text-xs text-on-surface-var/60 mt-2">
               Recursos visuales generados por Google AI
             </p>
+            {/* Live clock */}
+            <div className="flex items-center gap-2 mt-4 text-xs text-on-surface-var/60">
+              <span className="material-symbols-outlined text-[14px]">schedule</span>
+              <span suppressHydrationWarning>{time}</span>
+            </div>
           </div>
 
           {/* Contact Section */}

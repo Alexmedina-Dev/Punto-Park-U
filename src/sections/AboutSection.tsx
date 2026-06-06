@@ -10,7 +10,7 @@ export function AboutSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Historia */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          <div>
+          <div className="animate-slide-up">
             <h2 className="text-3xl sm:text-4xl font-black font-headline mb-6" data-testid="about-title">
               Nuestra Historia<br />
               <span className="text-lg sm:text-xl font-normal text-on-surface-var">
@@ -26,23 +26,23 @@ export function AboutSection() {
               para la ciudad moderna.
             </p>
           </div>
-          <div className="relative">
+          <div className="relative animate-slide-right">
             <div className="absolute -inset-2 bg-primary/20 rounded-xl blur-xl" />
             <img
               src="/images/Google AI/historia.png"
               alt="Parqueadero tradicional de Bogotá con gravilla y lámparas amarillas"
-              className="relative rounded-xl w-full h-auto"
+              className="relative rounded-xl w-full h-auto hover-scale"
               data-testid="about-image"
             />
           </div>
         </div>
 
         {/* Misión & Visión */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20 stagger-children">
           <Card
             variant="glass"
             padding="lg"
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-4 animate-slide-up hover-scale"
             data-testid="mission-card"
           >
             <span className="material-symbols-outlined text-4xl text-primary">
@@ -63,7 +63,7 @@ export function AboutSection() {
           <Card
             variant="glass"
             padding="lg"
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-4 animate-slide-up hover-scale"
             data-testid="vision-card"
           >
             <span className="material-symbols-outlined text-4xl text-primary">

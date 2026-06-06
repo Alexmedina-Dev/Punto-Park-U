@@ -44,13 +44,13 @@ export function WhyUsSection() {
         <h2 className="text-3xl sm:text-4xl font-black text-center mb-16 font-headline" data-testid="why-us-title">
           Tu<br /><span className="text-primary">Aliado</span>
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
           {WHY_ITEMS.map((item) => (
             <Card
               key={item.title}
               variant="glass"
               padding="lg"
-              className="text-center flex flex-col items-center gap-4"
+              className="text-center flex flex-col items-center gap-4 animate-slide-up hover-scale"
               data-testid={`why-card-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
             >
               <span className="material-symbols-outlined text-4xl text-primary">
