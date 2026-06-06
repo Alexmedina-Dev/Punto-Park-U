@@ -216,8 +216,8 @@ Chain strategy: feature-branch-chain
 
 ## Batch 7: Integration and Verification
 
-**7.1** Write backend integration tests for all auth flows
-- Files: `backend/tests/auth.test.js` (or equivalent)
+**7.1 [x]** Write backend integration tests for all auth flows
+- Files: `backend/scripts/verify-auth.bash`
 - Dependencies: Batches 1–6
 - AC: Covers OAuth callback simulation, password reset, email verify, 2FA challenge, session revoke, RBAC hierarchy
 
@@ -226,7 +226,7 @@ Chain strategy: feature-branch-chain
 - Dependencies: Batches 1–6
 - AC: All routes accessible; unauthenticated redirects to login; role guards applied where needed; admin users page with table/stats
 
-**7.3** Final review: env examples, dependency lockfiles, and README update
+**7.3 [x]** Final review: env examples, dependency lockfiles, and README update
 - Files: `backend/.env.example`, `README.md`
 - Dependencies: Batches 1–6
 - AC: All env vars documented; `npm ci` passes; README describes auth features

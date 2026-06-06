@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/stores/appStore'
 import { useAuthStore } from '@/stores/authStore'
+import { showSuccessToast } from '@/utils/errorHandler'
+import { ROUTES } from '@/utils/constants'
 
 const NAV_ITEMS = [
   { id: 'why', label: 'Tu Aliado' },
@@ -14,8 +16,9 @@ const NAV_ITEMS = [
 ]
 
 export function MobileNav() {
+  const navigate = useNavigate()
   const { isMobileMenuOpen, closeMobileMenu } = useAppStore()
-  const { isAuthenticated, isAdmin } = useAuthStore()
+  const { isAuthenticated, isAdmin, user, logout } = useAuthStore()
   const [shouldRender, setShouldRender] = useState(false)
   const [animate, setAnimate] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -128,6 +131,30 @@ export function MobileNav() {
           {/* Auth links */}
           {isAuthenticated ? (
             <>
+              {/* User info */}
+              <div className="px-3 py-2 border-b border-outline/10 mb-2">
+                <p className="text-sm font-medium text-on-bg truncate">
+                  {user?.nombres || user?.username || user?.email || 'Usuario'}
+                </p>
+                <p className="text-xs text-on-surface-var truncate">{user?.email || ''}</p>
+              </div>
+
+              <Link
+                to="/dashboard"
+                className="bg-primary text-on-primary text-center rounded-lg py-2 px-3 font-bold hover:bg-primary-fixed transition-colors"
+                onClick={closeMobileMenu}
+              >
+                Dashboard
+              </Link>
+
+              <Link
+                to="/sessions"
+                className="text-on-surface-var hover:text-primary transition-colors py-2 px-3 rounded-lg hover:bg-surface-high"
+                onClick={closeMobileMenu}
+              >
+                Mis Sesiones
+              </Link>
+
               {isAdmin && (
                 <Link
                   to="/admin"
@@ -137,13 +164,20 @@ export function MobileNav() {
                   Panel Admin
                 </Link>
               )}
-              <Link
-                to="/dashboard"
-                className="bg-primary text-on-primary text-center rounded-lg py-2 px-3 font-bold hover:bg-primary-fixed transition-colors"
-                onClick={closeMobileMenu}
+
+              <hr className="border-outline/20 my-2" />
+
+              <button
+                onClick={() => {
+                  closeMobileMenu()
+                  logout()
+                  showSuccessToast('Sesión cerrada correctamente')
+                  navigate('/')
+                }}
+                className="w-full text-left text-red-400 hover:bg-surface-high transition-colors py-2 px-3 rounded-lg text-sm"
               >
-                Dashboard
-              </Link>
+                Cerrar Sesión
+              </button>
             </>
           ) : (
             <>
