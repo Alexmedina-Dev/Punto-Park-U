@@ -301,3 +301,55 @@ export async function generateBackupCodesService(): Promise<import('@/types').Tw
   }
   throw new Error('Failed to generate backup codes')
 }
+
+// ── Session Services ──────────────────────────────────────────────────
+
+/**
+ * Get all active sessions for the current user.
+ */
+export async function getSessionsService(): Promise<import('@/types').SessionData[]> {
+  const { data } = await api.get('/sessions')
+  const resp = data as Record<string, unknown>
+  if (resp.success && Array.isArray(resp.data)) {
+    return resp.data as import('@/types').SessionData[]
+  }
+  if (Array.isArray(resp.data)) {
+    return resp.data as import('@/types').SessionData[]
+  }
+  return []
+}
+
+/**
+ * Revoke a specific session by ID.
+ */
+export async function revokeSessionService(sessionId: string): Promise<void> {
+  await api.delete(`/sessions/${sessionId}`)
+}
+
+/**
+ * Revoke all sessions except the current one.
+ */
+export async function revokeAllSessionsService(): Promise<{ modifiedCount: number }> {
+  const { data } = await api.delete('/sessions')
+  const resp = data as Record<string, unknown>
+  return { modifiedCount: (resp.modifiedCount as number) || 0 }
+}
+
+/**
+ * Send activity heartbeat for the current session.
+ */
+export async function sendActivityHeartbeatService(): Promise<void> {
+  await api.post('/sessions/activity')
+}
+
+/**
+ * Get session stats (admin only).
+ */
+export async function getSessionStatsService(): Promise<import('@/types').SessionStats> {
+  const { data } = await api.get('/sessions/stats')
+  const resp = data as Record<string, unknown>
+  if (resp.success && resp.data) {
+    return resp.data as import('@/types').SessionStats
+  }
+  throw new Error('Failed to get session stats')
+}

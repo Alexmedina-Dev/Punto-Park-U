@@ -3,14 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout'
 import { Card, Button, Badge } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
+import { useSessionActivity } from '@/hooks/useSessionActivity'
 import { get2FAStatusService } from '@/services/auth.service'
 
-type UserTab = 'dashboard' | 'vehicles' | 'reservations' | 'profile'
+type UserTab = 'dashboard' | 'vehicles' | 'reservations' | 'sessions' | 'profile'
 
 export function UserDashboard() {
   const navigate = useNavigate()
   const { user, logout, isLoading } = useAuth()
   const [activeTab, setActiveTab] = useState<UserTab>('dashboard')
+
+  // Track user activity for session management
+  useSessionActivity()
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
   const [backupCodesCount, setBackupCodesCount] = useState(0)
 
@@ -34,6 +38,7 @@ export function UserDashboard() {
     { key: 'dashboard', label: 'Resumen', icon: 'dashboard' },
     { key: 'vehicles', label: 'Vehículos', icon: 'directions_car' },
     { key: 'reservations', label: 'Reservas', icon: 'calendar_month' },
+    { key: 'sessions', label: 'Sesiones', icon: 'devices' },
     { key: 'profile', label: 'Perfil', icon: 'person' },
   ]
 
@@ -149,6 +154,29 @@ export function UserDashboard() {
               </Button>
             </div>
           </Card>
+        )}
+
+        {activeTab === 'sessions' && (
+          <div className="text-center py-8">
+            <Card variant="glass" className="max-w-lg mx-auto">
+              <div className="flex flex-col items-center gap-4">
+                <span className="material-symbols-outlined text-5xl text-primary">devices</span>
+                <div>
+                  <p className="text-on-bg font-medium mb-1">Gestiona tus sesiones activas</p>
+                  <p className="text-sm text-on-surface-var mb-4">
+                    Revisa y administra los dispositivos donde has iniciado sesión
+                  </p>
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={() => navigate('/sessions')}
+                >
+                  <span className="material-symbols-outlined text-base">manage_search</span>
+                  Administrar Sesiones
+                </Button>
+              </div>
+            </Card>
+          </div>
         )}
 
         {activeTab === 'profile' && (

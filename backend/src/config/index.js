@@ -14,6 +14,10 @@ const config = {
   googleCallbackUrl: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/oauth/google/callback',
   // Email Verification
   strictEmailVerification: process.env.STRICT_EMAIL_VERIFICATION === 'true' || false,
+  // Session Management
+  sessionTimeout: parseInt(process.env.SESSION_TIMEOUT, 10) || 30,           // minutes
+  activityHeartbeatInterval: parseInt(process.env.ACTIVITY_HEARTBEAT_INTERVAL, 10) || 5, // minutes
+  cleanupInterval: parseInt(process.env.SESSION_CLEANUP_INTERVAL, 10) || 60, // minutes
 };
 
 const requiredVars = ['jwtSecret', 'jwtRefreshSecret'];

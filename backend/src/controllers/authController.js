@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const config = require('../config');
 const User = require('../models/User');
+const Session = require('../models/Session');
+const { createSession } = require('./sessionController');
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -119,6 +121,11 @@ const register = async (req, res, next) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
+    // Create session record (only in non-strict mode)
+    if (!config.strictEmailVerification) {
+      await createSession(req, user._id, accessToken, refreshToken);
+    }
+
     const response = {
       user: formatUserResponse(user),
       token: accessToken,
@@ -196,6 +203,9 @@ const login = async (req, res, next) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
+    // Create session record
+    await createSession(req, user._id, accessToken, refreshToken);
+
     res.status(200).json({
       user: formatUserResponse(user),
       token: accessToken,
@@ -244,11 +254,48 @@ const refresh = async (req, res, next) => {
     // Generate new access token
     const newAccessToken = generateAccessToken(user);
 
+    // Update session with new token
+    await Session.updateOne(
+      { refreshToken, userId: user._id, revokedAt: null },
+      { $set: { token: newAccessToken, lastActiveAt: new Date() } }
+    );
+
     res.status(200).json({ accessToken: newAccessToken });
   } catch (err) {
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Invalid refresh token' });
     }
+    next(err);
+  }
+};
+
+// ── POST /api/auth/logout ──────────────────────────────────────────
+
+const logout = async (req, res, next) => {
+  try {
+    // Extract token from Authorization header
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+    if (token) {
+      // Revoke the session
+      await Session.updateOne(
+        { token, revokedAt: null },
+        { $set: { revokedAt: new Date() } }
+      );
+    }
+
+    // Also revoke by refresh token if provided in body
+    const { refreshToken } = req.body;
+    if (refreshToken) {
+      await Session.updateOne(
+        { refreshToken, revokedAt: null },
+        { $set: { revokedAt: new Date() } }
+      );
+    }
+
+    res.status(200).json({ success: true, message: 'Logged out successfully' });
+  } catch (err) {
     next(err);
   }
 };
@@ -458,6 +505,7 @@ module.exports = {
   login,
   me,
   refresh,
+  logout,
   sendVerification,
   verifyEmail,
   resendVerification,

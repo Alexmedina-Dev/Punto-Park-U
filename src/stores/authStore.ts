@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { User, LoginCredentials, RegisterData, AuthResponse, LoginResponse2FA } from '@/types'
+import type { User, LoginCredentials, RegisterData, AuthResponse, LoginResponse2FA, SessionData } from '@/types'
 import {
   loginService,
   registerService,
@@ -8,9 +8,12 @@ import {
   resetPasswordService,
   verify2FAService,
   verifyBackupCodeService,
+  getSessionsService,
+  revokeSessionService,
+  revokeAllSessionsService,
 } from '@/services/auth.service'
 import { STORAGE_KEYS } from '@/utils/constants'
-import { withRetry, showErrorToast } from '@/utils/errorHandler'
+import { withRetry, showErrorToast, showSuccessToast } from '@/utils/errorHandler'
 import axios from 'axios'
 
 interface AuthState {
@@ -24,6 +27,10 @@ interface AuthState {
   // 2FA state
   requiresTwoFactor: boolean
   tempToken: string | null
+
+  // Session state
+  sessions: SessionData[]
+  sessionsLoading: boolean
 
   // Actions
   login: (credentials: LoginCredentials) => Promise<boolean | LoginResponse2FA>
@@ -40,6 +47,11 @@ interface AuthState {
   complete2FALogin: (user: User, token: string, refreshToken: string) => void
   clearTwoFactorState: () => void
   setTwoFactorTempToken: (tempToken: string) => void
+
+  // Session Actions
+  fetchSessions: () => Promise<void>
+  revokeSession: (sessionId: string) => Promise<boolean>
+  revokeAllOtherSessions: () => Promise<boolean>
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -51,6 +63,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
   requiresTwoFactor: false,
   tempToken: null,
+  sessions: [],
+  sessionsLoading: false,
 
   login: async (credentials) => {
     set({ isLoading: true, error: null, requiresTwoFactor: false, tempToken: null })
@@ -330,5 +344,48 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setTwoFactorTempToken: (tempToken) => {
     set({ tempToken })
+  },
+
+  // ── Session Actions ─────────────────────────────────────────────────
+
+  fetchSessions: async () => {
+    set({ sessionsLoading: true })
+    try {
+      const sessions = await getSessionsService()
+      set({ sessions, sessionsLoading: false })
+    } catch (error) {
+      set({ sessionsLoading: false })
+      // Sessions fetch failure is not critical
+      console.warn('[session] Failed to fetch sessions:', error)
+    }
+  },
+
+  revokeSession: async (sessionId) => {
+    try {
+      await revokeSessionService(sessionId)
+      // Remove from local state
+      set((state) => ({
+        sessions: state.sessions.filter((s) => s.id !== sessionId),
+      }))
+      showSuccessToast('Sesión cerrada correctamente')
+      return true
+    } catch (error) {
+      showErrorToast(error)
+      return false
+    }
+  },
+
+  revokeAllOtherSessions: async () => {
+    try {
+      const result = await revokeAllSessionsService()
+      showSuccessToast(`${result.modifiedCount} sesión(es) cerrada(s)`)
+      // Re-fetch to get updated list
+      const sessions = await getSessionsService()
+      set({ sessions })
+      return true
+    } catch (error) {
+      showErrorToast(error)
+      return false
+    }
   },
 }))
