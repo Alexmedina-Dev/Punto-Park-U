@@ -1,0 +1,64 @@
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const config = require('./config');
+const errorHandler = require('./middleware/errorHandler');
+const indexRoutes = require('./routes/index');
+const authRoutes = require('./routes/auth');
+const publicRoutes = require('./routes/public');
+
+const app = express();
+
+// ── Security headers ──────────────────────────────────────────────
+// helmet is deferred to Phase 2 per design decision; placeholder for future use
+
+// ── CORS ──────────────────────────────────────────────────────────
+app.use(cors({ origin: config.corsOrigin }));
+
+// ── Body parsing ──────────────────────────────────────────────────
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ── Request logging ───────────────────────────────────────────────
+app.use(morgan('dev'));
+
+// ── Rate limiting ─────────────────────────────────────────────────
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60,             // 60 requests per minute per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+});
+app.use('/api/', limiter);
+
+// ── Routes ────────────────────────────────────────────────────────
+
+// Welcome / root
+app.get('/', (req, res) => {
+  res.json({
+    name: 'Punto Park U API',
+    version: '1.0.0',
+    status: 'running',
+  });
+});
+
+// Health check
+app.use('/api', indexRoutes);
+
+// Auth routes (placeholder — will be implemented in Batch 2)
+app.use('/api/auth', authRoutes);
+
+// Public routes (placeholder — will be implemented in Batch 3)
+app.use('/api', publicRoutes);
+
+// ── 404 handler ───────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found` });
+});
+
+// ── Global error handler ──────────────────────────────────────────
+app.use(errorHandler);
+
+module.exports = app;
