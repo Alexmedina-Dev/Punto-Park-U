@@ -20,6 +20,7 @@ interface AuthState {
   setUser: (user: User | null) => void
   clearError: () => void
   restoreSession: () => void
+  handleOAuthCallback: (token: string, refreshToken: string, user: User) => void
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -133,6 +134,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   clearError: () => {
     set({ error: null })
+  },
+
+  handleOAuthCallback: (token, refreshToken, user) => {
+    // Persist to localStorage
+    localStorage.setItem(STORAGE_KEYS.TOKEN, token)
+    if (refreshToken) {
+      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+    }
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
+
+    set({
+      user,
+      token,
+      isAuthenticated: true,
+      isAdmin: user.rol === 'admin',
+      isLoading: false,
+      error: null,
+    })
   },
 
   restoreSession: () => {

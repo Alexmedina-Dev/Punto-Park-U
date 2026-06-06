@@ -19,8 +19,8 @@ const userSchema = new mongoose.Schema(
     },
     cedula: {
       type: String,
-      required: [true, 'Cédula is required'],
       unique: true,
+      sparse: true,
       trim: true,
       match: [/^\d{6,10}$/, 'Cédula must be between 6 and 10 digits'],
     },
@@ -34,8 +34,23 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters'],
+    },
+    // ── OAuth / Auth Provider fields ──────────────────────────────
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
+    },
+    googlePicture: {
+      type: String,
+      trim: true,
     },
     role: {
       type: String,
@@ -57,9 +72,9 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ email: 1 });
 userSchema.index({ cedula: 1 });
 
-// ── Pre-save hook: hash password ────────────────────────────────────
+// ── Pre-save hook: hash password (only for local auth users) ──────
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password') || !this.password) return next();
 
   try {
     const salt = await bcrypt.genSalt(10);
@@ -72,6 +87,7 @@ userSchema.pre('save', async function (next) {
 
 // ── Instance method: compare passwords ──────────────────────────────
 userSchema.methods.comparePassword = async function (candidatePassword) {
+  if (!this.password) return false;
   return bcrypt.compare(candidatePassword, this.password);
 };
 
