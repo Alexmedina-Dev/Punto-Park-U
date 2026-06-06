@@ -9,6 +9,45 @@ const api = axios.create({
   },
 })
 
+// ── Dev Logging ──
+// Log all requests and responses in development mode
+if (import.meta.env.DEV) {
+  api.interceptors.request.use(
+    (config) => {
+      console.log(`[API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, {
+        data: config.data,
+        params: config.params,
+        headers: config.headers,
+      })
+      return config
+    },
+    (error) => {
+      console.error('[API] Request error:', error)
+      return Promise.reject(error)
+    }
+  )
+
+  api.interceptors.response.use(
+    (response) => {
+      console.log(`[API] ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}`, {
+        data: response.data,
+      })
+      return response
+    },
+    (error) => {
+      if (error.response) {
+        console.error(`[API] Error ${error.response.status}:`, {
+          url: error.config?.url,
+          data: error.response.data,
+        })
+      } else if (error.request) {
+        console.error('[API] Network error:', error.message)
+      }
+      return Promise.reject(error)
+    }
+  )
+}
+
 // ── Request Interceptor ──
 // Attach JWT token from localStorage to every request
 api.interceptors.request.use(
@@ -24,25 +63,94 @@ api.interceptors.request.use(
   }
 )
 
+// ── Token Refresh Queue ──
+let isRefreshing = false
+let failedQueue: Array<{
+  resolve: (token: string) => void
+  reject: (error: unknown) => void
+}> = []
+
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach((promise) => {
+    if (token) {
+      promise.resolve(token)
+    } else {
+      promise.reject(error)
+    }
+  })
+  failedQueue = []
+}
+
 // ── Response Interceptor ──
-// Handle 401 (unauthorized) globally — clear token and redirect to login
+// Handle 401 (unauthorized) globally — try token refresh, then clear and redirect
 // Handle other errors and normalize them
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response) {
-      const { status } = error.response
+    const originalRequest = error.config
 
-      // 401 Unauthorized — token expired or invalid
-      if (status === 401) {
+    // Skip retry for login/register requests
+    const isAuthRequest =
+      originalRequest?.url?.includes('/auth/login') ||
+      originalRequest?.url?.includes('/auth/register')
+
+    // Attempt token refresh on 401 (skip for auth requests)
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
+      if (isRefreshing) {
+        // Queue this request until refresh completes
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`
+          return api(originalRequest)
+        })
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      try {
+        const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+        if (!refreshToken) {
+          throw new Error('No refresh token available')
+        }
+
+        const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken })
+        const newToken = data.token || data.accessToken
+
+        localStorage.setItem(STORAGE_KEYS.TOKEN, newToken)
+        processQueue(null, newToken)
+
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
+        return api(originalRequest)
+      } catch (refreshError) {
+        processQueue(refreshError, null)
+
+        // Clear auth state on refresh failure
         localStorage.removeItem(STORAGE_KEYS.TOKEN)
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
         localStorage.removeItem(STORAGE_KEYS.USER)
 
-        // Only redirect if not already on login/register
         const currentPath = window.location.pathname
         if (currentPath !== '/login' && currentPath !== '/register') {
           window.location.href = '/login'
         }
+
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
+      }
+    }
+
+    // Normalize error messages
+    if (error.response) {
+      const { status, data } = error.response
+
+      // Server returned a structured error
+      if (data?.error) {
+        error.message = data.error
+      } else if (data?.message) {
+        error.message = data.message
       }
 
       // 429 Too Many Requests — rate limiting

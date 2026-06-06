@@ -11,10 +11,11 @@ import {
 } from '@/sections'
 import { AnimatedSection } from '@/components/AnimatedSection'
 import { ScrollProgress } from '@/components/ScrollProgress'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { useAppStore } from '@/stores/appStore'
 
 export function LandingPage() {
-  const { fetchTariffs, fetchSchedule, fetchAvailability } = useAppStore()
+  const { isLoading, fetchTariffs, fetchSchedule, fetchAvailability } = useAppStore()
   const [showScrollTop, setShowScrollTop] = useState(false)
   const scrollRef = useRef<number | null>(null)
 
@@ -48,6 +49,13 @@ export function LandingPage() {
 
   return (
     <Layout>
+      {/* Loading indicator for initial data fetch */}
+      {isLoading && (
+        <div className="fixed top-0 left-0 right-0 z-[60] h-1 bg-primary/20">
+          <div className="h-full bg-primary animate-pulse rounded-full transition-all duration-500" style={{ width: '60%' }} />
+        </div>
+      )}
+
       {/* Scroll Progress Indicator */}
       <ScrollProgress />
 

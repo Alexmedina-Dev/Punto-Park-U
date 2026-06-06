@@ -15,6 +15,8 @@ export interface ApiError {
 export interface AuthResponse {
   user: User
   token: string
+  accessToken?: string
+  refreshToken?: string
 }
 
 export interface AdminStats {
@@ -147,4 +149,5 @@ export interface RegisterData {
   username: string
   password: string
   confirmPassword: string
+  email?: string
 }

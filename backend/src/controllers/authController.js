@@ -26,9 +26,13 @@ const generateRefreshToken = (user) => {
 
 const formatUserResponse = (user) => ({
   id: user._id,
+  username: user.username || user.email?.split('@')[0],
   name: user.name,
+  nombres: user.name?.split(' ').slice(0, -1).join(' ') || user.name,
+  apellidos: user.name?.split(' ').slice(-1).join(' ') || '',
   email: user.email,
   cedula: user.cedula,
+  rol: user.role,
   role: user.role,
   phone: user.phone,
 });
@@ -47,7 +51,17 @@ const register = async (req, res, next) => {
       return res.status(400).json({ error: 'Validation error', details });
     }
 
-    const { name, email, cedula, password, phone } = req.body;
+    // Support both backend format (name, email) and frontend format (nombres, apellidos, username)
+    const name = req.body.name || [req.body.nombres, req.body.apellidos].filter(Boolean).join(' ') || 'User';
+    const email = req.body.email || (req.body.username ? `${req.body.username}@puntoparku.com` : null);
+    const username = req.body.username || req.body.email?.split('@')[0] || null;
+    const cedula = req.body.cedula;
+    const password = req.body.password;
+    const phone = req.body.phone || '';
+
+    if (!email) {
+      return res.status(400).json({ error: 'Validation error', details: [{ field: 'email', message: 'Email is required' }] });
+    }
 
     // Check duplicate email
     const existingEmail = await User.findOne({ email });
@@ -55,14 +69,30 @@ const register = async (req, res, next) => {
       return res.status(409).json({ error: 'Email already registered' });
     }
 
-    // Check duplicate username (cedula as unique identifier)
+    // Check duplicate username
+    if (username) {
+      const existingUsername = await User.findOne({ username });
+      if (existingUsername) {
+        return res.status(409).json({ error: 'Username already taken' });
+      }
+    }
+
+    // Check duplicate cedula
     const existingCedula = await User.findOne({ cedula });
     if (existingCedula) {
       return res.status(409).json({ error: 'Cédula already registered' });
     }
 
     // Create user
-    const user = await User.create({ name, email, cedula, password, phone, role: 'user' });
+    const user = await User.create({
+      name,
+      email,
+      username,
+      cedula,
+      password,
+      phone,
+      role: 'user',
+    });
 
     // Generate tokens
     const accessToken = generateAccessToken(user);
@@ -70,6 +100,7 @@ const register = async (req, res, next) => {
 
     res.status(201).json({
       user: formatUserResponse(user),
+      token: accessToken,
       accessToken,
       refreshToken,
     });
@@ -92,10 +123,15 @@ const login = async (req, res, next) => {
       return res.status(400).json({ error: 'Validation error', details });
     }
 
-    const { email, password } = req.body;
+    const { email, username, password } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Find user by email OR username
+    const user = await User.findOne({
+      $or: [
+        ...(email ? [{ email: email.toLowerCase() }] : []),
+        ...(username ? [{ username }] : []),
+      ],
+    });
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -112,6 +148,7 @@ const login = async (req, res, next) => {
 
     res.status(200).json({
       user: formatUserResponse(user),
+      token: accessToken,
       accessToken,
       refreshToken,
     });
@@ -129,7 +166,7 @@ const me = async (req, res, next) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.status(200).json({ user: formatUserResponse(user) });
+    res.status(200).json({ success: true, data: formatUserResponse(user) });
   } catch (err) {
     next(err);
   }

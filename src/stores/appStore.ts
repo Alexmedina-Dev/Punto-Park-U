@@ -1,17 +1,27 @@
 import { create } from 'zustand'
-import type { PricingConfig, Schedule } from '@/types'
+import type { PricingConfig, Schedule, ParkingSpot, ParkingStats } from '@/types'
 import { getTariffsService, getScheduleService, getAvailabilityService } from '@/services/parking.service'
 import { withRetry } from '@/utils/errorHandler'
 
 interface AvailabilityData {
-  spots: any[]
-  stats: any
+  spots: ParkingSpot[]
+  stats: ParkingStats
 }
 
 interface AppState {
   // UI State
   isMobileMenuOpen: boolean
   isLoading: boolean
+  loadingState: {
+    tariffs: boolean
+    schedule: boolean
+    availability: boolean
+  }
+  errorState: {
+    tariffs: string | null
+    schedule: string | null
+    availability: string | null
+  }
   activeTab: string
 
   // Data
@@ -32,11 +42,22 @@ interface AppState {
   fetchTariffs: () => Promise<void>
   fetchSchedule: () => Promise<void>
   fetchAvailability: () => Promise<void>
+  fetchAll: () => Promise<void>
 }
 
 export const useAppStore = create<AppState>((set) => ({
   isMobileMenuOpen: false,
   isLoading: false,
+  loadingState: {
+    tariffs: false,
+    schedule: false,
+    availability: false,
+  },
+  errorState: {
+    tariffs: null,
+    schedule: null,
+    availability: null,
+  },
   activeTab: 'home',
   tariffs: null,
   schedule: null,
@@ -51,43 +72,71 @@ export const useAppStore = create<AppState>((set) => ({
   setAvailability: (availability) => set({ availability }),
 
   fetchTariffs: async () => {
+    set((state) => ({
+      loadingState: { ...state.loadingState, tariffs: true },
+      errorState: { ...state.errorState, tariffs: null },
+    }))
     try {
       const tariffs = await withRetry(() => getTariffsService())
-      set({ tariffs })
+      set((state) => ({
+        tariffs,
+        loadingState: { ...state.loadingState, tariffs: false },
+      }))
     } catch {
-      // Fallback to default tariffs if API unavailable
-      set({
+      set((state) => ({
         tariffs: {
           car: { hour: 3000, day: 25000, month: 300000 },
           moto: { hour: 1500, day: 12000, month: 150000 },
           bike: { hour: 1000, day: 8000, month: 100000 },
         },
-      })
+        loadingState: { ...state.loadingState, tariffs: false },
+        errorState: {
+          ...state.errorState,
+          tariffs: 'No se pudieron cargar las tarifas. Mostrando valores por defecto.',
+        },
+      }))
     }
   },
 
   fetchSchedule: async () => {
+    set((state) => ({
+      loadingState: { ...state.loadingState, schedule: true },
+      errorState: { ...state.errorState, schedule: null },
+    }))
     try {
       const schedule = await withRetry(() => getScheduleService())
-      set({ schedule })
+      set((state) => ({
+        schedule,
+        loadingState: { ...state.loadingState, schedule: false },
+      }))
     } catch {
-      // Fallback to default schedule
-      set({
+      set((state) => ({
         schedule: {
           weekday: { open: '07:00', close: '19:00' },
           sunday: { open: '09:00', close: '17:00' },
         },
-      })
+        loadingState: { ...state.loadingState, schedule: false },
+        errorState: {
+          ...state.errorState,
+          schedule: 'No se pudieron cargar los horarios. Mostrando valores por defecto.',
+        },
+      }))
     }
   },
 
   fetchAvailability: async () => {
+    set((state) => ({
+      loadingState: { ...state.loadingState, availability: true },
+      errorState: { ...state.errorState, availability: null },
+    }))
     try {
       const availability = await withRetry(() => getAvailabilityService())
-      set({ availability })
+      set((state) => ({
+        availability,
+        loadingState: { ...state.loadingState, availability: false },
+      }))
     } catch {
-      // Fallback to default availability
-      set({
+      set((state) => ({
         availability: {
           spots: Array.from({ length: 30 }, (_, i) => ({
             id: `${String.fromCharCode(65 + (i % 3))}${i + 1}`,
@@ -100,7 +149,28 @@ export const useAppStore = create<AppState>((set) => ({
             bikes: { used: 2, total: 5 },
           },
         },
-      })
+        loadingState: { ...state.loadingState, availability: false },
+        errorState: {
+          ...state.errorState,
+          availability: 'No se pudo cargar la disponibilidad. Mostrando valores estimados.',
+        },
+      }))
     }
   },
+
+  fetchAll: async () => {
+    set({ isLoading: true })
+    await Promise.allSettled([
+      get().fetchTariffs(),
+      get().fetchSchedule(),
+      get().fetchAvailability(),
+    ])
+    set({ isLoading: false })
+  },
 }))
+
+// Helper to access current state outside of set
+const state = useAppStore.getState
+function get() {
+  return state()
+}

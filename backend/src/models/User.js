@@ -24,6 +24,14 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/^\d{6,10}$/, 'Cédula must be between 6 and 10 digits'],
     },
+    username: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      minlength: [3, 'Username must be at least 3 characters'],
+      maxlength: [50, 'Username cannot exceed 50 characters'],
+    },
     password: {
       type: String,
       required: [true, 'Password is required'],

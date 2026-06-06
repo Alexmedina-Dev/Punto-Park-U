@@ -17,6 +17,7 @@ const Schedule = require('../models/Schedule');
 const defaultAdmin = {
   name: 'Admin Principal',
   email: 'admin@puntoparku.com',
+  username: 'admin',
   cedula: '0000000000',
   password: 'admin123',
   role: 'admin',

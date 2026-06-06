@@ -35,7 +35,7 @@ const setCache = (maxAge) => (req, res, next) => {
 
 router.get('/tariffs', setCache(120), getTariffs);
 router.get('/schedule', setCache(300), getSchedule);  // Schedule changes rarely
-router.get('/availability', setCache(30), getAvailability);
-router.get('/spots', setCache(30), getParkingSpots);
+router.get('/parking/availability', setCache(30), getAvailability);
+router.get('/parking/spots', setCache(30), getParkingSpots);
 
 module.exports = router;

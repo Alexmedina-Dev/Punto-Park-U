@@ -11,6 +11,6 @@ router.get('/health', (req, res) => {
 
 // Public routes (landing page endpoints — no auth required)
 const publicRoutes = require('./public');
-router.use('/public', publicRoutes);
+router.use('/', publicRoutes);
 
 module.exports = router;
