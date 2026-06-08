@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { UserLayout } from '@/components/layout'
 import { Card, Button, Badge, Modal, Input } from '@/components/ui'
 import { VehicleForm } from '@/components/VehicleForm'
@@ -23,9 +23,18 @@ type UserTab = 'dashboard' | 'vehicles' | 'reservations' | 'sessions' | 'payment
 
 export function UserDashboard() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, logout, isLoading: authLoading } = useAuth()
   const setUser = useAuthStore((state) => state.setUser)
-  const [activeTab, setActiveTab] = useState<UserTab>('dashboard')
+  
+  // Sync activeTab with URL parameter
+  const urlTab = new URLSearchParams(location.search).get('tab') as UserTab || 'dashboard'
+  const [activeTab, setActiveTab] = useState<UserTab>(urlTab)
+  
+  // Update activeTab when URL changes
+  useEffect(() => {
+    setActiveTab(urlTab)
+  }, [urlTab])
 
   // Track user activity for session management
   useSessionActivity()
@@ -278,30 +287,7 @@ export function UserDashboard() {
           </Button>
         </div>
 
-        {/* Navigation Tabs — with scroll gradient indicator */}
-        <div className="relative mb-8" data-testid="user-tabs">
-          <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-none">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`
-                  flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold whitespace-nowrap transition-colors touch-target
-                  ${
-                    activeTab === tab.key
-                      ? 'bg-primary text-on-primary'
-                      : 'text-on-surface-var hover:text-on-bg hover:bg-surface-container'
-                  }
-                `}
-              >
-                <span className="material-symbols-outlined text-base">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
-          </div>
-          {/* Fade edges to indicate scroll */}
-          <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-bg to-transparent pointer-events-none md:hidden" />
-        </div>
+
 
         {/* ═══════════════════════════════════════════════════════════
            DASHBOARD TAB
