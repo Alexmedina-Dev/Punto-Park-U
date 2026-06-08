@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { Card } from '@/components/ui'
 import { formatCurrency, formatNumber, formatPercentage } from '@/utils/formatters'
 import type { ReportSummary, ReportPaymentKPI } from '@/types'

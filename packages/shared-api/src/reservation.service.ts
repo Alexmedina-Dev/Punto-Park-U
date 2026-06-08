@@ -37,7 +37,7 @@ export async function getReservationService(id: string): Promise<Reservation> {
 
 export async function createReservationService(reservationData: {
   vehicle: string
-  spot: string
+  spot?: string
   entryTime: string
   date?: string
   startTime?: string

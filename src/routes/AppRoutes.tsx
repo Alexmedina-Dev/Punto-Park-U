@@ -30,11 +30,6 @@ const TwoFactorVerifyPage = lazy(() =>
   import('@/pages/TwoFactorVerifyPage').then((m) => ({ default: m.TwoFactorVerifyPage }))
 )
 
-// Lazy-loaded sessions page
-const SessionsPage = lazy(() =>
-  import('@/pages/SessionsPage').then((m) => ({ default: m.SessionsPage }))
-)
-
 // Lazy-loaded admin users page
 const AdminUsersPage = lazy(() =>
   import('@/pages/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage }))
@@ -53,18 +48,6 @@ export function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
-
-        {/* Sessions Route */}
-        <Route
-          path="/sessions"
-          element={
-            <ProtectedRoute>
-              <Suspense fallback={<LoadingSpinner size="lg" text="Cargando..." />}>
-                <SessionsPage />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
 
         {/* 2FA Routes */}
         <Route

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/stores/appStore'
 import { useAuthStore } from '@/stores/authStore'
@@ -138,22 +138,12 @@ export function MobileNav() {
               </Link>
 
               <Link
-                to="/sessions"
+                to="/dashboard?tab=sessions"
                 className="text-on-surface-var hover:text-primary transition-colors py-2 px-3 rounded-lg hover:bg-surface-high"
                 onClick={closeMobileMenu}
               >
                 Mis Sesiones
               </Link>
-
-              {isAdmin && (
-                <Link
-                  to="/admin"
-                  className="text-primary hover:text-primary-fixed transition-colors py-2 px-3 rounded-lg hover:bg-surface-high font-bold"
-                  onClick={closeMobileMenu}
-                >
-                  Panel Admin
-                </Link>
-              )}
 
               <hr className="border-outline/20 my-2" />
 

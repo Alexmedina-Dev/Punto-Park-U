@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+﻿import React, { useState, useMemo } from 'react'
 import { Card, Badge } from '@/components/ui'
 import type { ParkedVehicle } from '@/types'
 import { getVehicleLabel, formatDateTime } from '@/utils/formatters'

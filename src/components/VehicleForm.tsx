@@ -14,10 +14,11 @@ interface VehicleFormProps {
   onSubmit: (data: VehicleFormData) => Promise<boolean>
   onCancel?: () => void
   isLoading?: boolean
+  error?: string | null
 }
 
 const VEHICLE_TYPES = [
-  { value: 'car', label: 'Vehículo', icon: 'directions_car' },
+  { value: 'car', label: 'VehÃ­culo', icon: 'directions_car' },
   { value: 'moto', label: 'Moto', icon: 'two_wheeler' },
   { value: 'bike', label: 'Bicicleta', icon: 'pedal_bike' },
 ]
@@ -40,7 +41,7 @@ const COLOR_OPTIONS = [
   'Verde',
   'Amarillo',
   'Naranja',
-  'Marrón',
+  'MarrÃ³n',
   'Beige',
   'Otro',
 ]
@@ -50,6 +51,7 @@ export function VehicleForm({
   onSubmit,
   onCancel,
   isLoading = false,
+  error,
 }: VehicleFormProps) {
   const [form, setForm] = useState<VehicleFormData>({
     ...INITIAL_FORM,
@@ -63,12 +65,16 @@ export function VehicleForm({
 
     if (!form.plate.trim()) {
       newErrors.plate = 'La placa es obligatoria'
-    } else if (!/^[A-Za-z0-9-]{4,10}$/.test(form.plate.trim())) {
-      newErrors.plate = 'Formato de placa inválido (4-10 caracteres alfanuméricos)'
+    } else if (!/^[A-Z0-9]+$/.test(form.plate.trim())) {
+      newErrors.plate = 'Solo se permiten letras y nÃºmeros (sin espacios ni guiones)'
+    } else if (form.plate.trim().length < 5 || form.plate.trim().length > 6) {
+      newErrors.plate = 'La placa debe tener 5 o 6 caracteres'
+    } else if (!/^[A-Z]{3}[0-9]{2,3}[A-Z]?$/.test(form.plate.trim()) && !/^[A-Z]{2}[0-9]{4}$/.test(form.plate.trim())) {
+      newErrors.plate = 'Formato invÃ¡lido. Ejemplos: ABC123, ABC12D, ABC12, AB1234'
     }
 
     if (!form.type) {
-      newErrors.type = 'Selecciona el tipo de vehículo'
+      newErrors.type = 'Selecciona el tipo de vehÃ­culo'
     }
 
     if (form.brand && form.brand.length > 50) {
@@ -115,7 +121,7 @@ export function VehicleForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-on-surface-var mb-2">
-          Tipo de Vehículo
+          Tipo de VehÃ­culo
         </label>
         <div className="grid grid-cols-3 gap-2">
           {VEHICLE_TYPES.map((vt) => (
@@ -149,7 +155,7 @@ export function VehicleForm({
         value={form.plate}
         onChange={(e) => handleChange('plate', e.target.value.toUpperCase())}
         error={errors.plate}
-        maxLength={10}
+        maxLength={6}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -219,6 +225,13 @@ export function VehicleForm({
         />
       )}
 
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400 flex items-start gap-2">
+          <span className="material-symbols-outlined text-base shrink-0 mt-0.5">error</span>
+          <span>{error}</span>
+        </div>
+      )}
+
       <div className="flex justify-end gap-3 pt-2">
         {onCancel && (
           <Button type="button" variant="ghost" onClick={onCancel} disabled={isLoading}>
@@ -226,7 +239,7 @@ export function VehicleForm({
           </Button>
         )}
         <Button type="submit" variant="primary" loading={isLoading}>
-          {initialData ? 'Guardar Cambios' : 'Registrar Vehículo'}
+          {initialData ? 'Guardar Cambios' : 'Registrar VehÃ­culo'}
         </Button>
       </div>
     </form>

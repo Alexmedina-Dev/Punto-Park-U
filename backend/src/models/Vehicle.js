@@ -8,7 +8,9 @@ const vehicleSchema = new mongoose.Schema(
       unique: true,
       uppercase: true,
       trim: true,
-      match: [/^[A-Z0-9-]{4,10}$/, 'Plate format is invalid'],
+      minlength: [5, 'Plate must be between 5 and 6 characters'],
+      maxlength: [6, 'Plate must be between 5 and 6 characters'],
+      match: [/^([A-Z]{3}[0-9]{2,3}[A-Z]?$|[A-Z]{2}[0-9]{4}$)/, 'Plate format is invalid. Examples: ABC123, ABC12D, ABC12, AB1234'],
     },
     type: {
       type: String,

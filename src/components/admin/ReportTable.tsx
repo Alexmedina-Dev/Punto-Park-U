@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+﻿import React, { useState, useMemo } from 'react'
 import { Card } from '@/components/ui'
 import type { ReportRow, ReportFilters } from '@/types'
 import { getVehicleLabel, formatCurrency } from '@/utils/formatters'

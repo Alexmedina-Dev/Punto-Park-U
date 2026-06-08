@@ -1,4 +1,4 @@
-import type { Payment } from '@/types'
+﻿import type { Payment } from '@/types'
 import { Card, Badge } from '@/components/ui'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 

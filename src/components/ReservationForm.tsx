@@ -22,6 +22,7 @@ interface ReservationFormProps {
   }) => Promise<boolean>
   onCancel?: () => void
   isLoading?: boolean
+  error?: string | null
 }
 
 const INITIAL_FORM: ReservationFormData = {
@@ -37,6 +38,7 @@ export function ReservationForm({
   onSubmit,
   onCancel,
   isLoading = false,
+  error,
 }: ReservationFormProps) {
   const [form, setForm] = useState<ReservationFormData>(INITIAL_FORM)
   const [errors, setErrors] = useState<Partial<Record<keyof ReservationFormData, string>>>({})
@@ -45,7 +47,7 @@ export function ReservationForm({
     const newErrors: Partial<Record<keyof ReservationFormData, string>> = {}
 
     if (!form.vehicleId) {
-      newErrors.vehicleId = 'Selecciona un vehículo'
+      newErrors.vehicleId = 'Selecciona un vehÃ­culo'
     }
 
     if (!form.date) {
@@ -113,11 +115,11 @@ export function ReservationForm({
       {/* Vehicle Selection */}
       <div>
         <label className="block text-sm font-medium text-on-surface-var mb-1">
-          Vehículo
+          VehÃ­culo
         </label>
         {vehicles.length === 0 ? (
           <p className="text-sm text-red-400">
-            No tienes vehículos registrados. Agrega uno primero.
+            No tienes vehÃ­culos registrados. Agrega uno primero.
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
@@ -192,6 +194,13 @@ export function ReservationForm({
         error={errors.notes}
         maxLength={500}
       />
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400 flex items-start gap-2">
+          <span className="material-symbols-outlined text-base shrink-0 mt-0.5">error</span>
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-2">

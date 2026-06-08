@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { useAppStore } from '@/stores/appStore'
@@ -155,15 +155,6 @@ export function Header() {
 
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    className="font-label uppercase tracking-[0.15em] text-xs px-4 py-1.5 border border-[rgba(167,200,255,0.3)] rounded-full bg-transparent text-primary hover:bg-primary/10 transition-colors"
-                  >
-                    Admin
-                  </Link>
-                )}
-
                 {/* Notification Bell (PR 4) */}
                 <NotificationBell />
 
@@ -211,24 +202,13 @@ export function Header() {
                       </Link>
 
                       <Link
-                        to="/sessions"
+                        to="/dashboard?tab=sessions"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-2 text-sm text-on-bg hover:bg-surface-high transition-colors"
                       >
                         <span className="material-symbols-outlined text-base">devices</span>
                         Mis Sesiones
                       </Link>
-
-                      {isAdmin && (
-                        <Link
-                          to="/admin"
-                          onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-on-bg hover:bg-surface-high transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-base">admin_panel_settings</span>
-                          Panel Admin
-                        </Link>
-                      )}
 
                       <hr className="border-outline/10 my-1" />
 

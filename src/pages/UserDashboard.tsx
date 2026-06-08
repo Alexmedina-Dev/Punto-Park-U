@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { UserLayout } from '@/components/layout'
 import { Card, Button, Badge, Modal, Input } from '@/components/ui'
@@ -9,6 +9,7 @@ import { PaymentButton } from '@/components/PaymentButton'
 import { PaymentStatus } from '@/components/PaymentStatus'
 import { ReceiptModal } from '@/components/ReceiptModal'
 import { QRDisplay } from '@/components/QRDisplay'
+import { SessionsInline } from '@/components/SessionsInline'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/stores/authStore'
 import { useSessionActivity } from '@/hooks/useSessionActivity'
@@ -43,6 +44,7 @@ export function UserDashboard() {
   const {
     vehicles,
     isLoading: vehiclesLoading,
+    error: vehicleError,
     fetchVehicles,
     createVehicle,
     updateVehicle,
@@ -53,6 +55,7 @@ export function UserDashboard() {
     reservations,
     stats: reservationStats,
     isLoading: reservationsLoading,
+    error: reservationError,
     fetchReservations,
     fetchStats: fetchReservationStats,
     createReservation,
@@ -188,12 +191,17 @@ export function UserDashboard() {
     model: string
     color: string
   }) => {
+    console.log('[VehicleSubmit] Iniciando registro:', data)
     if (editingVehicle) {
+      console.log('[VehicleSubmit] Editando vehículo:', editingVehicle.id)
       const ok = await updateVehicle(editingVehicle.id, data)
+      console.log('[VehicleSubmit] updateVehicle resultado:', ok)
       if (ok) setShowVehicleModal(false)
       return ok
     }
+    console.log('[VehicleSubmit] Creando vehículo nuevo...')
     const ok = await createVehicle(data)
+    console.log('[VehicleSubmit] createVehicle resultado:', ok, 'vehicleError:', vehicleError)
     if (ok) setShowVehicleModal(false)
     return ok
   }
@@ -726,25 +734,13 @@ export function UserDashboard() {
            SESSIONS TAB
            ═══════════════════════════════════════════════════════════ */}
         {activeTab === 'sessions' && (
-          <div className="text-center py-8">
-            <Card variant="glass" className="max-w-lg mx-auto">
-              <div className="flex flex-col items-center gap-4">
-                <span className="material-symbols-outlined text-5xl text-primary">devices</span>
-                <div>
-                  <p className="text-on-bg font-medium mb-1">Gestiona tus sesiones activas</p>
-                  <p className="text-sm text-on-surface-var mb-4">
-                    Revisa y administra los dispositivos donde has iniciado sesión
-                  </p>
-                </div>
-                <Button
-                  variant="primary"
-                  onClick={() => navigate('/sessions')}
-                >
-                  <span className="material-symbols-outlined text-base">manage_search</span>
-                  Administrar Sesiones
-                </Button>
-              </div>
-            </Card>
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-primary font-headline">Mis Sesiones</h2>
+            </div>
+
+            {/* Sessions content inlined from SessionsPage */}
+            <SessionsInline />
           </div>
         )}
 
@@ -905,6 +901,7 @@ export function UserDashboard() {
             onSubmit={handleVehicleSubmit}
             onCancel={() => { setShowVehicleModal(false); setEditingVehicle(null) }}
             isLoading={vehiclesLoading}
+            error={vehicleError}
           />
         </Modal>
 
@@ -919,6 +916,7 @@ export function UserDashboard() {
             onSubmit={handleCreateReservation}
             onCancel={() => setShowReservationModal(false)}
             isLoading={reservationsLoading}
+            error={reservationError}
           />
         </Modal>
 

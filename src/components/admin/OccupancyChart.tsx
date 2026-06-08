@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { ChartWidget } from './ChartWidget'
 import type { HourlyOccupancy } from '@/types'
 import type { ChartData } from 'chart.js'

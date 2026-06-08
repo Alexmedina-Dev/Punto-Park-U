@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 const USER_MENU = [
   { key: 'dashboard', label: 'Inicio', icon: 'home', path: '/dashboard' },
-  { key: 'vehicles', label: 'Vehículos', icon: 'directions_car', path: '/dashboard?tab=vehicles' },
+  { key: 'vehicles', label: 'VehÃ­culos', icon: 'directions_car', path: '/dashboard?tab=vehicles' },
   { key: 'reservations', label: 'Reservas', icon: 'event_seat', path: '/dashboard?tab=reservations' },
   { key: 'payments', label: 'Pagos', icon: 'payments', path: '/dashboard?tab=payments' },
   { key: 'sessions', label: 'Sesiones', icon: 'devices', path: '/dashboard?tab=sessions' },
@@ -81,7 +81,7 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors"
           >
             <span className="material-symbols-outlined">logout</span>
-            <span className="text-sm">Cerrar Sesión</span>
+            <span className="text-sm">Cerrar SesiÃ³n</span>
           </button>
         </div>
       </aside>
@@ -143,7 +143,7 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
                 className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors"
               >
                 <span className="material-symbols-outlined">logout</span>
-                <span className="text-sm">Cerrar Sesión</span>
+                <span className="text-sm">Cerrar SesiÃ³n</span>
               </button>
             </div>
           </aside>

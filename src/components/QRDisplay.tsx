@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { Card, Button, Badge } from '@/components/ui'
 import { generateQRService, getQRTicketService } from '@/services/qr.service'
 import { showErrorToast } from '@/utils/errorHandler'

@@ -25,7 +25,7 @@ export interface ReservationState {
   fetchStats: () => Promise<void>
   createReservation: (data: {
     vehicle: string
-    spot: string
+    spot?: string
     entryTime: string
     date?: string
     startTime?: string
@@ -70,8 +70,9 @@ export const useReservationStore = create<ReservationState>((set) => ({
         isLoading: false,
       }))
       return true
-    } catch {
-      set({ isLoading: false })
+    } catch (error: any) {
+      const msg = error?.message || 'Error al crear la reserva'
+      set({ isLoading: false, error: msg })
       return false
     }
   },
