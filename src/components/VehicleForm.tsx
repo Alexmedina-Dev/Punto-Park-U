@@ -1,4 +1,4 @@
-ï»¿import { useState } from 'react'
+import { useState } from 'react'
 import { Input, Button } from '@/components/ui'
 
 interface VehicleFormData {
@@ -17,7 +17,7 @@ interface VehicleFormProps {
 }
 
 const VEHICLE_TYPES = [
-  { value: 'car', label: 'VehÃ­culo', icon: 'directions_car' },
+  { value: 'car', label: 'Vehículo', icon: 'directions_car' },
   { value: 'moto', label: 'Moto', icon: 'two_wheeler' },
   { value: 'bike', label: 'Bicicleta', icon: 'pedal_bike' },
 ]
@@ -40,7 +40,7 @@ const COLOR_OPTIONS = [
   'Verde',
   'Amarillo',
   'Naranja',
-  'MarrÃ³n',
+  'Marrón',
   'Beige',
   'Otro',
 ]
@@ -56,6 +56,7 @@ export function VehicleForm({
     ...initialData,
   })
   const [errors, setErrors] = useState<Partial<Record<keyof VehicleFormData, string>>>({})
+  const [isCustomColor, setIsCustomColor] = useState(false)
 
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof VehicleFormData, string>> = {}
@@ -63,11 +64,11 @@ export function VehicleForm({
     if (!form.plate.trim()) {
       newErrors.plate = 'La placa es obligatoria'
     } else if (!/^[A-Za-z0-9-]{4,10}$/.test(form.plate.trim())) {
-      newErrors.plate = 'Formato de placa invÃ¡lido (4-10 caracteres alfanumÃ©ricos)'
+      newErrors.plate = 'Formato de placa inválido (4-10 caracteres alfanuméricos)'
     }
 
     if (!form.type) {
-      newErrors.type = 'Selecciona el tipo de vehÃ­culo'
+      newErrors.type = 'Selecciona el tipo de vehículo'
     }
 
     if (form.brand && form.brand.length > 50) {
@@ -98,6 +99,7 @@ export function VehicleForm({
     if (success && !initialData) {
       // Reset form after successful creation
       setForm(INITIAL_FORM)
+      setIsCustomColor(false)
     }
   }
 
@@ -113,7 +115,7 @@ export function VehicleForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-on-surface-var mb-2">
-          Tipo de VehÃ­culo
+          Tipo de Vehículo
         </label>
         <div className="grid grid-cols-3 gap-2">
           {VEHICLE_TYPES.map((vt) => (
@@ -122,7 +124,7 @@ export function VehicleForm({
               type="button"
               onClick={() => handleChange('type', vt.value)}
               className={`
-                flex flex-col items-center gap-1 px-3 py-3 rounded-xl text-sm font-medium border transition-colors
+                flex flex-col items-center gap-1 px-3 py-3 rounded-xl text-sm font-medium border transition-colors min-h-[44px]
                 ${
                   form.type === vt.value
                     ? 'bg-primary text-on-primary border-primary'
@@ -180,11 +182,19 @@ export function VehicleForm({
             <button
               key={color}
               type="button"
-              onClick={() => handleChange('color', color === 'Otro' ? '' : color)}
+              onClick={() => {
+                if (color === 'Otro') {
+                  handleChange('color', '')
+                  setIsCustomColor(true)
+                } else {
+                  handleChange('color', color)
+                  setIsCustomColor(false)
+                }
+              }}
               className={`
-                px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors
+                px-3 py-3 rounded-lg text-xs font-medium border transition-colors min-h-[44px]
                 ${
-                  form.color === color || (color === 'Otro' && !COLOR_OPTIONS.slice(0, -1).includes(form.color))
+                  (color !== 'Otro' && form.color === color) || (color === 'Otro' && isCustomColor)
                     ? 'bg-primary text-on-primary border-primary'
                     : 'bg-surface-container text-on-surface-var border-outline/20 hover:border-primary/50'
                 }
@@ -199,7 +209,7 @@ export function VehicleForm({
         )}
       </div>
 
-      {!COLOR_OPTIONS.slice(0, -1).includes(form.color) && form.color && (
+      {isCustomColor && (
         <Input
           label="Otro color"
           placeholder="Especifica el color"
@@ -216,7 +226,7 @@ export function VehicleForm({
           </Button>
         )}
         <Button type="submit" variant="primary" loading={isLoading}>
-          {initialData ? 'Guardar Cambios' : 'Registrar VehÃ­culo'}
+          {initialData ? 'Guardar Cambios' : 'Registrar Vehículo'}
         </Button>
       </div>
     </form>

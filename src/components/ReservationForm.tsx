@@ -4,7 +4,6 @@ import type { Vehicle } from '@/types'
 
 interface ReservationFormData {
   vehicleId: string
-  spot: string
   date: string
   startTime: string
   endTime: string
@@ -15,7 +14,6 @@ interface ReservationFormProps {
   vehicles: Vehicle[]
   onSubmit: (data: {
     vehicle: string
-    spot: string
     entryTime: string
     date?: string
     startTime?: string
@@ -28,14 +26,11 @@ interface ReservationFormProps {
 
 const INITIAL_FORM: ReservationFormData = {
   vehicleId: '',
-  spot: '',
   date: '',
   startTime: '',
   endTime: '',
   notes: '',
 }
-
-const SPOTS = ['A1', 'A2', 'A3', 'A4', 'A5', 'B1', 'B2', 'B3', 'B4', 'B5', 'C1', 'C2', 'C3', 'C4', 'C5']
 
 export function ReservationForm({
   vehicles,
@@ -50,11 +45,7 @@ export function ReservationForm({
     const newErrors: Partial<Record<keyof ReservationFormData, string>> = {}
 
     if (!form.vehicleId) {
-      newErrors.vehicleId = 'Selecciona un vehÃ­culo'
-    }
-
-    if (!form.spot) {
-      newErrors.spot = 'Selecciona un espacio'
+      newErrors.vehicleId = 'Selecciona un vehículo'
     }
 
     if (!form.date) {
@@ -95,7 +86,6 @@ export function ReservationForm({
 
     const success = await onSubmit({
       vehicle: form.vehicleId,
-      spot: form.spot,
       entryTime,
       date: form.date,
       startTime: form.startTime,
@@ -123,11 +113,11 @@ export function ReservationForm({
       {/* Vehicle Selection */}
       <div>
         <label className="block text-sm font-medium text-on-surface-var mb-1">
-          VehÃ­culo
+          Vehículo
         </label>
         {vehicles.length === 0 ? (
           <p className="text-sm text-red-400">
-            No tienes vehÃ­culos registrados. Agrega uno primero.
+            No tienes vehículos registrados. Agrega uno primero.
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
@@ -160,35 +150,6 @@ export function ReservationForm({
         )}
         {errors.vehicleId && (
           <p className="mt-1 text-sm text-red-400">{errors.vehicleId}</p>
-        )}
-      </div>
-
-      {/* Spot Selection */}
-      <div>
-        <label className="block text-sm font-medium text-on-surface-var mb-1">
-          Espacio de Estacionamiento
-        </label>
-        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2">
-          {SPOTS.map((spot) => (
-            <button
-              key={spot}
-              type="button"
-              onClick={() => handleChange('spot', spot)}
-              className={`
-                px-2 py-2 rounded-lg text-sm font-medium border transition-colors text-center
-                ${
-                  form.spot === spot
-                    ? 'bg-primary text-on-primary border-primary'
-                    : 'bg-surface-container text-on-surface-var border-outline/20 hover:border-primary/50'
-                }
-              `}
-            >
-              {spot}
-            </button>
-          ))}
-        </div>
-        {errors.spot && (
-          <p className="mt-1 text-sm text-red-400">{errors.spot}</p>
         )}
       </div>
 

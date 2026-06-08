@@ -207,7 +207,6 @@ export function UserDashboard() {
   // ── Reservation Handlers ──────────────────────────────────────────
   const handleCreateReservation = async (data: {
     vehicle: string
-    spot: string
     entryTime: string
     date?: string
     startTime?: string
@@ -337,7 +336,7 @@ export function UserDashboard() {
                   <span className="material-symbols-outlined text-primary text-2xl">credit_card</span>
                 </div>
                 <div className="text-2xl font-bold text-primary mb-1">
-                  {paymentsLoading ? '...' : formatCurrency(payments.reduce((sum, p) => sum + (p.amount || 0), 0))}
+                  {paymentsLoading ? '...' : formatCurrency(payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + (p.amount || 0), 0))}
                 </div>
                 <div className="text-sm text-on-surface-var">Gastado</div>
               </Card>
@@ -469,14 +468,14 @@ export function UserDashboard() {
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => handleEditVehicle(v)}
-                          className="p-1.5 rounded-lg text-on-surface-var hover:text-primary hover:bg-primary/10 transition-colors"
+                          className="p-2.5 rounded-lg text-on-surface-var hover:text-primary hover:bg-primary/10 transition-colors"
                           title="Editar"
                         >
                           <span className="material-symbols-outlined text-base">edit</span>
                         </button>
                         <button
                           onClick={() => handleDeleteVehicle(v.id)}
-                          className="p-1.5 rounded-lg text-on-surface-var hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          className="p-2.5 rounded-lg text-on-surface-var hover:text-red-400 hover:bg-red-500/10 transition-colors"
                           title="Eliminar"
                         >
                           <span className="material-symbols-outlined text-base">delete</span>
@@ -590,14 +589,14 @@ export function UserDashboard() {
                           <>
                             <button
                               onClick={() => handleShowQR(r)}
-                              className="p-1.5 rounded-lg text-on-surface-var hover:text-primary hover:bg-primary/10 transition-colors"
+                              className="p-2.5 rounded-lg text-on-surface-var hover:text-primary hover:bg-primary/10 transition-colors"
                               title="Ver código QR"
                             >
                               <span className="material-symbols-outlined text-base">qr_code</span>
                             </button>
                             <button
                               onClick={() => handleCancelReservation(r.id)}
-                              className="p-1.5 rounded-lg text-on-surface-var hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              className="p-2.5 rounded-lg text-on-surface-var hover:text-red-400 hover:bg-red-500/10 transition-colors"
                               title="Cancelar reserva"
                             >
                               <span className="material-symbols-outlined text-base">close</span>
