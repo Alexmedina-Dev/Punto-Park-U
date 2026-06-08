@@ -1,22 +1,91 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout'
-import { Card, Button, Badge } from '@/components/ui'
+import { Card, Button, Badge, Modal, Input } from '@/components/ui'
+import { VehicleForm } from '@/components/VehicleForm'
+import { ReservationForm } from '@/components/ReservationForm'
+import { PaymentCard } from '@/components/PaymentCard'
+import { PaymentButton } from '@/components/PaymentButton'
+import { PaymentStatus } from '@/components/PaymentStatus'
+import { ReceiptModal } from '@/components/ReceiptModal'
+import { QRDisplay } from '@/components/QRDisplay'
 import { useAuth } from '@/hooks/useAuth'
+import { useAuthStore } from '@/stores/authStore'
 import { useSessionActivity } from '@/hooks/useSessionActivity'
-import { get2FAStatusService } from '@/services/auth.service'
+import { useVehicleStore } from '@/stores/vehicleStore'
+import { useReservationStore } from '@/stores/reservationStore'
+import { usePaymentStore } from '@/stores/paymentStore'
+import { get2FAStatusService, updateUserService } from '@/services/auth.service'
+import { formatDate, formatDateTime, getVehicleLabel, getStatusLabel } from '@/utils/formatters'
+import { showErrorToast, showSuccessToast } from '@/utils/errorHandler'
 
-type UserTab = 'dashboard' | 'vehicles' | 'reservations' | 'sessions' | 'profile'
+type UserTab = 'dashboard' | 'vehicles' | 'reservations' | 'sessions' | 'payments' | 'profile'
 
 export function UserDashboard() {
   const navigate = useNavigate()
-  const { user, logout, isLoading } = useAuth()
+  const { user, logout, isLoading: authLoading } = useAuth()
+  const setUser = useAuthStore((state) => state.setUser)
   const [activeTab, setActiveTab] = useState<UserTab>('dashboard')
 
   // Track user activity for session management
   useSessionActivity()
+
+  // ── Stores ────────────────────────────────────────────────────────
+  const {
+    vehicles,
+    isLoading: vehiclesLoading,
+    fetchVehicles,
+    createVehicle,
+    updateVehicle,
+    deleteVehicle,
+  } = useVehicleStore()
+
+  const {
+    reservations,
+    stats: reservationStats,
+    isLoading: reservationsLoading,
+    fetchReservations,
+    fetchStats: fetchReservationStats,
+    createReservation,
+    cancelReservation,
+  } = useReservationStore()
+
+  const {
+    payments,
+    isLoading: paymentsLoading,
+    fetchPayments,
+  } = usePaymentStore()
+
+  // ── Local state ───────────────────────────────────────────────────
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
   const [backupCodesCount, setBackupCodesCount] = useState(0)
+
+  // Payment flow
+  const [selectedPayment, setSelectedPayment] = useState<typeof payments[0] | null>(null)
+  const [showReceiptModal, setShowReceiptModal] = useState(false)
+
+  // Profile edit
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [profileForm, setProfileForm] = useState({ nombres: '', apellidos: '', email: '', phone: '' })
+  const [profileErrors, setProfileErrors] = useState<Record<string, string>>({})
+  const [profileSaving, setProfileSaving] = useState(false)
+
+  // Vehicle modals
+  const [showVehicleModal, setShowVehicleModal] = useState(false)
+  const [editingVehicle, setEditingVehicle] = useState<typeof vehicles[0] | null>(null)
+
+  // Reservation modals
+  const [showReservationModal, setShowReservationModal] = useState(false)
+  const [showQRCode, setShowQRCode] = useState<typeof reservations[0] | null>(null)
+
+  // ── Effects ───────────────────────────────────────────────────────
+  useEffect(() => {
+    // Fetch all data on first mount
+    fetchVehicles()
+    fetchReservations()
+    fetchReservationStats()
+    fetchPayments()
+  }, [fetchVehicles, fetchReservations, fetchReservationStats, fetchPayments])
 
   useEffect(() => {
     if (activeTab === 'profile') {
@@ -30,17 +99,165 @@ export function UserDashboard() {
       setTwoFactorEnabled(status.twoFactorEnabled)
       setBackupCodesCount(status.backupCodesCount)
     } catch {
-      // Silently fail - 2FA status is not critical
+      // Silently fail
     }
   }
 
+  // ── Profile Handlers ──────────────────────────────────────────────
+  const startEditProfile = useCallback(() => {
+    setProfileForm({
+      nombres: user?.nombres || '',
+      apellidos: user?.apellidos || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+    })
+    setProfileErrors({})
+    setIsEditingProfile(true)
+  }, [user])
+
+  const cancelEditProfile = useCallback(() => {
+    setIsEditingProfile(false)
+    setProfileErrors({})
+  }, [])
+
+  const handleProfileChange = (field: string, value: string) => {
+    setProfileForm((prev) => ({ ...prev, [field]: value }))
+    if (profileErrors[field]) {
+      setProfileErrors((prev) => ({ ...prev, [field]: '' }))
+    }
+  }
+
+  const validateProfile = (): boolean => {
+    const errors: Record<string, string> = {}
+    if (!profileForm.nombres.trim()) errors.nombres = 'Los nombres son obligatorios'
+    if (!profileForm.apellidos.trim()) errors.apellidos = 'Los apellidos son obligatorios'
+    if (!profileForm.email.trim()) {
+      errors.email = 'El email es obligatorio'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileForm.email)) {
+      errors.email = 'Formato de email inválido'
+    }
+    setProfileErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleProfileSave = async () => {
+    if (!validateProfile() || !user) return
+    setProfileSaving(true)
+    try {
+      // Backend expects combined 'name' field, not separate nombres/apellidos
+      const fullName = `${profileForm.nombres.trim()} ${profileForm.apellidos.trim()}`.trim()
+      const updatedUser = await updateUserService(user.id, {
+        name: fullName,
+        email: profileForm.email,
+        phone: profileForm.phone || undefined,
+      })
+      setUser(updatedUser)
+      showSuccessToast('Perfil actualizado correctamente')
+      setIsEditingProfile(false)
+    } catch (error) {
+      showErrorToast(error)
+    } finally {
+      setProfileSaving(false)
+    }
+  }
+
+  // ── Vehicle Handlers ──────────────────────────────────────────────
+  const handleAddVehicle = () => {
+    setEditingVehicle(null)
+    setShowVehicleModal(true)
+  }
+
+  const handleEditVehicle = (vehicle: typeof vehicles[0]) => {
+    setEditingVehicle(vehicle)
+    setShowVehicleModal(true)
+  }
+
+  const handleVehicleSubmit = async (data: {
+    plate: string
+    type: string
+    brand: string
+    model: string
+    color: string
+  }) => {
+    if (editingVehicle) {
+      const ok = await updateVehicle(editingVehicle.id, data)
+      if (ok) setShowVehicleModal(false)
+      return ok
+    }
+    const ok = await createVehicle(data)
+    if (ok) setShowVehicleModal(false)
+    return ok
+  }
+
+  const handleDeleteVehicle = async (id: string) => {
+    if (window.confirm('¿Estás seguro de eliminar este vehículo?')) {
+      await deleteVehicle(id)
+    }
+  }
+
+  // ── Reservation Handlers ──────────────────────────────────────────
+  const handleCreateReservation = async (data: {
+    vehicle: string
+    spot: string
+    entryTime: string
+    date?: string
+    startTime?: string
+    endTime?: string
+    notes?: string
+  }) => {
+    const ok = await createReservation(data)
+    if (ok) setShowReservationModal(false)
+    return ok
+  }
+
+  const handleCancelReservation = async (id: string) => {
+    if (window.confirm('¿Estás seguro de cancelar esta reserva?')) {
+      await cancelReservation(id)
+    }
+  }
+
+  const handleShowQR = (reservation: typeof reservations[0]) => {
+    setShowQRCode(reservation)
+  }
+
+  // ── Payment Handlers ──────────────────────────────────────────────
+  const handleViewReceipt = (payment: typeof payments[0]) => {
+    setSelectedPayment(payment)
+    setShowReceiptModal(true)
+  }
+
+  const handleCloseReceipt = () => {
+    setShowReceiptModal(false)
+    setSelectedPayment(null)
+  }
+
+  const handlePaymentStatusChange = useCallback(
+    (_paymentId: string, newStatus: string) => {
+      // Re-fetch payments list when an ePayco payment changes status
+      if (newStatus === 'completed' || newStatus === 'failed') {
+        fetchPayments()
+        showSuccessToast(
+          newStatus === 'completed'
+            ? 'Pago confirmado correctamente'
+            : 'El pago no pudo ser procesado'
+        )
+      }
+    },
+    [fetchPayments]
+  )
+
+  // ── Tabs config ───────────────────────────────────────────────────
   const tabs: { key: UserTab; label: string; icon: string }[] = [
     { key: 'dashboard', label: 'Resumen', icon: 'dashboard' },
     { key: 'vehicles', label: 'Vehículos', icon: 'directions_car' },
     { key: 'reservations', label: 'Reservas', icon: 'calendar_month' },
+    { key: 'payments', label: 'Pagos', icon: 'payments' },
     { key: 'sessions', label: 'Sesiones', icon: 'devices' },
     { key: 'profile', label: 'Perfil', icon: 'person' },
   ]
+
+  // ── Helpers ───────────────────────────────────────────────────────
+  const activeReservations = reservations.filter((r) => r.status === 'active' || r.status === 'pending')
 
   return (
     <Layout>
@@ -55,34 +272,40 @@ export function UserDashboard() {
               Bienvenido, {user?.nombres || user?.username || 'Usuario'}
             </p>
           </div>
-          <Button variant="ghost" onClick={logout} loading={isLoading}>
+          <Button variant="ghost" onClick={logout} loading={authLoading}>
             <span className="material-symbols-outlined text-base">logout</span>
             Cerrar Sesión
           </Button>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex gap-1 mb-8 overflow-x-auto pb-2" data-testid="user-tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors
-                ${
-                  activeTab === tab.key
-                    ? 'bg-primary text-on-primary'
-                    : 'text-on-surface-var hover:text-on-bg hover:bg-surface-container'
-                }
-              `}
-            >
-              <span className="material-symbols-outlined text-base">{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
+        {/* Navigation Tabs — with scroll gradient indicator */}
+        <div className="relative mb-8" data-testid="user-tabs">
+          <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-none">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`
+                  flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold whitespace-nowrap transition-colors touch-target
+                  ${
+                    activeTab === tab.key
+                      ? 'bg-primary text-on-primary'
+                      : 'text-on-surface-var hover:text-on-bg hover:bg-surface-container'
+                  }
+                `}
+              >
+                <span className="material-symbols-outlined text-base">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {/* Fade edges to indicate scroll */}
+          <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-bg to-transparent pointer-events-none md:hidden" />
         </div>
 
-        {/* Tab Content */}
+        {/* ═══════════════════════════════════════════════════════════
+           DASHBOARD TAB
+           ═══════════════════════════════════════════════════════════ */}
         {activeTab === 'dashboard' && (
           <div>
             {/* Stats Grid */}
@@ -93,7 +316,9 @@ export function UserDashboard() {
                     directions_car
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-primary mb-1">1</div>
+                <div className="text-2xl font-bold text-primary mb-1">
+                  {vehiclesLoading ? '...' : vehicles.length}
+                </div>
                 <div className="text-sm text-on-surface-var">Vehículos</div>
               </Card>
               <Card variant="glass" className="text-center">
@@ -102,60 +327,389 @@ export function UserDashboard() {
                     calendar_month
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-primary mb-1">0</div>
+                <div className="text-2xl font-bold text-primary mb-1">
+                  {reservationsLoading ? '...' : activeReservations.length}
+                </div>
                 <div className="text-sm text-on-surface-var">Reservas Activas</div>
               </Card>
               <Card variant="glass" className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <span className="material-symbols-outlined text-primary">
-                    notifications
+                    payments
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-primary mb-1">0</div>
-                <div className="text-sm text-on-surface-var">Notificaciones</div>
+                <div className="text-2xl font-bold text-primary mb-1">
+                  {paymentsLoading ? '...' : payments.length}
+                </div>
+                <div className="text-sm text-on-surface-var">Pagos Registrados</div>
               </Card>
             </div>
 
-            {/* Recent Activity */}
-            <Card variant="glass" title="Actividad Reciente">
-              <div className="text-center py-8 text-on-surface-var text-sm">
-                <span className="material-symbols-outlined text-3xl mb-2 block">
-                  history
-                </span>
-                No hay actividad reciente
-              </div>
+            {/* Recent Reservations */}
+            <Card variant="glass" title="Reservas Recientes">
+              {reservations.length === 0 ? (
+                <div className="text-center py-6 text-on-surface-var text-sm">
+                  <span className="material-symbols-outlined text-3xl mb-2 block">
+                    calendar_month
+                  </span>
+                  No hay reservas recientes
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {reservations.slice(0, 5).map((r) => (
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-surface-high/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-primary text-lg">calendar_month</span>
+                        <div>
+                          <p className="text-sm font-medium text-on-bg">
+                            {r.date ? formatDate(r.date) : 'Fecha no disponible'}
+                          </p>
+                          <p className="text-xs text-on-surface-var">
+                            {r.startTime || r.entryTime ? `${r.startTime || r.entryTime?.slice(11, 16)}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge
+                        variant={
+                          r.status === 'active'
+                            ? 'success'
+                            : r.status === 'cancelled'
+                              ? 'error'
+                              : r.status === 'completed'
+                                ? 'info'
+                                : 'warning'
+                        }
+                      >
+                        {getStatusLabel(r.status)}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
           </div>
         )}
 
+        {/* ═══════════════════════════════════════════════════════════
+           VEHICLES TAB
+           ═══════════════════════════════════════════════════════════ */}
         {activeTab === 'vehicles' && (
-          <Card variant="glass" title="Mis Vehículos">
-            <div className="text-center py-8 text-on-surface-var text-sm">
-              <span className="material-symbols-outlined text-3xl mb-2 block">
-                directions_car
-              </span>
-              <p className="mb-4">No tienes vehículos registrados</p>
-              <Button variant="primary" size="sm">
-                + Agregar Vehículo
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-primary font-headline">Mis Vehículos</h2>
+              <Button variant="primary" size="sm" onClick={handleAddVehicle}>
+                <span className="material-symbols-outlined text-sm">add</span>
+                Agregar Vehículo
               </Button>
             </div>
-          </Card>
+
+            {vehiclesLoading && vehicles.length === 0 ? (
+              <Card variant="glass">
+                <div className="flex items-center justify-center py-8">
+                  <span className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              </Card>
+            ) : vehicles.length === 0 ? (
+              <Card variant="glass">
+                <div className="text-center py-8 text-on-surface-var text-sm">
+                  <span className="material-symbols-outlined text-3xl mb-2 block">
+                    directions_car
+                  </span>
+                  <p className="mb-4">No tienes vehículos registrados</p>
+                  <Button variant="primary" size="sm" onClick={handleAddVehicle}>
+                    + Agregar Vehículo
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {vehicles.map((v) => (
+                  <Card key={v.id} variant="glass" padding="sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/15 shrink-0">
+                          <span className="material-symbols-outlined text-primary text-lg">
+                            {v.type === 'moto' ? 'motorcycle' : v.type === 'bike' ? 'pedal_bike' : 'directions_car'}
+                          </span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-on-bg text-lg">{v.plate}</p>
+                          <p className="text-sm text-on-surface-var">
+                            {getVehicleLabel(v.type)}
+                            {v.brand ? ` · ${v.brand}` : ''}
+                            {v.model ? ` ${v.model}` : ''}
+                          </p>
+                          {v.color && (
+                            <p className="text-xs text-on-surface-var mt-0.5">
+                              Color: {v.color}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => handleEditVehicle(v)}
+                          className="p-1.5 rounded-lg text-on-surface-var hover:text-primary hover:bg-primary/10 transition-colors"
+                          title="Editar"
+                        >
+                          <span className="material-symbols-outlined text-base">edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteVehicle(v.id)}
+                          className="p-1.5 rounded-lg text-on-surface-var hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          title="Eliminar"
+                        >
+                          <span className="material-symbols-outlined text-base">delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
+        {/* ═══════════════════════════════════════════════════════════
+           RESERVATIONS TAB
+           ═══════════════════════════════════════════════════════════ */}
         {activeTab === 'reservations' && (
-          <Card variant="glass" title="Mis Reservas">
-            <div className="text-center py-8 text-on-surface-var text-sm">
-              <span className="material-symbols-outlined text-3xl mb-2 block">
-                calendar_month
-              </span>
-              <p className="mb-4">No tienes reservas activas</p>
-              <Button variant="primary" size="sm">
-                + Nueva Reserva
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-primary font-headline">Mis Reservas</h2>
+              <Button variant="primary" size="sm" onClick={() => setShowReservationModal(true)}>
+                <span className="material-symbols-outlined text-sm">add</span>
+                Nueva Reserva
               </Button>
             </div>
-          </Card>
+
+            {/* Stats row */}
+            {reservationStats && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <Card variant="glass" padding="sm" className="text-center">
+                  <div className="text-lg font-bold text-primary">{reservationStats.active}</div>
+                  <div className="text-xs text-on-surface-var">Activas</div>
+                </Card>
+                <Card variant="glass" padding="sm" className="text-center">
+                  <div className="text-lg font-bold text-yellow-400">{reservationStats.pending}</div>
+                  <div className="text-xs text-on-surface-var">Pendientes</div>
+                </Card>
+                <Card variant="glass" padding="sm" className="text-center">
+                  <div className="text-lg font-bold text-green-400">{reservationStats.completed}</div>
+                  <div className="text-xs text-on-surface-var">Completadas</div>
+                </Card>
+                <Card variant="glass" padding="sm" className="text-center">
+                  <div className="text-lg font-bold text-red-400">{reservationStats.cancelled}</div>
+                  <div className="text-xs text-on-surface-var">Canceladas</div>
+                </Card>
+              </div>
+            )}
+
+            {reservationsLoading && reservations.length === 0 ? (
+              <Card variant="glass">
+                <div className="flex items-center justify-center py-8">
+                  <span className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              </Card>
+            ) : reservations.length === 0 ? (
+              <Card variant="glass">
+                <div className="text-center py-8 text-on-surface-var text-sm">
+                  <span className="material-symbols-outlined text-3xl mb-2 block">
+                    calendar_month
+                  </span>
+                  <p className="mb-4">No tienes reservas</p>
+                  <Button variant="primary" size="sm" onClick={() => setShowReservationModal(true)}>
+                    + Nueva Reserva
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {reservations.map((r) => (
+                  <Card key={r.id} variant="glass" padding="sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <div
+                          className={`
+                            flex items-center justify-center w-10 h-10 rounded-lg shrink-0
+                            ${r.status === 'active' ? 'bg-green-500/15' : r.status === 'cancelled' ? 'bg-red-500/15' : r.status === 'completed' ? 'bg-primary/15' : 'bg-yellow-500/15'}
+                          `}
+                        >
+                          <span
+                            className={`material-symbols-outlined text-lg ${
+                              r.status === 'active' ? 'text-green-400' : r.status === 'cancelled' ? 'text-red-400' : r.status === 'completed' ? 'text-primary' : 'text-yellow-400'
+                            }`}
+                          >
+                            calendar_month
+                          </span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium text-on-bg text-sm">
+                              {r.date ? formatDate(r.date) : 'Sin fecha'}
+                            </p>
+                            <Badge
+                              variant={
+                                r.status === 'active' ? 'success' : r.status === 'cancelled' ? 'error' : r.status === 'completed' ? 'info' : 'warning'
+                              }
+                            >
+                              {getStatusLabel(r.status)}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-on-surface-var mt-0.5">
+                            {r.startTime || r.entryTime?.slice(11, 16) || '--:--'} — {r.endTime || '--:--'}
+                          </p>
+                          <p className="text-xs text-on-surface-var mt-0.5">
+                            Espacio: {r.spotId}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        {(r.status === 'pending' || r.status === 'active') && (
+                          <>
+                            <button
+                              onClick={() => handleShowQR(r)}
+                              className="p-1.5 rounded-lg text-on-surface-var hover:text-primary hover:bg-primary/10 transition-colors"
+                              title="Ver código QR"
+                            >
+                              <span className="material-symbols-outlined text-base">qr_code</span>
+                            </button>
+                            <button
+                              onClick={() => handleCancelReservation(r.id)}
+                              className="p-1.5 rounded-lg text-on-surface-var hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              title="Cancelar reserva"
+                            >
+                              <span className="material-symbols-outlined text-base">close</span>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    {r.notes && (
+                      <p className="text-xs text-on-surface-var mt-2 pt-2 border-t border-outline/10">
+                        {r.notes}
+                      </p>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
+        {/* ═══════════════════════════════════════════════════════════
+           PAYMENTS TAB
+           ═══════════════════════════════════════════════════════════ */}
+        {activeTab === 'payments' && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-primary font-headline">Historial de Pagos</h2>
+            </div>
+
+            {/* ePayco Payment Button (quick pay from a reservation) */}
+            {activeReservations.length > 0 && (
+              <Card variant="glass" padding="sm" className="mb-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/15 shrink-0">
+                      <span className="material-symbols-outlined text-primary text-lg">payments</span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-on-bg text-sm">
+                        Paga tu reserva en línea
+                      </p>
+                      <p className="text-xs text-on-surface-var">
+                        Usa ePayco para pagar de forma rápida y segura
+                      </p>
+                    </div>
+                  </div>
+                  <PaymentButton
+                    amount={5000}
+                    vehicleId={activeReservations[0]?.vehicleId || vehicles[0]?.id || ''}
+                    reservationId={activeReservations[0]?.id}
+                    email={user?.email}
+                    label="Pagar ahora"
+                    variant="primary"
+                    size="sm"
+                  />
+                </div>
+              </Card>
+            )}
+
+            {/* Payment List */}
+            {paymentsLoading && payments.length === 0 ? (
+              <Card variant="glass">
+                <div className="flex items-center justify-center py-8">
+                  <span className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              </Card>
+            ) : payments.length === 0 ? (
+              <Card variant="glass">
+                <div className="text-center py-8 text-on-surface-var text-sm">
+                  <span className="material-symbols-outlined text-3xl mb-2 block">
+                    payments
+                  </span>
+                  <p>No hay pagos registrados</p>
+                </div>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {payments.map((p) => (
+                  <div key={p.id} className="relative">
+                    {/* Show inline ePayco status for pending ePayco payments */}
+                    {p.method === 'epayco' && (p.status === 'pending_epayco' || p.status === 'pending') ? (
+                      <button
+                        onClick={() => handleViewReceipt(p)}
+                        className="w-full text-left"
+                      >
+                        <PaymentStatus
+                          payment={p}
+                          variant="full"
+                          onStatusChange={(newStatus) => handlePaymentStatusChange(p.id, newStatus)}
+                          enablePolling={true}
+                        />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleViewReceipt(p)}
+                        className="w-full text-left"
+                      >
+                        <PaymentCard payment={p} showVehicleInfo={true} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Receipt Modal ───────────────────────────────────── */}
+        {selectedPayment && (
+          <ReceiptModal
+            payment={selectedPayment}
+            open={showReceiptModal}
+            onClose={handleCloseReceipt}
+            vehiclePlate={
+              vehicles.find((v) => v.id === selectedPayment.vehicleId)?.plate
+            }
+            vehicleType={
+              vehicles.find((v) => v.id === selectedPayment.vehicleId)?.type
+            }
+            userName={
+              user ? `${user.nombres} ${user.apellidos}`.trim() || user.username : undefined
+            }
+          />
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════
+           SESSIONS TAB
+           ═══════════════════════════════════════════════════════════ */}
         {activeTab === 'sessions' && (
           <div className="text-center py-8">
             <Card variant="glass" className="max-w-lg mx-auto">
@@ -179,52 +733,101 @@ export function UserDashboard() {
           </div>
         )}
 
+        {/* ═══════════════════════════════════════════════════════════
+           PROFILE TAB
+           ═══════════════════════════════════════════════════════════ */}
         {activeTab === 'profile' && (
           <div className="space-y-6">
             {/* User Info */}
             <Card variant="glass" title="Mi Perfil">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-on-surface-var mb-1">
-                    Nombres
-                  </label>
-                  <p className="text-on-bg font-medium">{user?.nombres || '-'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm text-on-surface-var mb-1">
-                    Apellidos
-                  </label>
-                  <p className="text-on-bg font-medium">{user?.apellidos || '-'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm text-on-surface-var mb-1">
-                    Usuario
-                  </label>
-                  <p className="text-on-bg font-medium">{user?.username || '-'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm text-on-surface-var mb-1">
-                    Email
-                  </label>
-                  <p className="text-on-bg font-medium">{user?.email || '-'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm text-on-surface-var mb-1">
-                    Cédula
-                  </label>
-                  <p className="text-on-bg font-medium">{user?.cedula || '-'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm text-on-surface-var mb-1">
-                    Rol
-                  </label>
-                  <div>
-                    <Badge variant={user?.rol === 'admin' ? 'info' : 'success'}>
-                      {user?.rol === 'admin' ? 'Administrador' : 'Usuario'}
-                    </Badge>
+              {isEditingProfile ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input
+                      label="Nombres"
+                      icon="person"
+                      value={profileForm.nombres}
+                      onChange={(e) => handleProfileChange('nombres', e.target.value)}
+                      error={profileErrors.nombres}
+                    />
+                    <Input
+                      label="Apellidos"
+                      icon="person"
+                      value={profileForm.apellidos}
+                      onChange={(e) => handleProfileChange('apellidos', e.target.value)}
+                      error={profileErrors.apellidos}
+                    />
+                    <Input
+                      label="Email"
+                      icon="mail"
+                      type="email"
+                      value={profileForm.email}
+                      onChange={(e) => handleProfileChange('email', e.target.value)}
+                      error={profileErrors.email}
+                    />
+                    <Input
+                      label="Teléfono"
+                      icon="phone"
+                      value={profileForm.phone}
+                      onChange={(e) => handleProfileChange('phone', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-2">
+                    <Button variant="ghost" onClick={cancelEditProfile} disabled={profileSaving}>
+                      Cancelar
+                    </Button>
+                    <Button variant="primary" onClick={handleProfileSave} loading={profileSaving}>
+                      Guardar Cambios
+                    </Button>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-on-surface-var mb-1">Nombres</label>
+                      <p className="text-on-bg font-medium">{user?.nombres || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-on-surface-var mb-1">Apellidos</label>
+                      <p className="text-on-bg font-medium">{user?.apellidos || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-on-surface-var mb-1">Usuario</label>
+                      <p className="text-on-bg font-medium">{user?.username || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-on-surface-var mb-1">Email</label>
+                      <p className="text-on-bg font-medium">{user?.email || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-on-surface-var mb-1">Cédula</label>
+                      <p className="text-on-bg font-medium">{user?.cedula || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-on-surface-var mb-1">Rol</label>
+                      <div>
+                        <Badge variant={user?.rol === 'admin' ? 'info' : 'success'}>
+                          {user?.rol === 'admin' ? 'Administrador' : 'Usuario'}
+                        </Badge>
+                      </div>
+                    </div>
+                    {user?.phone && (
+                      <div>
+                        <label className="block text-sm text-on-surface-var mb-1">Teléfono</label>
+                        <p className="text-on-bg font-medium">{user.phone}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-outline/10">
+                    <Button variant="secondary" size="sm" onClick={startEditProfile}>
+                      <span className="material-symbols-outlined text-sm">edit</span>
+                      Editar Perfil
+                    </Button>
+                  </div>
+                </>
+              )}
             </Card>
 
             {/* 2FA Settings */}
@@ -252,33 +855,76 @@ export function UserDashboard() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  {twoFactorEnabled ? (
-                    <>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => navigate('/2fa/setup')}
-                      >
-                        <span className="material-symbols-outlined text-sm">settings</span>
-                        Administrar 2FA
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => navigate('/2fa/setup')}
-                    >
-                      <span className="material-symbols-outlined text-sm">security</span>
-                      Activar 2FA
-                    </Button>
-                  )}
+                  <Button
+                    variant={twoFactorEnabled ? 'secondary' : 'primary'}
+                    size="sm"
+                    onClick={() => navigate('/2fa/setup')}
+                  >
+                    <span className="material-symbols-outlined text-sm">security</span>
+                    {twoFactorEnabled ? 'Administrar 2FA' : 'Activar 2FA'}
+                  </Button>
                 </div>
               </div>
             </Card>
           </div>
         )}
+
+        {/* ── Vehicle Modal ────────────────────────────────────────── */}
+        <Modal
+          open={showVehicleModal}
+          onClose={() => { setShowVehicleModal(false); setEditingVehicle(null) }}
+          title={editingVehicle ? 'Editar Vehículo' : 'Agregar Vehículo'}
+        >
+          <VehicleForm
+            initialData={
+              editingVehicle
+                ? {
+                    plate: editingVehicle.plate,
+                    type: editingVehicle.type,
+                    brand: editingVehicle.brand,
+                    model: editingVehicle.model,
+                    color: editingVehicle.color,
+                  }
+                : undefined
+            }
+            onSubmit={handleVehicleSubmit}
+            onCancel={() => { setShowVehicleModal(false); setEditingVehicle(null) }}
+            isLoading={vehiclesLoading}
+          />
+        </Modal>
+
+        {/* ── Reservation Modal ────────────────────────────────────── */}
+        <Modal
+          open={showReservationModal}
+          onClose={() => setShowReservationModal(false)}
+          title="Nueva Reserva"
+        >
+          <ReservationForm
+            vehicles={vehicles}
+            onSubmit={handleCreateReservation}
+            onCancel={() => setShowReservationModal(false)}
+            isLoading={reservationsLoading}
+          />
+        </Modal>
+
+        {/* ── QR Code Modal ──────────────────────────────────────────── */}
+        {showQRCode && (
+          <Modal
+            open={!!showQRCode}
+            onClose={() => setShowQRCode(null)}
+            title="Código QR de Acceso"
+          >
+            <QRDisplay
+              reservationId={showQRCode.id}
+              plate={vehicles.find((v) => v.id === showQRCode.vehicleId)?.plate || '—'}
+              status={showQRCode.status}
+              onClose={() => setShowQRCode(null)}
+            />
+          </Modal>
+        )}
       </div>
     </Layout>
   )
 }
+
+

@@ -5,14 +5,16 @@ import { MobileNav } from './MobileNav'
 
 export interface LayoutProps {
   children: React.ReactNode
+  /** Remove top padding so hero sections sit behind the fixed header */
+  noHeaderPadding?: boolean
 }
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({ children, noHeaderPadding = false }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <MobileNav />
-      <main className="flex-1 pt-16">
+      <main className={`flex-1 ${noHeaderPadding ? '' : 'pt-16'}`}>
         {children}
       </main>
       <Footer />

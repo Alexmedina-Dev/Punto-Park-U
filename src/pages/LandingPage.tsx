@@ -44,11 +44,27 @@ export function LandingPage() {
   }, [])
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    const start = window.pageYOffset
+    const duration = 800
+    const startTime = performance.now()
+
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = easeOutCubic(progress)
+      window.scrollTo(0, start * (1 - eased))
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+
+    requestAnimationFrame(animate)
   }
 
   return (
-    <Layout>
+    <Layout noHeaderPadding>
       {/* Loading indicator for initial data fetch */}
       {isLoading && (
         <div className="fixed top-0 left-0 right-0 z-[60] h-1 bg-primary/20">
@@ -91,7 +107,7 @@ export function LandingPage() {
         href="https://wa.me/573101234567?text=Hola,%20necesito%20información%20sobre%20el%20parqueadero"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-all duration-200 hover:scale-110"
+        className="fixed bottom-[8rem] right-[1.875rem] z-[99] flex items-center justify-center w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full shadow-lg hover:from-green-500 hover:to-green-700 transition-all duration-200 hover:scale-110 animate-pulse-green sm:bottom-[9rem]"
         title="Contáctenos por WhatsApp"
         aria-label="WhatsApp"
         data-testid="whatsapp-float"
@@ -108,22 +124,17 @@ export function LandingPage() {
       {/* ── Scroll to Top Button ── */}
       <button
         onClick={scrollToTop}
-        className={`fixed bottom-6 left-6 z-50 flex items-center justify-center w-12 h-12 bg-surface-container border border-outline/20 rounded-full shadow-lg hover:bg-surface-high transition-all duration-300 ${
-          showScrollTop
-            ? 'opacity-100 translate-y-0'
-            : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
+        className={`scroll-top ${showScrollTop ? 'show' : ''}`}
         title="Volver arriba"
         aria-label="Volver arriba"
         data-testid="scroll-top-btn"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-6 h-6 fill-on-surface"
-          viewBox="0 0 24 24"
-        >
-          <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z" />
-        </svg>
+        <div className="scroll-top-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z" fill="white" />
+          </svg>
+          <span>P</span>
+        </div>
       </button>
     </Layout>
   )

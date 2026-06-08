@@ -34,3 +34,17 @@ npm-debug.log*
 
 # Coverage (future)
 coverage/
+
+# Expo
+.expo/
+dist/
+
+# Test results
+test-results/
+tests/screenshots/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*

@@ -1,5 +1,6 @@
 import { Toaster } from 'sonner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { NotificationToast } from '@/components/NotificationToast'
 import { AppRoutes } from '@/routes/AppRoutes'
 
 export function App() {
@@ -17,6 +18,8 @@ export function App() {
             },
           }}
         />
+        {/* Background toast handler for in-app notifications */}
+        <NotificationToast />
         <AppRoutes />
       </div>
     </ErrorBoundary>

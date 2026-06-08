@@ -67,9 +67,38 @@ const googleAuth = (req, res) => {
 // ── GET /api/oauth/google/callback ───────────────────────────────────
 // Handle the OAuth 2.0 callback from Google.
 
+// ── Google callback redirect targets ────────────────────────────────────
+
+const MOBILE_REDIRECT_URI = 'puntoparku://auth/callback';
+
+/**
+ * Determine the final redirect URL after Google OAuth callback.
+ * Supports:
+ *   - Web: redirects to frontend web callback
+ *   - Mobile: redirects to deep link (puntoparku://auth/callback)
+ * The `state` parameter from Google can optionally carry a `source=mobile` flag.
+ */
+const buildRedirectUrl = (accessToken, refreshToken, userData, source) => {
+  const userEncoded = Buffer.from(JSON.stringify(userData)).toString('base64');
+
+  if (source === 'mobile') {
+    const deepLink = new URL(MOBILE_REDIRECT_URI);
+    deepLink.searchParams.set('token', accessToken);
+    deepLink.searchParams.set('refreshToken', refreshToken);
+    deepLink.searchParams.set('user', userEncoded);
+    return deepLink.toString();
+  }
+
+  const redirectUrl = new URL(`${config.frontendUrl}/oauth/callback`);
+  redirectUrl.searchParams.set('token', accessToken);
+  redirectUrl.searchParams.set('refreshToken', refreshToken);
+  redirectUrl.searchParams.set('user', userEncoded);
+  return redirectUrl.toString();
+};
+
 const googleCallback = async (req, res, next) => {
   try {
-    const { code } = req.query;
+    const { code, state } = req.query;
 
     if (!code) {
       // User denied access or no code returned
@@ -131,17 +160,20 @@ const googleCallback = async (req, res, next) => {
     // Create session record
     await createSession(req, user._id, accessToken, refreshToken);
 
-    // Encode user data as base64 for the URL
+    // Encode user data and redirect (web or mobile)
     const userData = formatUserResponse(user);
-    const userEncoded = Buffer.from(JSON.stringify(userData)).toString('base64');
 
-    // Redirect to frontend callback page with tokens in URL
-    const redirectUrl = new URL(`${config.frontendUrl}/oauth/callback`);
-    redirectUrl.searchParams.set('token', accessToken);
-    redirectUrl.searchParams.set('refreshToken', refreshToken);
-    redirectUrl.searchParams.set('user', userEncoded);
+    // Parse state to determine source (web vs mobile)
+    let source = 'web';
+    try {
+      const stateParsed = JSON.parse(state || '{}');
+      if (stateParsed.source === 'mobile') source = 'mobile';
+    } catch {
+      // state is a simple string or undefined — default to web
+    }
 
-    res.redirect(redirectUrl.toString());
+    const redirectUrl = buildRedirectUrl(accessToken, refreshToken, userData, source);
+    res.redirect(redirectUrl);
   } catch (err) {
     console.error('[OAuth] Google callback error:', err.message);
     res.redirect(`${config.frontendUrl}/login?error=google_auth_failed`);

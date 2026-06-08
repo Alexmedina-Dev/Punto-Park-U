@@ -16,16 +16,15 @@ function GaugeChart({ used, total, icon, label }: GaugeData) {
   // SVG circumference for r=15.9155 is ~100
   const dashArray = percentage
 
-  // Animated available count
-  const available = total - used
+  // Animated occupied count
   const { displayValue } = useCounter({
-    target: available,
+    target: used,
     duration: 1200,
   })
 
   return (
     <div className="flex flex-col items-center gap-3" data-testid={`gauge-${label.toLowerCase()}`}>
-      <div className="relative w-32 h-32 sm:w-36 sm:h-36">
+        <div className="relative w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
           {/* Background circle */}
           <path
@@ -46,15 +45,15 @@ function GaugeChart({ used, total, icon, label }: GaugeData) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="material-symbols-outlined text-2xl text-primary mb-1">{icon}</span>
-          <span className="text-xl font-black text-on-bg font-headline" data-testid={`gauge-count-${label.toLowerCase()}`}>
+          <span className="material-symbols-outlined text-3xl text-primary mb-1">{icon}</span>
+          <span className="text-on-bg font-headline" style={{ fontSize: '2.25rem', fontWeight: 900 }} data-testid={`gauge-count-${label.toLowerCase()}`}>
             {displayValue}
             <span className="text-sm font-normal text-on-surface-var">/{total}</span>
           </span>
         </div>
       </div>
-      <h3 className="text-base font-bold text-primary font-headline">{label}</h3>
-      <p className="text-sm text-on-surface-var">{displayPercentage}% Ocupado</p>
+      <h3 className="text-primary font-headline" style={{ fontSize: '1.5rem', fontWeight: 900, textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>{label}</h3>
+      <p className="text-on-surface-var" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.3em' }}>{displayPercentage}% Ocupado</p>
     </div>
   )
 }
@@ -94,26 +93,26 @@ export function AvailabilitySection() {
   return (
     <section
       id="availability"
-      className="py-20 sm:py-28"
+      className="relative py-20 sm:py-28 bg-surface-low"
       data-testid="availability-section"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-16 gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-16 gap-4">
           <div className="flex items-center gap-4">
-            <h2 className="text-3xl sm:text-4xl font-black font-headline" data-testid="availability-title">
+            <h2 className="font-headline" style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)', fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1, fontStyle: 'italic', textTransform: 'uppercase' }} data-testid="availability-title">
               Disponibilidad<br />
               <span className="text-primary">en Tiempo Real</span>
             </h2>
             <div
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/15 border border-red-500/30"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30"
               data-testid="live-badge"
             >
               <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500/60 opacity-75" />
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
               </span>
-              <span className="text-xs font-bold text-red-400 uppercase tracking-wider">En Vivo</span>
+              <span className="text-xs font-bold text-red-500 uppercase tracking-wider">En Vivo</span>
             </div>
           </div>
           <div className="text-right">
@@ -128,7 +127,7 @@ export function AvailabilitySection() {
         </div>
 
         {/* Gauges */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 stagger-children">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 stagger-children">
           {gauges.map((gauge) => (
             <div
               key={gauge.label}
@@ -140,6 +139,7 @@ export function AvailabilitySection() {
           ))}
         </div>
       </div>
+      <div className="section-divider" />
     </section>
   )
 }

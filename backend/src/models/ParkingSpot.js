@@ -31,6 +31,26 @@ const parkingSpotSchema = new mongoose.Schema(
       enum: ['available', 'occupied', 'reserved'],
       default: 'available',
     },
+    hardwareId: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    sensorStatus: {
+      type: String,
+      enum: ['online', 'offline', 'unknown'],
+      default: 'unknown',
+    },
+    lastSensorUpdate: {
+      type: Date,
+      default: null,
+    },
+    sensorValue: {
+      type: Number,
+      default: null,
+      min: 0,
+      max: 400,
+    },
   },
   {
     timestamps: true,

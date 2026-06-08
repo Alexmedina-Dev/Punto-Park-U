@@ -24,7 +24,9 @@ export function useAuth() {
 
       if (result) {
         showSuccessToast('¡Bienvenido!')
-        navigate(ROUTES.DASHBOARD)
+        // Redirect admin users to /admin, others to /dashboard
+        const isAdmin = store.isAdmin || store.userRole === 'admin'
+        navigate(isAdmin ? ROUTES.ADMIN : ROUTES.DASHBOARD)
       }
       return result
     },

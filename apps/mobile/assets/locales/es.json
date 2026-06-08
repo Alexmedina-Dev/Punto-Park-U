@@ -1,0 +1,7 @@
+{
+  "CFBundleDisplayName": "Punto Park U",
+  "NSCameraUsageDescription": "Usa la cámara para escanear códigos QR de tus reservas.",
+  "NSLocationWhenInUseUsageDescription": "Usa tu ubicación para encontrar estacionamientos cercanos.",
+  "NSPhotoLibraryAddUsageDescription": "Guarda los comprobantes de pago en tu galería.",
+  "NSNotificationsUsageDescription": "Recibe notificaciones sobre tus reservas y pagos."
+}

@@ -3,25 +3,42 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "dev:frontend": "vite",
     "dev:backend": "npm run dev --prefix backend",
+    "dev:mobile": "npm run start --prefix apps/mobile",
     "dev:all": "concurrently -n FE,BE -c cyan,yellow \"npm run dev:frontend\" \"npm run dev:backend\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "seed": "npm run seed --prefix backend"
+    "seed": "npm run seed --prefix backend",
+    "build:packages": "npm run build --workspaces --if-present",
+    "typecheck:packages": "npm run typecheck --workspaces --if-present"
   },
   "dependencies": {
+    "@punto-park-u/shared-types": "workspace:*",
+    "@punto-park-u/shared-api": "workspace:*",
+    "@punto-park-u/shared-stores": "workspace:*",
     "axios": "^1.7.9",
+    "chart.js": "^4.5.1",
+    "html5-qrcode": "^2.3.8",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "react": "^18.3.1",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.2",
+    "socket.io-client": "^4.8.3",
     "sonner": "^1.7.4",
+    "xlsx": "^0.18.5",
     "zustand": "^4.5.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",

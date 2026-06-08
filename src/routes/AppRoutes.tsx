@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner'
 // Eagerly loaded pages (public/landing)
 import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { AdminLoginPage } from '@/pages/AdminLoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { OAuthCallback } from '@/pages/OAuthCallback'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
@@ -46,6 +47,7 @@ export function AppRoutes() {
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />

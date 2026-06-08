@@ -30,7 +30,7 @@ export function ResetPasswordPage() {
     let valid = true
 
     if (!password || password.length < 6) {
-      setPasswordError('La contraseña debe tener al menos 6 caracteres')
+      setPasswordError('La contraseña debe tener al menos 8 caracteres')
       valid = false
     } else {
       setPasswordError('')

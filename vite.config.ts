@@ -8,6 +8,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@punto-park-u/shared-api': path.resolve(__dirname, './packages/shared-api/dist/index.js'),
+      '@punto-park-u/shared-types': path.resolve(__dirname, './packages/shared-types/dist/index.js'),
+      '@punto-park-u/shared-stores': path.resolve(__dirname, './packages/shared-stores/dist/index.js'),
     },
   },
 })

@@ -18,7 +18,51 @@ html {
 body {
   font-family: 'Manrope', sans-serif;
   line-height: 1.6;
-  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+/* Safe areas for iPhone notch / Dynamic Island */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
+/* Responsive media queries matching vanilla granularity */
+@media (max-width: 767px) {
+  .max-md-only {
+    display: block;
+  }
+  .min-md-only {
+    display: none;
+  }
+}
+@media (min-width: 768px) {
+  .max-md-only {
+    display: none;
+  }
+  .min-md-only {
+    display: block;
+  }
+}
+
+/* Touch target utility */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 ::selection {
@@ -202,4 +246,151 @@ img {
       transform: none;
     }
   }
+
+  /* Header styles */
+  .header-landing {
+    background: rgba(16, 19, 26, 0.95);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(167, 200, 255, 0.1);
+  }
+
+  /* Vehicle menu animations — vanilla driveToLeft */
+  @keyframes drive-to-left {
+    0% { right: -50px; opacity: 0; }
+    5% { opacity: 1; }
+    45% { right: calc(100% - 85px); opacity: 1; }
+    50% { right: calc(100% - 55px); opacity: 0; }
+    100% { right: -50px; opacity: 0; }
+  }
+
+  @keyframes lane-superior {
+    0%, 100% { transform: translateY(-100%) translateY(-4px) scaleX(-1); }
+    33% { transform: translateY(-50%) scaleX(-1); }
+    66% { transform: translateY(4px) scaleX(-1); }
+  }
+
+  @keyframes lane-centro {
+    0%, 100% { transform: translateY(-50%) scaleX(-1); }
+    33% { transform: translateY(4px) scaleX(-1); }
+    66% { transform: translateY(-100%) translateY(-4px) scaleX(-1); }
+  }
+
+  @keyframes lane-inferior {
+    0%, 100% { transform: translateY(4px) scaleX(-1); }
+    33% { transform: translateY(-100%) translateY(-4px) scaleX(-1); }
+    66% { transform: translateY(-50%) scaleX(-1); }
+  }
+
+  @keyframes move-road {
+    from { background-position: 0 50%; }
+    to { background-position: -30px 50%; }
+  }
+
+  .vehicle-animation {
+    position: absolute;
+    fill: currentColor;
+    opacity: 0;
+    right: -50px;
+    transform: scaleX(-1);
+  }
+
+  .vehicle-car {
+    width: 32px;
+    height: 32px;
+    top: 12px;
+    animation: drive-to-left 6s infinite ease-in-out, lane-inferior 18s infinite steps(1);
+    animation-delay: 2s, 2s;
+  }
+
+  .vehicle-moto {
+    width: 28px;
+    height: 28px;
+    top: 50%;
+    transform: translateY(-50%) scaleX(-1);
+    animation: drive-to-left 6s infinite ease-in-out, lane-superior 18s infinite steps(1);
+    animation-delay: 0s, 0s;
+  }
+
+  .vehicle-bike {
+    width: 26px;
+    height: 26px;
+    bottom: 15px;
+    animation: drive-to-left 6s infinite ease-in-out, lane-centro 18s infinite steps(1);
+    animation-delay: 4s, 4s;
+  }
+
+  .animate-move-road {
+    animation: move-road 0.6s linear infinite;
+  }
+}
+
+.section-divider {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1200px;
+  height: 10px;
+  background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0.15) 75%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Scroll-to-top button — vanilla style */
+.scroll-top {
+  position: fixed;
+  bottom: 4rem;
+  right: 1.875rem;
+  width: 3.75rem;
+  height: 3.75rem;
+  background: linear-gradient(135deg, #0074d9 0%, rgba(167, 200, 255, 0.5) 100%);
+  border-radius: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(167, 200, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 99;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  border: none;
+}
+
+.scroll-top.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+@media (min-width: 768px) {
+  .scroll-top {
+    bottom: 4.5rem;
+  }
+}
+
+.scroll-top:hover {
+  transform: translateY(-5px);
+}
+
+.scroll-top-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.scroll-top-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: white;
+}
+
+.scroll-top-icon span {
+  font-size: 0.875rem;
+  font-weight: 900;
+  line-height: 1;
 }

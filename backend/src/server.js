@@ -2,6 +2,11 @@ const app = require('./app');
 const config = require('./config');
 const connectDB = require('./config/database');
 const { startCleanupJob } = require('./jobs/sessionCleanup');
+const { startReminderJob } = require('./jobs/reminderJob');
+const { startAnomalyCheckJob } = require('./jobs/anomalyCheckJob');
+const { configureVapid } = require('./services/notificationService');
+const { initSocketIO } = require('./services/socketService');
+const { connectMQTT, disconnectMQTT } = require('./services/mqttService');
 
 const startServer = async () => {
   // Attempt MongoDB connection (graceful on failure)
@@ -10,13 +15,29 @@ const startServer = async () => {
   // Start session cleanup job
   startCleanupJob(config.cleanupInterval || 60);
 
+  // Start notification reminder job (PR 4)
+  startReminderJob();
+
+  // Start anomaly detection job (PR 2 - Phase 6)
+  startAnomalyCheckJob();
+
+  // Configure VAPID for push notifications
+  configureVapid();
+
   const server = app.listen(config.port, () => {
     console.log(`[server] Punto Park U API running on port ${config.port} (${config.nodeEnv})`);
   });
 
+  // Initialize Socket.IO on the same HTTP server
+  initSocketIO(server);
+
+  // Start MQTT client (Phase 7 — Hardware)
+  connectMQTT();
+
   // ── Graceful shutdown ─────────────────────────────────────────
   const gracefulShutdown = (signal) => {
     console.log(`\n[server] Received ${signal}. Shutting down gracefully...`);
+    disconnectMQTT();
     server.close(() => {
       console.log('[server] HTTP server closed');
       process.exit(0);

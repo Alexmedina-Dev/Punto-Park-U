@@ -64,23 +64,23 @@ export function PricingSection() {
   return (
     <section
       id="pricing"
-      className="py-20 sm:py-28"
+      className="relative py-20 sm:py-28 bg-surface-low"
       data-testid="pricing-section"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-black font-headline" data-testid="pricing-title">
-            Tarifas Según<br />
+          <h2 className="font-headline" style={{ fontSize: 'clamp(2.5rem, 6vw, 3.75rem)', fontWeight: 900, letterSpacing: '-0.02em', fontStyle: 'italic', textTransform: 'uppercase' }} data-testid="pricing-title">
+            Tarifas Segun<br />
             <span className="text-primary">tu medio de transporte</span>
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
           {PRICING_CARDS.map((card) => (
             <Card
               key={card.title}
-              variant="glass"
+              variant="default"
               padding="none"
-              className="overflow-hidden text-center animate-slide-up hover-scale"
+              className="overflow-hidden text-center animate-slide-up hover-scale border-b-8 border-primary-container bg-surface"
               data-testid={`pricing-card-${card.title.toLowerCase().replace(/[\s/]+/g, '-')}`}
             >
               <div className="aspect-[4/3] overflow-hidden img-hover-zoom">
@@ -92,10 +92,10 @@ export function PricingSection() {
                 />
               </div>
               <div className="p-6">
-                <h3 className="text-lg font-bold text-primary font-headline mb-3">
+                <h3 className="text-primary font-label uppercase tracking-[0.3em] mb-3" style={{ fontSize: '0.875rem', fontWeight: 700 }}>
                   {card.title}
                 </h3>
-                <p className="text-3xl font-black text-on-bg mb-4">
+                <p className="text-on-bg mb-4" style={{ fontSize: '2.25rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
                   {getPrice(card)}{' '}
                   <span className="text-sm font-normal text-on-surface-var">/ hora</span>
                 </p>
@@ -103,7 +103,8 @@ export function PricingSection() {
                   {card.features.map((feature) => (
                     <li
                       key={feature}
-                      className="flex items-center justify-center gap-2 text-sm text-on-surface-var"
+                      className="flex items-center justify-center gap-2 text-on-surface-var"
+                      style={{ fontSize: '1rem' }}
                     >
                       <span className="material-symbols-outlined text-primary text-base">
                         check_circle
@@ -117,6 +118,7 @@ export function PricingSection() {
           ))}
         </div>
       </div>
+      <div className="section-divider" />
     </section>
   )
 }

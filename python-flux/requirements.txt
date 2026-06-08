@@ -1,0 +1,12 @@
+# Punto Park U - Flux AI Vision API
+# FastAPI microservice for license plate recognition
+# Phase 7: Hardware Integration
+
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+opencv-python==4.10.0.84
+ultralytics==8.3.0
+easyocr==1.7.0
+numpy==1.26.4
+pillow==10.4.0
+python-multipart==0.0.9

@@ -33,8 +33,8 @@ const registerValidation = [
   body('password')
     .notEmpty()
     .withMessage('Password is required')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters'),
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters'),
   body('phone')
     .optional({ values: 'falsy' })
     .matches(/^3\d{9}$/)
@@ -85,8 +85,8 @@ const resetPasswordValidation = [
   body('password')
     .notEmpty()
     .withMessage('Password is required')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters'),
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters'),
 ];
 
 // ── Rate limiters ────────────────────────────────────────────────────
