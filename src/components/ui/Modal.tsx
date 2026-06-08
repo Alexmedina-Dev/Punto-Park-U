@@ -34,7 +34,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4"
       data-testid="modal"
     >
       {/* Backdrop */}
@@ -44,13 +44,14 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         data-testid="modal-backdrop"
       />
 
-      {/* Modal Content */}
+      {/* Modal Content — bottom-sheet on mobile, centered on desktop */}
       <div
-        className="relative w-full max-w-md bg-surface-container border border-outline/20 rounded-lg shadow-brutal animate-in fade-in zoom-in-95"
+        className="relative w-full max-w-md bg-surface-container border border-outline/20 rounded-t-2xl md:rounded-lg shadow-brutal animate-in fade-in zoom-in-95 md:zoom-in-100 max-h-[90vh] overflow-y-auto
+                   fixed bottom-0 left-0 right-0 md:static md:bottom-auto md:left-auto md:right-auto"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label={title || 'Diálogo'}
+        aria-label={title || 'Dialogo'}
       >
         {/* Header */}
         {title && (

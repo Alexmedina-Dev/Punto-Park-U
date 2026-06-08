@@ -4,20 +4,20 @@ export function AboutSection() {
   return (
     <section
       id="about"
-      className="py-20 sm:py-28"
+      className="relative py-20 sm:py-28 bg-surface-container"
       data-testid="about-section"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Historia */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div className="animate-slide-up">
-            <h2 className="text-3xl sm:text-4xl font-black font-headline mb-6" data-testid="about-title">
+            <h2 className="font-headline mb-6" style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)', fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1.1, fontStyle: 'italic', textTransform: 'uppercase' }} data-testid="about-title">
               Nuestra Historia<br />
-              <span className="text-lg sm:text-xl font-normal text-on-surface-var">
+              <span style={{ fontSize: 'clamp(0.875rem, 2vw, 1.5rem)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.3em', display: 'block', marginTop: '0.5rem', color: 'var(--primary, #a7c8ff)' }}>
                 De lo Analógico a lo Digital
               </span>
             </h2>
-            <p className="text-on-surface-var font-body leading-relaxed text-base sm:text-lg">
+            <p className="text-on-surface-var font-body leading-relaxed" style={{ fontSize: '1.25rem', lineHeight: 1.8, marginBottom: '3rem' }}>
               PUNTO PARK U nació observando los tradicionales parqueaderos de
               balasto y luz amarilla de Bogotá. Reconocimos la necesidad de
               evolucionar esa experiencia manual y lenta hacia un ecosistema
@@ -31,7 +31,7 @@ export function AboutSection() {
             <img
               src="/images/Google AI/historia.png"
               alt="Parqueadero tradicional de Bogotá con gravilla y lámparas amarillas"
-              className="relative rounded-xl w-full h-auto hover-scale"
+              className="relative rounded-xl w-full h-[31.25rem] object-cover hover-scale"
               data-testid="about-image"
             />
           </div>
@@ -42,16 +42,16 @@ export function AboutSection() {
           <Card
             variant="glass"
             padding="lg"
-            className="flex flex-col gap-4 animate-slide-up hover-scale"
+            className="flex flex-col gap-4 animate-slide-up hover-scale border-t-8 border-primary"
             data-testid="mission-card"
           >
             <span className="material-symbols-outlined text-4xl text-primary">
               rocket_launch
             </span>
-            <h3 className="text-xl font-bold text-primary font-headline">
+            <h3 className="text-primary font-label uppercase tracking-[0.3em]" style={{ fontSize: '2.25rem', fontWeight: 900, letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>
               Nuestra Misión
             </h3>
-            <p className="text-on-surface-var font-body leading-relaxed">
+            <p className="text-on-surface-var font-body leading-relaxed" style={{ fontSize: '1.25rem', lineHeight: 1.8 }}>
               Proporcionar un servicio de estacionamiento seguro, confiable y
               accesible para la comunidad, garantizando la protección de los
               vehículos mediante tecnología de punta con integración de
@@ -63,16 +63,16 @@ export function AboutSection() {
           <Card
             variant="glass"
             padding="lg"
-            className="flex flex-col gap-4 animate-slide-up hover-scale"
+            className="flex flex-col gap-4 animate-slide-up hover-scale border-t-8 border-primary"
             data-testid="vision-card"
           >
             <span className="material-symbols-outlined text-4xl text-primary">
               visibility
             </span>
-            <h3 className="text-xl font-bold text-primary font-headline">
+            <h3 className="text-primary font-label uppercase tracking-[0.3em]" style={{ fontSize: '2.25rem', fontWeight: 900, letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>
               Nuestra Visión
             </h3>
-            <p className="text-on-surface-var font-body leading-relaxed">
+            <p className="text-on-surface-var font-body leading-relaxed" style={{ fontSize: '1.25rem', lineHeight: 1.8 }}>
               Ser el Parqueadero líder y más confiable de la región, reconocido
               por nuestra innovación tecnológica, seguridad integral y
               excelencia en el servicio. Aspiramos a establecer nuevos
@@ -83,6 +83,7 @@ export function AboutSection() {
           </Card>
         </div>
       </div>
+      <div className="section-divider" />
     </section>
   )
 }

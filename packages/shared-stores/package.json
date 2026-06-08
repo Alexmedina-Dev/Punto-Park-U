@@ -1,0 +1,38 @@
+{
+  "name": "@punto-park-u/shared-stores",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared Zustand stores with platform-agnostic storage adapter for Punto Park U",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "zustand": "^4.5.6"
+  },
+  "peerDependencies": {
+    "@punto-park-u/shared-types": "workspace:*",
+    "@punto-park-u/shared-api": "workspace:*"
+  },
+  "devDependencies": {
+    "@punto-park-u/shared-types": "workspace:*",
+    "@punto-park-u/shared-api": "workspace:*",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

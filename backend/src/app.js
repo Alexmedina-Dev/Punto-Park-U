@@ -35,6 +35,10 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// ── Webhook routes (before auth — no JWT required) ─────────────────
+const webhookRoutes = require('./routes/webhooks');
+app.use('/api/webhooks', webhookRoutes);
+
 // ── Routes ────────────────────────────────────────────────────────
 
 // Welcome / root
@@ -64,6 +68,42 @@ app.use('/api/sessions', sessionRoutes);
 // User management routes (admin/operator)
 const userRoutes = require('./routes/users');
 app.use('/api/users', userRoutes);
+
+// Vehicle routes
+const vehicleRoutes = require('./routes/vehicles');
+app.use('/api/vehicles', vehicleRoutes);
+
+// Reservation routes
+const reservationRoutes = require('./routes/reservations');
+app.use('/api/reservations', reservationRoutes);
+
+// Payment routes
+const paymentRoutes = require('./routes/payments');
+app.use('/api/payments', paymentRoutes);
+
+// QR Entry/Exit routes (PR 3)
+const qrRoutes = require('./routes/qr');
+app.use('/api/qr', qrRoutes);
+
+// Admin routes (activity log, alerts, reports)
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
+
+// Notification routes (PR 4)
+const notificationRoutes = require('./routes/notifications');
+app.use('/api/notifications', notificationRoutes);
+
+// Anomaly routes (PR 2 - Phase 6)
+const anomalyRoutes = require('./routes/anomaly');
+app.use('/api/anomalies', anomalyRoutes);
+
+// Pricing routes (PR 3 - Phase 6)
+const pricingRoutes = require('./routes/pricing');
+app.use('/api/pricing', pricingRoutes);
+
+// Hardware routes (PR 1 - Phase 7)
+const hardwareRoutes = require('./routes/hardware');
+app.use('/api/hardware', hardwareRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────
 app.use((req, res) => {

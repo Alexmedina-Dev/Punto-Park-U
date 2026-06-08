@@ -29,7 +29,7 @@ export function FluxAISection() {
   return (
     <section
       id="flux-AI"
-      className="py-20 sm:py-28"
+      className="relative py-20 sm:py-28 bg-surface-container"
       data-testid="flux-ai-section"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,8 +46,8 @@ export function FluxAISection() {
                 loading="lazy"
               />
             </div>
-            {/* Latency Badge */}
-            <div className="absolute -bottom-4 -right-4 sm:right-4 glass rounded-xl px-4 py-3 flex items-center gap-3 shadow-glow animate-scale-in animate-delay-500" data-testid="flux-badge">
+            {/* Latency Badge — hidden on mobile */}
+            <div className="absolute -bottom-4 -right-4 sm:right-4 glass rounded-xl px-4 py-3 hidden lg:flex items-center gap-3 shadow-glow animate-scale-in animate-delay-500" data-testid="flux-badge">
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 neon-glow">
                 <span className="material-symbols-outlined text-primary text-xl">bolt</span>
               </div>
@@ -60,11 +60,11 @@ export function FluxAISection() {
 
           {/* Content Side */}
           <div className="order-1 lg:order-2 animate-slide-right">
-            <h2 className="text-3xl sm:text-4xl font-black font-headline mb-4" data-testid="flux-ai-title">
+            <h2 className="font-headline mb-4" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1, fontStyle: 'italic', textTransform: 'uppercase' }} data-testid="flux-ai-title">
               Tecnología<br />
               <span className="text-primary">Flux AI</span>
             </h2>
-            <p className="text-on-surface-var font-body leading-relaxed mb-10 text-base sm:text-lg">
+            <p className="text-on-surface-var font-body mb-10" style={{ fontSize: '1.125rem', fontWeight: 300, lineHeight: 1.7 }}>
               Motor de inteligencia artificial propietario que procesa en tiempo
               real cada operación del parqueadero con latencia menor a 1 segundo.
             </p>
@@ -80,10 +80,10 @@ export function FluxAISection() {
                     {step.number}
                   </div>
                   <div>
-                    <h4 className="text-lg font-bold text-primary font-headline mb-2">
+                    <h4 className="text-primary font-headline" style={{ fontSize: '1.25rem', fontWeight: 900, fontStyle: 'italic', textTransform: 'uppercase', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>
                       {step.title}
                     </h4>
-                    <p className="text-sm text-on-surface-var font-body leading-relaxed">
+                    <p className="text-on-surface-var font-body" style={{ fontSize: '1rem', fontWeight: 300, lineHeight: 1.7 }}>
                       {step.description}
                     </p>
                   </div>
@@ -93,6 +93,7 @@ export function FluxAISection() {
           </div>
         </div>
       </div>
+      <div className="section-divider" />
     </section>
   )
 }

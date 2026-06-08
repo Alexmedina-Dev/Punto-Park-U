@@ -19,7 +19,7 @@ const defaultAdmin = {
   email: 'admin@puntoparku.com',
   username: 'admin',
   cedula: '0000000000',
-  password: 'admin123',
+  password: 'admin1234',
   role: 'admin',
   phone: '3000000000',
 };
@@ -51,7 +51,7 @@ const seed = async () => {
       console.log('[seeder] Admin user already exists, skipping');
     } else {
       await User.create(defaultAdmin);
-      console.log('[seeder] Admin user created (admin@puntoparku.com / admin123)');
+      console.log('[seeder] Admin user created (admin@puntoparku.com / admin1234)');
     }
 
     // Tariffs

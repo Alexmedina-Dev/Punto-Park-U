@@ -14,9 +14,13 @@ const vehicleSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Vehicle type is required'],
       enum: {
-        values: ['car', 'moto', 'suv', 'bike'],
+        values: ['car', 'moto', 'bike'],
         message: '{VALUE} is not a valid vehicle type',
       },
+    },
+    entryCount: {
+      type: Number,
+      default: 0,
     },
     brand: {
       type: String,
@@ -38,6 +42,10 @@ const vehicleSchema = new mongoose.Schema(
       ref: 'User',
       required: [true, 'Owner is required'],
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
@@ -45,7 +53,8 @@ const vehicleSchema = new mongoose.Schema(
 );
 
 // ── Indexes ─────────────────────────────────────────────────────────
-vehicleSchema.index({ plate: 1 });
+// plate has an implicit index from `unique: true` in the schema definition
 vehicleSchema.index({ owner: 1 });
+vehicleSchema.index({ isActive: 1 });
 
 module.exports = mongoose.model('Vehicle', vehicleSchema);

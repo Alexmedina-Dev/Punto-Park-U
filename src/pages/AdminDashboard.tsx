@@ -1,34 +1,83 @@
-import { useState, useEffect } from 'react'
-import { Layout } from '@/components/layout'
+import { useState, useEffect, useCallback } from 'react'
+import { AdminLayout } from '@/components/layout'
 import { Card, Button, Badge } from '@/components/ui'
+import { KPICard, OccupancyChart, VehiclesTable, AlertsPanel, ActivityFeed, HistoryLog, TariffEditor, ScheduleEditor, ParkingMap, ReportGenerator, AnalyticsPanel, PricingPanel, HardwarePanel } from '@/components/admin'
 import { useAuth } from '@/hooks/useAuth'
 import { useAdminStore } from '@/stores/adminStore'
-import { formatCurrency, formatPercentage, formatNumber } from '@/utils/formatters'
+import { formatCurrency, formatPercentage, formatNumber, formatDuration } from '@/utils/formatters'
+import wsService from '@/services/websocket.service'
+import type { Alert, ActivityLog } from '@/types'
 
-type AdminTab = 'dashboard' | 'reports' | 'users' | 'tariffs' | 'activity'
+type AdminTab = 'dashboard' | 'reports' | 'users' | 'tariffs' | 'schedule' | 'map' | 'activity' | 'analytics' | 'pricing' | 'hardware'
 
 export function AdminDashboard() {
-  const { user, logout, isLoading } = useAuth()
-  const { dashboardStats, fetchDashboardStats } = useAdminStore()
+  const { user, logout, isLoading: authLoading } = useAuth()
+  const {
+    dashboardStats,
+    activityFeed,
+    alerts,
+    hourlyOccupancy,
+    parkedVehicles,
+    fetchDashboardStats,
+    fetchActivityFeed,
+    fetchAlerts,
+    fetchHourlyOccupancy,
+    fetchParkedVehicles,
+  } = useAdminStore()
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard')
 
-  useEffect(() => {
+  const fetchAll = useCallback(() => {
     fetchDashboardStats()
-  }, [fetchDashboardStats])
+    fetchActivityFeed()
+    fetchAlerts()
+    fetchHourlyOccupancy()
+    fetchParkedVehicles()
+  }, [fetchDashboardStats, fetchActivityFeed, fetchAlerts, fetchHourlyOccupancy, fetchParkedVehicles])
+
+  // ── Real-time WebSocket callbacks ───────────────────────────
+  const handleNewAlert = useCallback((alert: Alert) => {
+    // Prepending new alert to store
+    useAdminStore.setState((state) => ({
+      alerts: [alert, ...state.alerts],
+    }))
+  }, [])
+
+  const handleNewActivity = useCallback((entry: ActivityLog) => {
+    // Prepending new activity entry to store
+    useAdminStore.setState((state) => ({
+      activityFeed: [entry, ...state.activityFeed].slice(0, 50), // keep max 50
+    }))
+  }, [])
+
+  useEffect(() => {
+    fetchAll()
+
+    // Connect WebSocket for real-time updates
+    wsService.connect()
+
+    return () => {
+      wsService.disconnect()
+    }
+  }, [fetchAll])
 
   const tabs: { key: AdminTab; label: string; icon: string }[] = [
     { key: 'dashboard', label: 'Resumen', icon: 'dashboard' },
     { key: 'reports', label: 'Reportes', icon: 'bar_chart' },
     { key: 'users', label: 'Usuarios', icon: 'people' },
     { key: 'tariffs', label: 'Tarifas', icon: 'attach_money' },
+    { key: 'schedule', label: 'Horarios', icon: 'schedule' },
+    { key: 'map', label: 'Mapa', icon: 'map' },
+    { key: 'analytics', label: 'Analítica', icon: 'insights' },
+    { key: 'pricing', label: 'Precios', icon: 'trending_up' },
+    { key: 'hardware', label: 'Hardware', icon: 'memory' },
     { key: 'activity', label: 'Actividad', icon: 'history' },
   ]
 
   const stats = dashboardStats
 
   return (
-    <Layout>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <AdminLayout>
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -41,140 +90,105 @@ export function AdminDashboard() {
           </div>
           <div className="flex items-center gap-3">
             <Badge variant="info">Admin</Badge>
-            <Button variant="ghost" onClick={logout} loading={isLoading}>
+            <Button variant="ghost" onClick={logout} loading={authLoading}>
               <span className="material-symbols-outlined text-base">logout</span>
               Cerrar Sesión
             </Button>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex gap-1 mb-8 overflow-x-auto pb-2" data-testid="admin-tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors
-                ${
-                  activeTab === tab.key
-                    ? 'bg-primary text-on-primary'
-                    : 'text-on-surface-var hover:text-on-bg hover:bg-surface-container'
-                }
-              `}
-            >
-              <span className="material-symbols-outlined text-base">{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
+        {/* Navigation Tabs — with scroll gradient indicator */}
+        <div className="relative mb-8" data-testid="admin-tabs">
+          <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-none">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`
+                  flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold whitespace-nowrap transition-colors touch-target
+                  ${
+                    activeTab === tab.key
+                      ? 'bg-primary text-on-primary'
+                      : 'text-on-surface-var hover:text-on-bg hover:bg-surface-container'
+                  }
+                `}
+              >
+                <span className="material-symbols-outlined text-base">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {/* Fade edges to indicate scroll */}
+          <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-bg to-transparent pointer-events-none md:hidden" />
         </div>
 
-        {/* Tab Content */}
+        {/* ──────────────── DASHBOARD TAB ──────────────── */}
         {activeTab === 'dashboard' && (
-          <div>
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Card variant="glass" className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-primary">directions_car</span>
-                </div>
-                <div className="text-2xl font-bold text-primary mb-1">
-                  {stats ? formatNumber(stats.totalVehicles) : '0'}
-                </div>
-                <div className="text-sm text-on-surface-var">Vehículos Estacionados</div>
-              </Card>
-              <Card variant="glass" className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-primary">payments</span>
-                </div>
-                <div className="text-2xl font-bold text-primary mb-1">
-                  {stats ? formatCurrency(stats.totalRevenue) : '$0'}
-                </div>
-                <div className="text-sm text-on-surface-var">Ingresos Totales</div>
-              </Card>
-              <Card variant="glass" className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-primary">donut_large</span>
-                </div>
-                <div className="text-2xl font-bold text-primary mb-1">
-                  {stats ? formatPercentage(stats.occupancyRate) : '0%'}
-                </div>
-                <div className="text-sm text-on-surface-var">Ocupación</div>
-              </Card>
-              <Card variant="glass" className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-primary">group</span>
-                </div>
-                <div className="text-2xl font-bold text-primary mb-1">
-                  {stats ? formatNumber(stats.totalUsers) : '0'}
-                </div>
-                <div className="text-sm text-on-surface-var">Usuarios Registrados</div>
-              </Card>
+          <div className="space-y-6">
+            {/* 6 KPI Cards — responsive: 1 -> 2 -> 3 cols */}
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+              <KPICard
+                title="Vehículos Hoy"
+                value={stats ? formatNumber(stats.entriesToday) : '0'}
+                icon="directions_car"
+                trend={stats?.vehiclesTodayTrend}
+                trendColor="#60a5fa"
+              />
+              <KPICard
+                title="Ingresos Hoy"
+                value={stats ? formatCurrency(stats.revenueToday) : '$0'}
+                icon="payments"
+                trend={stats?.revenueTodayTrend}
+                trendColor="#34d399"
+              />
+              <KPICard
+                title="Ocupación Actual"
+                value={stats ? formatPercentage(stats.occupancyRate) : '0%'}
+                icon="donut_large"
+                trend={stats?.occupancyTrend}
+                trendColor="#fbbf24"
+              />
+              <KPICard
+                title="Tiempo Promedio"
+                value={stats?.averageParkingTime ? formatDuration(stats.averageParkingTime) : '0 min'}
+                icon="schedule"
+                subtitle="promedio"
+              />
+              <KPICard
+                title="Operadores Activos"
+                value={stats ? formatNumber(stats.activeOperators ?? 0) : '0'}
+                icon="badge"
+                subtitle="en turno"
+              />
+              <KPICard
+                title="Hora Pico"
+                value={stats?.peakHour ?? '--'}
+                icon="trending_up"
+                subtitle="hoy"
+              />
             </div>
 
-            {/* Secondary Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              <Card variant="glass" className="text-center">
-                <div className="text-lg font-bold text-primary mb-1">
-                  {stats ? formatCurrency(stats.revenueToday) : '$0'}
-                </div>
-                <div className="text-sm text-on-surface-var">Ingresos Hoy</div>
-              </Card>
-              <Card variant="glass" className="text-center">
-                <div className="text-lg font-bold text-primary mb-1">
-                  {stats ? formatNumber(stats.entriesToday) : '0'}
-                </div>
-                <div className="text-sm text-on-surface-var">Entradas Hoy</div>
-              </Card>
-              <Card variant="glass" className="text-center">
-                <div className="text-lg font-bold text-primary mb-1">
-                  {stats ? formatNumber(stats.activeReservations) : '0'}
-                </div>
-                <div className="text-sm text-on-surface-var">Reservas Activas</div>
-              </Card>
+            {/* Chart + Alerts row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <OccupancyChart data={hourlyOccupancy} className="lg:col-span-2" />
+              <AlertsPanel alerts={alerts} onNewAlert={handleNewAlert} />
             </div>
 
-            {/* Quick Actions */}
-            <Card variant="glass" title="Acciones Rápidas">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <Button variant="secondary" size="sm" className="flex-col gap-1 py-4 h-auto">
-                  <span className="material-symbols-outlined">add</span>
-                  <span className="text-xs">Nuevo Usuario</span>
-                </Button>
-                <Button variant="secondary" size="sm" className="flex-col gap-1 py-4 h-auto">
-                  <span className="material-symbols-outlined">edit</span>
-                  <span className="text-xs">Editar Tarifas</span>
-                </Button>
-                <Button variant="secondary" size="sm" className="flex-col gap-1 py-4 h-auto">
-                  <span className="material-symbols-outlined">assessment</span>
-                  <span className="text-xs">Generar Reporte</span>
-                </Button>
-                <Button variant="secondary" size="sm" className="flex-col gap-1 py-4 h-auto">
-                  <span className="material-symbols-outlined">settings</span>
-                  <span className="text-xs">Configuración</span>
-                </Button>
-              </div>
-            </Card>
+            {/* Vehicles Table */}
+            <VehiclesTable vehicles={parkedVehicles} />
+
+            {/* Activity + History row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ActivityFeed entries={activityFeed} onNewEntry={handleNewActivity} />
+              <HistoryLog entries={activityFeed} />
+            </div>
           </div>
         )}
 
-        {activeTab === 'reports' && (
-          <Card variant="glass" title="Reportes">
-            <div className="text-center py-8 text-on-surface-var text-sm">
-              <span className="material-symbols-outlined text-3xl mb-2 block">
-                bar_chart
-              </span>
-              <p className="mb-2">Los reportes estarán disponibles próximamente.</p>
-              <p>Selecciona el tipo de reporte para visualizar:</p>
-              <div className="flex justify-center gap-3 mt-4">
-                <Button variant="secondary" size="sm">Financiero</Button>
-                <Button variant="secondary" size="sm">Ocupación</Button>
-                <Button variant="secondary" size="sm">Usuarios</Button>
-              </div>
-            </div>
-          </Card>
-        )}
+        {/* ──────────────── REPORTS TAB ──────────────── */}
+        {activeTab === 'reports' && <ReportGenerator />}
 
+        {/* ──────────────── USERS TAB ──────────────── */}
         {activeTab === 'users' && (
           <Card variant="glass" title="Usuarios Registrados">
             <div className="text-center py-8 text-on-surface-var text-sm">
@@ -191,31 +205,47 @@ export function AdminDashboard() {
           </Card>
         )}
 
+        {/* ──────────────── TARIFFS TAB ──────────────── */}
         {activeTab === 'tariffs' && (
-          <Card variant="glass" title="Gestión de Tarifas">
-            <div className="text-center py-8 text-on-surface-var text-sm">
-              <span className="material-symbols-outlined text-3xl mb-2 block">
-                attach_money
-              </span>
-              <p className="mb-4">Administra las tarifas por tipo de vehículo.</p>
-              <Button variant="primary" size="sm">
-                Editar Tarifas
-              </Button>
-            </div>
+          <Card variant="glass" padding="lg">
+            <TariffEditor />
           </Card>
         )}
 
-        {activeTab === 'activity' && (
-          <Card variant="glass" title="Actividad Reciente">
-            <div className="text-center py-8 text-on-surface-var text-sm">
-              <span className="material-symbols-outlined text-3xl mb-2 block">
-                history
-              </span>
-              <p>No hay actividad reciente para mostrar.</p>
-            </div>
+        {/* ──────────────── SCHEDULE TAB ──────────────── */}
+        {activeTab === 'schedule' && (
+          <Card variant="glass" padding="lg">
+            <ScheduleEditor />
           </Card>
         )}
+
+        {/* ──────────────── MAP TAB ──────────────── */}
+        {activeTab === 'map' && (
+          <Card variant="glass" padding="lg">
+            <ParkingMap />
+          </Card>
+        )}
+
+        {/* ──────────────── ANALYTICS TAB ──────────────── */}
+        {activeTab === 'analytics' && (
+          <AnalyticsPanel />
+        )}
+
+        {/* ──────────────── PRICING TAB ──────────────── */}
+        {activeTab === 'pricing' && (
+          <PricingPanel />
+        )}
+
+        {/* ──────────────── HARDWARE TAB ──────────────── */}
+        {activeTab === 'hardware' && (
+          <HardwarePanel />
+        )}
+
+        {/* ──────────────── ACTIVITY TAB ──────────────── */}
+        {activeTab === 'activity' && (
+          <ActivityFeed entries={activityFeed} onNewEntry={handleNewActivity} />
+        )}
       </div>
-    </Layout>
+    </AdminLayout>
   )
 }

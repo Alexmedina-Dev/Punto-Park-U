@@ -73,10 +73,11 @@ export function MobileNav() {
 
   return (
     <div
-      className={`fixed inset-0 z-30 lg:hidden transition-all duration-250 ease-out ${
-        animate ? 'bg-black/60 backdrop-blur-sm' : 'bg-transparent backdrop-blur-none'
+      className={`fixed inset-0 z-30 lg:hidden overflow-hidden transition-transform duration-500 ease-[cubic-bezier(0.77,0,0.175,1)] ${
+        animate ? 'translate-y-0' : '-translate-y-full'
       }`}
       data-testid="mobile-nav"
+      style={{ background: 'var(--bg, #10131a)' }}
     >
       {/* Backdrop — click to close */}
       <div
@@ -85,32 +86,21 @@ export function MobileNav() {
         aria-hidden="true"
       />
 
-      {/* Slide-down menu */}
+      {/* Full-screen menu like vanilla */}
       <nav
         ref={menuRef}
-        className={`relative mt-16 mx-4 bg-surface-container border border-outline/20 rounded-lg shadow-brutal p-6 ${
-          animate ? 'mobile-nav-enter' : 'mobile-nav-exit'
-        }`}
+        className="relative flex flex-col px-5 sm:px-8 pt-16 sm:pt-20 pb-6 sm:pb-8 h-full overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-label="Menú de navegación"
       >
-        {/* Close button inside menu */}
-        <button
-          onClick={closeMobileMenu}
-          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-var hover:text-on-bg hover:bg-surface-high transition-colors"
-          aria-label="Cerrar menú"
-        >
-          <span className="material-symbols-outlined text-lg">close</span>
-        </button>
-
-        <div className="flex flex-col gap-3 pt-2">
+        <div className="flex flex-col gap-5">
           {/* Landing page links */}
           {NAV_ITEMS.map((item, idx) => (
             <a
               key={item.id}
               href={`#${item.id}`}
-              className={`text-on-surface-var hover:text-primary transition-all py-2 px-3 rounded-lg hover:bg-surface-high ${
+              className={`text-on-bg hover:text-primary transition-colors text-[1.5rem] sm:text-[1.75rem] font-black italic uppercase tracking-tight ${
                 animate
                   ? 'opacity-100 translate-x-0'
                   : 'opacity-0 -translate-x-3'
@@ -189,11 +179,11 @@ export function MobileNav() {
                 Iniciar Sesión
               </Link>
               <Link
-                to="/register"
+                to="/admin/login"
                 className="bg-primary text-on-primary text-center rounded-lg py-2 px-3 font-bold hover:bg-primary-fixed transition-colors"
                 onClick={closeMobileMenu}
               >
-                Registrarse
+                Administrador
               </Link>
             </>
           )}

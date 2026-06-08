@@ -24,7 +24,10 @@
     /* Path aliases */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@punto-park-u/shared-api": ["packages/shared-api/dist/index.js"],
+      "@punto-park-u/shared-types": ["packages/shared-types/dist/index.js"],
+      "@punto-park-u/shared-stores": ["packages/shared-stores/dist/index.js"]
     }
   },
   "include": ["src", "vite-env.d.ts"],

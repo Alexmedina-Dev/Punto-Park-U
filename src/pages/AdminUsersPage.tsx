@@ -206,8 +206,8 @@ export function AdminUsersPage() {
               <thead>
                 <tr className="border-b border-outline/20 text-on-surface-var text-xs uppercase font-bold">
                   <th className="text-left px-4 py-3">Usuario</th>
-                  <th className="text-left px-4 py-3">Email</th>
-                  <th className="text-left px-4 py-3">Cédula</th>
+                  <th className="text-left px-4 py-3 hidden sm:table-cell">Email</th>
+                  <th className="text-left px-4 py-3 hidden md:table-cell">Cedula</th>
                   <th className="text-left px-4 py-3">Rol</th>
                   <th className="text-right px-4 py-3">Acciones</th>
                 </tr>
@@ -243,8 +243,8 @@ export function AdminUsersPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-on-surface-var">{u.email}</td>
-                      <td className="px-4 py-3 text-on-surface-var">{u.cedula || '—'}</td>
+                      <td className="px-4 py-3 text-on-surface-var hidden sm:table-cell">{u.email}</td>
+                      <td className="px-4 py-3 text-on-surface-var hidden md:table-cell">{u.cedula || '—'}</td>
                       <td className="px-4 py-3">
                         <Badge role={(u.rol || u.role || 'guest') as UserRole} />
                       </td>

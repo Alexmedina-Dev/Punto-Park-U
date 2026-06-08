@@ -6,6 +6,15 @@ export default {
   ],
   darkMode: 'class',
   theme: {
+    screens: {
+      'xs': '480px',
+      'sm': '640px',
+      'md': '768px',
+      'blg': '900px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    },
     extend: {
       colors: {
         bg: '#10131a',
@@ -45,6 +54,11 @@ export default {
         glow: '0 0 20px rgba(167, 200, 255, 0.3)',
       },
       keyframes: {
+        'pulse-green': {
+          '0%': { transform: 'scale(0.95)', boxShadow: '0 0 0 0 rgba(34, 197, 94, 0.7)' },
+          '70%': { transform: 'scale(1)', boxShadow: '0 0 0 12px rgba(34, 197, 94, 0)' },
+          '100%': { transform: 'scale(0.95)', boxShadow: '0 0 0 0 rgba(34, 197, 94, 0)' },
+        },
         'pulse-red': {
           '0%': { transform: 'scale(0.95)', boxShadow: '0 0 0 0 rgba(239, 68, 68, 0.7)' },
           '70%': { transform: 'scale(1)', boxShadow: '0 0 0 10px rgba(239, 68, 68, 0)' },
@@ -92,6 +106,7 @@ export default {
         },
       },
       animation: {
+        'pulse-green': 'pulse-green 2s infinite',
         'pulse-red': 'pulse-red 2s infinite',
         'spin-custom': 'spin 3s linear infinite',
         'fade-in': 'fade-in 0.6s ease-out both',

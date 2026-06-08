@@ -236,7 +236,7 @@ El sistema de autenticación consta de 6 módulos integrados:
 2. Backend genera token (32 bytes hex, 1 hora de expiración)
 3. En desarrollo: token se muestra en consola del servidor (email simulado)
 4. Usuario hace clic en el enlace `/reset-password?token=...`
-5. Ingresa nueva contraseña (mín. 6 caracteres)
+5. Ingresa nueva contraseña (mín. 8 caracteres)
 6. Token se invalida después de usar
 
 **Seguridad:**

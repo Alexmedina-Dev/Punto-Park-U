@@ -1,0 +1,119 @@
+{
+  "expo": {
+    "name": "Punto Park U",
+    "slug": "punto-park-u",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "puntoparku",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a73e8"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.puntoparku.app",
+      "associatedDomains": ["applinks:puntoparku.com"],
+      "infoPlist": {
+        "CFBundleDisplayName": "Punto Park U",
+        "CFBundleDevelopmentRegion": "es-CO",
+        "LSApplicationQueriesSchemes": ["epayco", "puntoparku"],
+        "UIRequiresFullScreen": true,
+        "UILaunchStoryboardName": "SplashScreen"
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a73e8"
+      },
+      "package": "com.puntoparku.app",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "CAMERA",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "puntoparku",
+              "host": "*",
+              "pathPrefix": "/auth"
+            },
+            {
+              "scheme": "puntoparku",
+              "host": "*",
+              "pathPrefix": "/reservations"
+            },
+            {
+              "scheme": "puntoparku",
+              "host": "*",
+              "pathPrefix": "/payments"
+            },
+            {
+              "scheme": "puntoparku",
+              "host": "epayco",
+              "pathPrefix": "/callback"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-notifications",
+      "expo-linking",
+      "expo-asset",
+      "expo-font",
+      "expo-updates",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#1a73e8",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:3000/api",
+      "epayco": {
+        "callbackScheme": "puntoparku",
+        "callbackHost": "epayco",
+        "callbackPath": "/callback"
+      }
+    },
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#1a73e8",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Punto Park U"
+    },
+    "updates": {
+      "enabled": true,
+      "fallbackToCacheTimeout": 30000,
+      "url": "https://u.expo.dev/puntoparku"
+    },
+    "locales": {
+      "es": "./assets/locales/es.json"
+    }
+  }
+}
