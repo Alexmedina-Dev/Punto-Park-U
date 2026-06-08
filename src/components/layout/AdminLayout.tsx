@@ -3,9 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 
 const ADMIN_MENU = [
-  { key: 'dashboard', label: 'Resumen', icon: 'dashboard', path: '/admin' },
   { key: 'reports', label: 'Reportes', icon: 'bar_chart', path: '/admin?tab=reports' },
-  { key: 'users', label: 'Usuarios', icon: 'people', path: '/admin?tab=users' },
   { key: 'tariffs', label: 'Tarifas', icon: 'attach_money', path: '/admin?tab=tariffs' },
   { key: 'schedule', label: 'Horarios', icon: 'schedule', path: '/admin?tab=schedule' },
   { key: 'map', label: 'Mapa', icon: 'map', path: '/admin?tab=map' },
@@ -24,6 +22,32 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex bg-bg text-on-bg">
+      {/* ── MOBILE/TABLET NOT SUPPORTED MESSAGE ── */}
+      <div className="fixed inset-0 z-[60] bg-bg flex flex-col items-center justify-center p-8 lg:hidden">
+        <div className="text-center max-w-md">
+          <span className="material-symbols-outlined text-6xl text-primary mb-4 block">computer</span>
+          <h2 className="text-2xl font-bold text-on-bg mb-3 font-headline">
+            Panel de Administración
+          </h2>
+          <p className="text-on-surface-var mb-6">
+            El panel de administración está optimizado para pantallas grandes. 
+            Para gestionar la información del parqueadero, por favor ingresa desde un computador o tablet grande.
+          </p>
+          <div className="space-y-3">
+            <p className="text-sm text-on-surface-var">
+              <span className="material-symbols-outlined text-base align-text-bottom">info</span>
+              {' '}Resolución mínima recomendada: 1024px de ancho
+            </p>
+            <Link 
+              to="/" 
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold transition-colors hover:bg-primary/90"
+            >
+              <span className="material-symbols-outlined">home</span>
+              Volver al Inicio
+            </Link>
+          </div>
+        </div>
+      </div>
       {/* ── SIDEBAR (desktop) ── */}
       <aside className="hidden lg:flex flex-col w-64 bg-surface-low border-r border-outline/10 fixed h-screen z-30">
         {/* Brand */}
