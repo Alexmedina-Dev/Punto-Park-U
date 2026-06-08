@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AuthLayout } from '@/components/layout/AuthLayout'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/hooks/useAuth'
@@ -7,13 +8,21 @@ import { useAuth } from '@/hooks/useAuth'
  * Admin login page — pixel-matched to vanilla Administrador/Admi.css.
  *
  * Same input styling as LoginPage. Brand color is blue (primary-container).
- * No register link. Min password: 6 chars (matches vanilla admin).
+ * No register link. Min password: 8 chars.
  */
 export function AdminLoginPage() {
+  const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({})
-  const { login, isLoading, error, clearError } = useAuth()
+  const { login, isLoading, error, clearError, isAdmin, isAuthenticated } = useAuth()
+
+  // Redirect if already logged in as admin
+  useEffect(() => {
+    if (isAuthenticated && isAdmin) {
+      navigate('/admin')
+    }
+  }, [isAuthenticated, isAdmin, navigate])
 
   const validate = () => {
     const newErrors: { username?: string; password?: string } = {}

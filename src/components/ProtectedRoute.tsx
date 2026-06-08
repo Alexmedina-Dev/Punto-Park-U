@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import type { UserRole } from '@/types'
 
@@ -16,9 +16,12 @@ export function ProtectedRoute({
   requireRoles: acceptedRoles,
 }: ProtectedRouteProps) {
   const { isAuthenticated, hasRole, userRole } = useAuthStore()
+  const location = useLocation()
+  const isAdminRoute = location.pathname.startsWith('/admin')
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    // Redirect to admin login for admin routes, regular login for others
+    return <Navigate to={isAdminRoute ? '/admin/login' : '/login'} replace />
   }
 
   // Legacy requireAdmin support
