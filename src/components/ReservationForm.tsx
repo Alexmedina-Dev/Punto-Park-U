@@ -146,7 +146,7 @@ export function ReservationForm({
                 `}
               >
                 <span className="material-symbols-outlined text-base">
-                  {v.type === 'moto' ? 'motorcycle' : v.type === 'bike' ? 'pedal_bike' : 'directions_car'}
+                  {v.type === 'moto' ? 'two_wheeler' : v.type === 'bike' ? 'pedal_bike' : 'directions_car'}
                 </span>
                 <div className="min-w-0">
                   <p className="font-medium truncate">{v.plate}</p>

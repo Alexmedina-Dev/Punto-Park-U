@@ -16,7 +16,7 @@ import { useVehicleStore } from '@/stores/vehicleStore'
 import { useReservationStore } from '@/stores/reservationStore'
 import { usePaymentStore } from '@/stores/paymentStore'
 import { get2FAStatusService, updateUserService } from '@/services/auth.service'
-import { formatDate, formatDateTime, getVehicleLabel, getStatusLabel } from '@/utils/formatters'
+import { formatDate, formatDateTime, formatCurrency, getVehicleLabel, getStatusLabel } from '@/utils/formatters'
 import { showErrorToast, showSuccessToast } from '@/utils/errorHandler'
 
 type UserTab = 'dashboard' | 'vehicles' | 'reservations' | 'sessions' | 'payments' | 'profile'
@@ -294,88 +294,118 @@ export function UserDashboard() {
            ═══════════════════════════════════════════════════════════ */}
         {activeTab === 'dashboard' && (
           <div>
+            {/* Welcome Card */}
+            <div className="bg-surface border border-outline/10 rounded-2xl p-5 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-primary font-headline">
+                    Hola, {user?.nombres || user?.username || 'Usuario'}
+                  </h2>
+                  <p className="text-on-surface-var mt-1">
+                    Bienvenido de vuelta a tu espacio.
+                  </p>
+                </div>
+                {/* Membership Badge */}
+                <div className="bg-surface-container rounded-xl p-3 border border-outline/10 min-w-[240px]">
+                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                    <span className="material-symbols-outlined text-base">workspace_premium</span>
+                    Cliente Frecuente
+                  </div>
+                  <div className="mt-2">
+                    <div className="h-1.5 bg-outline/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full" style={{ width: '80%' }} />
+                    </div>
+                    <p className="text-xs text-on-surface-var mt-1">24 visitas · 6 para siguiente nivel</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
               <Card variant="glass" className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-primary">
-                    directions_car
-                  </span>
+                  <span className="material-symbols-outlined text-primary text-2xl">directions_car</span>
                 </div>
                 <div className="text-2xl font-bold text-primary mb-1">
-                  {vehiclesLoading ? '...' : vehicles.length}
+                  {reservationsLoading ? '...' : (reservationStats?.completed ?? 0)}
                 </div>
-                <div className="text-sm text-on-surface-var">Vehículos</div>
+                <div className="text-sm text-on-surface-var">Visitas</div>
               </Card>
               <Card variant="glass" className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-primary">
-                    calendar_month
-                  </span>
+                  <span className="material-symbols-outlined text-primary text-2xl">credit_card</span>
                 </div>
                 <div className="text-2xl font-bold text-primary mb-1">
-                  {reservationsLoading ? '...' : activeReservations.length}
+                  {paymentsLoading ? '...' : formatCurrency(payments.reduce((sum, p) => sum + (p.amount || 0), 0))}
                 </div>
-                <div className="text-sm text-on-surface-var">Reservas Activas</div>
+                <div className="text-sm text-on-surface-var">Gastado</div>
               </Card>
               <Card variant="glass" className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-primary">
-                    payments
-                  </span>
+                  <span className="material-symbols-outlined text-primary text-2xl">emoji_events</span>
                 </div>
-                <div className="text-2xl font-bold text-primary mb-1">
-                  {paymentsLoading ? '...' : payments.length}
-                </div>
-                <div className="text-sm text-on-surface-var">Pagos Registrados</div>
+                <div className="text-2xl font-bold text-primary mb-1">10%</div>
+                <div className="text-sm text-on-surface-var">Descuento</div>
               </Card>
             </div>
 
-            {/* Recent Reservations */}
-            <Card variant="glass" title="Reservas Recientes">
-              {reservations.length === 0 ? (
-                <div className="text-center py-6 text-on-surface-var text-sm">
-                  <span className="material-symbols-outlined text-3xl mb-2 block">
-                    calendar_month
-                  </span>
-                  No hay reservas recientes
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {reservations.slice(0, 5).map((r) => (
+            {/* Recent History */}
+            <div className="bg-surface border border-outline/10 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-primary font-headline flex items-center gap-2">
+                  <span className="material-symbols-outlined">history</span>
+                  Historial Reciente
+                </h3>
+                <button
+                  className="text-sm text-primary hover:underline"
+                  onClick={() => navigate('/dashboard?tab=payments')}
+                >
+                  Ver todo
+                </button>
+              </div>
+              <div className="space-y-2">
+                {payments.slice(0, 5).map((p) => {
+                  const vehicle = vehicles.find((v) => v.id === p.vehicleId)
+                  return (
                     <div
-                      key={r.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-surface-high/50"
+                      key={p.id}
+                      className="flex items-center justify-between p-3 rounded-xl bg-surface-high/50"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-primary text-lg">calendar_month</span>
+                        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/15">
+                          <span className="material-symbols-outlined text-primary text-sm">
+                            {vehicle?.type === 'moto' ? 'two_wheeler' : vehicle?.type === 'bike' ? 'pedal_bike' : 'directions_car'}
+                          </span>
+                        </div>
                         <div>
                           <p className="text-sm font-medium text-on-bg">
-                            {r.date ? formatDate(r.date) : 'Fecha no disponible'}
+                            {vehicle?.plate || '—'}
                           </p>
                           <p className="text-xs text-on-surface-var">
-                            {r.startTime || r.entryTime ? `${r.startTime || r.entryTime?.slice(11, 16)}` : ''}
+                            {p.date ? formatDate(p.date) : (p.createdAt ? formatDate(p.createdAt) : '')}
                           </p>
                         </div>
                       </div>
-                      <Badge
-                        variant={
-                          r.status === 'active'
-                            ? 'success'
-                            : r.status === 'cancelled'
-                              ? 'error'
-                              : r.status === 'completed'
-                                ? 'info'
-                                : 'warning'
-                        }
-                      >
-                        {getStatusLabel(r.status)}
-                      </Badge>
+                      <div className="text-right">
+                        <div className="text-sm font-bold text-on-bg">
+                          {formatCurrency(p.amount)}
+                        </div>
+                        <div className={`text-xs font-medium ${p.status === 'completed' ? 'text-green-400' : 'text-yellow-400'}`}>
+                          {p.status === 'completed' ? 'PAGADO' : (getStatusLabel(p.status) || p.status).toUpperCase()}
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </Card>
+                  )
+                })}
+                {payments.length === 0 && (
+                  <div className="text-center py-6 text-on-surface-var text-sm">
+                    <span className="material-symbols-outlined text-3xl mb-2 block">history</span>
+                    No hay historial reciente
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -418,7 +448,7 @@ export function UserDashboard() {
                       <div className="flex items-start gap-3 min-w-0 flex-1">
                         <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/15 shrink-0">
                           <span className="material-symbols-outlined text-primary text-lg">
-                            {v.type === 'moto' ? 'motorcycle' : v.type === 'bike' ? 'pedal_bike' : 'directions_car'}
+                            {v.type === 'moto' ? 'two_wheeler' : v.type === 'bike' ? 'pedal_bike' : 'directions_car'}
                           </span>
                         </div>
                         <div className="min-w-0">

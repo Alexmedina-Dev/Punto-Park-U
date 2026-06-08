@@ -1,4 +1,4 @@
-// ── Currency Formatters ──
+﻿// ── Currency Formatters ──
 
 /**
  * Format a number as Colombian Pesos (COP).
@@ -93,14 +93,14 @@ export function formatPercentage(value: number): string {
 // ── Vehicle Type Formatters ──
 
 const VEHICLE_LABELS: Record<string, string> = {
-  car: 'Automóvil',
-  moto: 'Motocicleta',
+  car: 'Vehículo',
+  moto: 'Moto',
   bike: 'Bicicleta',
 }
 
 /**
  * Get human-readable vehicle type label.
- * Example: "car" → "Automóvil"
+ * Example: "car" → "Vehículo"
  */
 export function getVehicleLabel(type: string): string {
   return VEHICLE_LABELS[type] || type
