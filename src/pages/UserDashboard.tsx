@@ -451,10 +451,10 @@ export function UserDashboard() {
                             {v.type === 'moto' ? 'two_wheeler' : v.type === 'bike' ? 'pedal_bike' : 'directions_car'}
                           </span>
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 overflow-hidden">
                           <p className="font-bold text-on-bg text-lg">{v.plate}</p>
-                          <p className="text-sm text-on-surface-var">
-                            {getVehicleLabel(v.type)}
+                          <p className="text-sm text-on-surface-var whitespace-normal">
+                            <span className="font-medium text-on-bg">{getVehicleLabel(v.type)}</span>
                             {v.brand ? ` · ${v.brand}` : ''}
                             {v.model ? ` ${v.model}` : ''}
                           </p>

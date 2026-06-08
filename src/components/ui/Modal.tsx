@@ -46,7 +46,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
 
       {/* Modal Content — bottom-sheet on mobile, centered on desktop */}
       <div
-        className="relative w-full max-w-md bg-surface-container border border-outline/20 rounded-t-2xl md:rounded-lg shadow-brutal animate-in fade-in zoom-in-95 md:zoom-in-100 max-h-[90vh] overflow-y-auto
+        className="relative w-full max-w-md md:max-w-2xl lg:max-w-3xl bg-surface-container border border-outline/20 rounded-t-2xl md:rounded-lg shadow-brutal animate-in fade-in zoom-in-95 md:zoom-in-100 max-h-[90vh] overflow-y-auto
                    fixed bottom-0 left-0 right-0 md:static md:bottom-auto md:left-auto md:right-auto"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
