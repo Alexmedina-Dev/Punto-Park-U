@@ -48,3 +48,5 @@ tests/screenshots/
 *.key
 *.mobileprovision
 *.orig.*
+
+.vercel

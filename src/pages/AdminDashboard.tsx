@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
 import { AdminLayout } from '@/components/layout'
 import { Card, Button, Badge } from '@/components/ui'
 import { KPICard, OccupancyChart, VehiclesTable, AlertsPanel, ActivityFeed, HistoryLog, TariffEditor, ScheduleEditor, ParkingMap, ReportGenerator, AnalyticsPanel, PricingPanel, HardwarePanel } from '@/components/admin'
@@ -25,6 +26,13 @@ export function AdminDashboard() {
     fetchParkedVehicles,
   } = useAdminStore()
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard')
+  
+  // Read tab from URL query params
+  const location = useLocation()
+  useEffect(() => {
+    const tab = new URLSearchParams(location.search).get('tab') as AdminTab
+    if (tab) setActiveTab(tab)
+  }, [location.search])
 
   const fetchAll = useCallback(() => {
     fetchDashboardStats()
@@ -60,19 +68,6 @@ export function AdminDashboard() {
     }
   }, [fetchAll])
 
-  const tabs: { key: AdminTab; label: string; icon: string }[] = [
-    { key: 'dashboard', label: 'Resumen', icon: 'dashboard' },
-    { key: 'reports', label: 'Reportes', icon: 'bar_chart' },
-    { key: 'users', label: 'Usuarios', icon: 'people' },
-    { key: 'tariffs', label: 'Tarifas', icon: 'attach_money' },
-    { key: 'schedule', label: 'Horarios', icon: 'schedule' },
-    { key: 'map', label: 'Mapa', icon: 'map' },
-    { key: 'analytics', label: 'Analítica', icon: 'insights' },
-    { key: 'pricing', label: 'Precios', icon: 'trending_up' },
-    { key: 'hardware', label: 'Hardware', icon: 'memory' },
-    { key: 'activity', label: 'Actividad', icon: 'history' },
-  ]
-
   const stats = dashboardStats
 
   return (
@@ -95,31 +90,6 @@ export function AdminDashboard() {
               Cerrar Sesión
             </Button>
           </div>
-        </div>
-
-        {/* Navigation Tabs — with scroll gradient indicator */}
-        <div className="relative mb-8" data-testid="admin-tabs">
-          <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-none">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`
-                  flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold whitespace-nowrap transition-colors touch-target
-                  ${
-                    activeTab === tab.key
-                      ? 'bg-primary text-on-primary'
-                      : 'text-on-surface-var hover:text-on-bg hover:bg-surface-container'
-                  }
-                `}
-              >
-                <span className="material-symbols-outlined text-base">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
-          </div>
-          {/* Fade edges to indicate scroll */}
-          <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-bg to-transparent pointer-events-none md:hidden" />
         </div>
 
         {/* ──────────────── DASHBOARD TAB ──────────────── */}

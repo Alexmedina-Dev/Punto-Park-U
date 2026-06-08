@@ -3,12 +3,16 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 
 const ADMIN_MENU = [
-  { key: 'dashboard', label: 'Dashboard', icon: 'grid_view', path: '/admin' },
-  { key: 'map', label: 'Mapa en Vivo', icon: 'map', path: '/admin?tab=map' },
-  { key: 'tariffs', label: 'Tarifas y Horarios', icon: 'tune', path: '/admin?tab=tariffs' },
-  { key: 'reports', label: 'Informes', icon: 'download', path: '/admin?tab=reports' },
-  { key: 'analytics', label: 'Monitoreo', icon: 'monitoring', path: '/admin?tab=analytics' },
-  { key: 'hardware', label: 'Estado del Sistema', icon: 'monitor_heart', path: '/admin?tab=hardware' },
+  { key: 'dashboard', label: 'Resumen', icon: 'dashboard', path: '/admin' },
+  { key: 'reports', label: 'Reportes', icon: 'bar_chart', path: '/admin?tab=reports' },
+  { key: 'users', label: 'Usuarios', icon: 'people', path: '/admin?tab=users' },
+  { key: 'tariffs', label: 'Tarifas', icon: 'attach_money', path: '/admin?tab=tariffs' },
+  { key: 'schedule', label: 'Horarios', icon: 'schedule', path: '/admin?tab=schedule' },
+  { key: 'map', label: 'Mapa', icon: 'map', path: '/admin?tab=map' },
+  { key: 'analytics', label: 'Analítica', icon: 'insights', path: '/admin?tab=analytics' },
+  { key: 'pricing', label: 'Precios', icon: 'trending_up', path: '/admin?tab=pricing' },
+  { key: 'hardware', label: 'Hardware', icon: 'memory', path: '/admin?tab=hardware' },
+  { key: 'activity', label: 'Actividad', icon: 'history', path: '/admin?tab=activity' },
 ]
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
