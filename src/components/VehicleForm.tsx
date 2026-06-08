@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Input, Button } from '@/components/ui'
 
 interface VehicleFormData {
@@ -17,10 +17,9 @@ interface VehicleFormProps {
 }
 
 const VEHICLE_TYPES = [
-  { value: 'car', label: 'Automóvil' },
-  { value: 'moto', label: 'Motocicleta' },
-  { value: 'suv', label: 'Camioneta' },
-  { value: 'bike', label: 'Bicicleta' },
+  { value: 'car', label: 'Vehículo', icon: 'directions_car' },
+  { value: 'moto', label: 'Moto', icon: 'two_wheeler' },
+  { value: 'bike', label: 'Bicicleta', icon: 'pedal_bike' },
 ]
 
 const INITIAL_FORM: VehicleFormData = {
@@ -113,17 +112,17 @@ export function VehicleForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-on-surface-var mb-1">
+        <label className="block text-sm font-medium text-on-surface-var mb-2">
           Tipo de Vehículo
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {VEHICLE_TYPES.map((vt) => (
             <button
               key={vt.value}
               type="button"
               onClick={() => handleChange('type', vt.value)}
               className={`
-                px-3 py-2 rounded-lg text-sm font-medium border transition-colors
+                flex flex-col items-center gap-1 px-3 py-3 rounded-xl text-sm font-medium border transition-colors
                 ${
                   form.type === vt.value
                     ? 'bg-primary text-on-primary border-primary'
@@ -131,6 +130,7 @@ export function VehicleForm({
                 }
               `}
             >
+              <span className="material-symbols-outlined text-xl">{vt.icon}</span>
               {vt.label}
             </button>
           ))}

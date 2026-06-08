@@ -3,16 +3,16 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 
 const USER_MENU = [
-  { key: 'dashboard', label: 'Resumen', icon: 'dashboard', path: '/dashboard' },
+  { key: 'dashboard', label: 'Inicio', icon: 'home', path: '/dashboard' },
   { key: 'vehicles', label: 'Vehículos', icon: 'directions_car', path: '/dashboard?tab=vehicles' },
-  { key: 'reservations', label: 'Reservas', icon: 'calendar_month', path: '/dashboard?tab=reservations' },
+  { key: 'reservations', label: 'Reservas', icon: 'event_seat', path: '/dashboard?tab=reservations' },
   { key: 'payments', label: 'Pagos', icon: 'payments', path: '/dashboard?tab=payments' },
   { key: 'profile', label: 'Perfil', icon: 'person', path: '/dashboard?tab=profile' },
 ]
 
 export function UserLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const currentTab = new URLSearchParams(location.search).get('tab') || 'dashboard'
@@ -32,6 +32,25 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
             <span className="font-headline font-bold text-lg text-primary">Punto Park U</span>
           </Link>
         </div>
+
+        {/* User Info */}
+        {user && (
+          <div className="p-4 border-b border-outline/10">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/15 text-primary">
+                <span className="material-symbols-outlined">person</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-on-bg truncate">
+                  {user.nombres || user.username}
+                </p>
+                <p className="text-xs text-on-surface-var truncate">
+                  Cliente frecuente
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3">
@@ -80,6 +99,23 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
+            {user && (
+              <div className="p-4 border-b border-outline/10">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/15 text-primary">
+                    <span className="material-symbols-outlined">person</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-on-bg truncate">
+                      {user.nombres || user.username}
+                    </p>
+                    <p className="text-xs text-on-surface-var truncate">
+                      Cliente frecuente
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             <nav className="flex-1 py-4 px-3">
               <ul className="space-y-1">
                 {USER_MENU.map((item) => (
@@ -127,10 +163,26 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Content */}
-        <main className="p-4 lg:p-8">
+        <main className="p-4 lg:p-8 pb-20 lg:pb-8">
           {children}
         </main>
       </div>
+
+      {/* ── MOBILE BOTTOM NAV ── */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-surface-low border-t border-outline/10 z-40 lg:hidden flex justify-around pb-safe">
+        {USER_MENU.map((item) => (
+          <Link
+            key={item.key}
+            to={item.path}
+            className={`flex flex-col items-center py-2 px-3 text-xs ${
+              currentTab === item.key ? 'text-primary' : 'text-on-surface-var'
+            }`}
+          >
+            <span className="material-symbols-outlined text-xl">{item.icon}</span>
+            <span>{item.label}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   )
 }
