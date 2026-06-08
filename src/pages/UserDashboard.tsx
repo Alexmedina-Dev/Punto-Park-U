@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Layout } from '@/components/layout'
+import { UserLayout } from '@/components/layout'
 import { Card, Button, Badge, Modal, Input } from '@/components/ui'
 import { VehicleForm } from '@/components/VehicleForm'
 import { ReservationForm } from '@/components/ReservationForm'
@@ -260,8 +260,8 @@ export function UserDashboard() {
   const activeReservations = reservations.filter((r) => r.status === 'active' || r.status === 'pending')
 
   return (
-    <Layout>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <UserLayout>
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -923,7 +923,7 @@ export function UserDashboard() {
           </Modal>
         )}
       </div>
-    </Layout>
+    </UserLayout>
   )
 }
 
