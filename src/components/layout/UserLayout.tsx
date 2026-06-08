@@ -4,9 +4,10 @@ import { useAuth } from '@/hooks/useAuth'
 
 const USER_MENU = [
   { key: 'dashboard', label: 'Inicio', icon: 'home', path: '/dashboard' },
-  { key: 'vehicles', label: 'Vehículos', icon: 'directions_car', path: '/dashboard?tab=vehicles' },
+  { key: 'vehicles', label: 'Veh�culos', icon: 'directions_car', path: '/dashboard?tab=vehicles' },
   { key: 'reservations', label: 'Reservas', icon: 'event_seat', path: '/dashboard?tab=reservations' },
   { key: 'payments', label: 'Pagos', icon: 'payments', path: '/dashboard?tab=payments' },
+  { key: 'sessions', label: 'Sesiones', icon: 'devices', path: '/dashboard?tab=sessions' },
   { key: 'profile', label: 'Perfil', icon: 'person', path: '/dashboard?tab=profile' },
 ]
 
@@ -19,7 +20,7 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex bg-bg text-on-bg">
-      {/* ── SIDEBAR (desktop) ── */}
+      {/* -- SIDEBAR (desktop) -- */}
       <aside className="hidden lg:flex flex-col w-64 bg-surface-low border-r border-outline/10 fixed h-screen z-30">
         {/* Brand */}
         <div className="p-6 border-b border-outline/10">
@@ -80,12 +81,12 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors"
           >
             <span className="material-symbols-outlined">logout</span>
-            <span className="text-sm">Cerrar Sesión</span>
+            <span className="text-sm">Cerrar Sesi�n</span>
           </button>
         </div>
       </aside>
 
-      {/* ── MOBILE SIDEBAR OVERLAY ── */}
+      {/* -- MOBILE SIDEBAR OVERLAY -- */}
       {sidebarOpen && (
         <>
           <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -142,14 +143,14 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
                 className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors"
               >
                 <span className="material-symbols-outlined">logout</span>
-                <span className="text-sm">Cerrar Sesión</span>
+                <span className="text-sm">Cerrar Sesi�n</span>
               </button>
             </div>
           </aside>
         </>
       )}
 
-      {/* ── MAIN CONTENT ── */}
+      {/* -- MAIN CONTENT -- */}
       <div className="flex-1 lg:ml-64 min-h-screen">
         {/* Topbar */}
         <header className="sticky top-0 z-20 bg-bg/80 backdrop-blur-md border-b border-outline/10 px-4 lg:px-8 py-4 flex items-center gap-4">
@@ -168,7 +169,7 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* ── MOBILE BOTTOM NAV ── */}
+      {/* -- MOBILE BOTTOM NAV -- */}
       <nav className="fixed bottom-0 left-0 right-0 bg-surface-low border-t border-outline/10 z-40 lg:hidden flex justify-around pb-safe">
         {USER_MENU.map((item) => (
           <Link
