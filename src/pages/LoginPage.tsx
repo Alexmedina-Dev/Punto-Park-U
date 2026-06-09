@@ -50,6 +50,14 @@ export function LoginPage() {
         </div>
       )}
 
+      {/* User credentials hint */}
+      <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 text-center">
+        <p className="text-xs text-on-surface-var">
+          <span className="material-symbols-outlined text-sm align-text-bottom">person</span>
+          {' '}Cuenta demo: <span className="font-semibold text-primary">juan / juan1234</span>
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-6">
           {/* ── Username field ── */}

@@ -55,6 +55,14 @@ export function AdminLoginPage() {
         </div>
       )}
 
+      {/* Admin credentials hint */}
+      <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 text-center">
+        <p className="text-xs text-on-surface-var">
+          <span className="material-symbols-outlined text-sm align-text-bottom">admin_panel_settings</span>
+          {' '}Acceso administrativo: <span className="font-semibold text-primary">admin / admin1234</span>
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-6">
           {/* ── Username field ── */}
