@@ -25,15 +25,14 @@ const defaultAdmin = {
 };
 
 const defaultUser = {
-  nombres: 'Juan',
-  apellidos: 'Pérez',
+  name: 'Juan Pérez',
   email: 'juan@puntoparku.com',
   username: 'juan',
   cedula: '1234567890',
   password: 'juan1234',
   role: 'user',
   phone: '3101234567',
-  isEmailVerified: true,
+  isVerified: true,
 };
 
 const defaultTariffs = [
