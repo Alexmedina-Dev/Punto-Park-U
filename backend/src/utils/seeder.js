@@ -24,6 +24,18 @@ const defaultAdmin = {
   phone: '3000000000',
 };
 
+const defaultUser = {
+  nombres: 'Juan',
+  apellidos: 'Pérez',
+  email: 'juan@puntoparku.com',
+  username: 'juan',
+  cedula: '1234567890',
+  password: 'juan1234',
+  role: 'user',
+  phone: '3101234567',
+  isEmailVerified: true,
+};
+
 const defaultTariffs = [
   { vehicleType: 'car',  hourlyRate: 3000,  dailyRate: 18000, monthlyRate: 180000 },
   { vehicleType: 'moto', hourlyRate: 1500,  dailyRate: 9000,  monthlyRate: 90000 },
@@ -52,6 +64,15 @@ const seed = async () => {
     } else {
       await User.create(defaultAdmin);
       console.log('[seeder] Admin user created (admin@puntoparku.com / admin1234)');
+    }
+
+    // Default user
+    const existingUser = await User.findOne({ email: defaultUser.email });
+    if (existingUser) {
+      console.log('[seeder] Default user already exists, skipping');
+    } else {
+      await User.create(defaultUser);
+      console.log('[seeder] Default user created (juan@puntoparku.com / juan1234)');
     }
 
     // Tariffs
@@ -89,8 +110,8 @@ const down = async () => {
     await mongoose.connect(config.mongodbUri);
     console.log('[seeder] Connected to MongoDB');
 
-    await User.deleteMany({ email: defaultAdmin.email });
-    console.log('[seeder] Admin user removed');
+    await User.deleteMany({ email: { $in: [defaultAdmin.email, defaultUser.email] } });
+    console.log('[seeder] Admin and default user removed');
 
     await Tariff.deleteMany({});
     console.log('[seeder] All tariffs removed');
