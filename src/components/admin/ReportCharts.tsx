@@ -249,12 +249,12 @@ export function ReportCharts({
 
         {/* Chart 2: Occupancy by type (doughnut) */}
         <Card variant="glass" title="Ocupación por Tipo">
-          <div className="flex items-center gap-6" style={{ height: '260px' }}>
-            <div className="w-1/2 h-full">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6" style={{ height: '260px' }}>
+            <div className="w-full sm:w-1/2 h-full min-h-[180px]">
               <Doughnut data={occupancyChartData} options={occupancyChartOptions} />
             </div>
             {/* Custom legend */}
-            <div className="w-1/2 space-y-3">
+            <div className="w-full sm:w-1/2 space-y-3">
               {occupancyByType.map((o) => (
                 <div key={o.type} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

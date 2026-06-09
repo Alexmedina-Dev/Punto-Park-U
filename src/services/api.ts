@@ -16,7 +16,11 @@ export const api = initApiClient({
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT,
   getToken: () => localStorage.getItem(STORAGE_KEYS.TOKEN),
+  getRefreshToken: () => localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN),
   onAuthFailure: () => {
+    // If token is already gone, user logged out intentionally — skip redirect
+    if (!localStorage.getItem(STORAGE_KEYS.TOKEN)) return
+
     // Clear auth state on token refresh failure
     localStorage.removeItem(STORAGE_KEYS.TOKEN)
     localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
@@ -24,7 +28,7 @@ export const api = initApiClient({
 
     const currentPath = window.location.pathname
     if (currentPath !== '/login' && currentPath !== '/register') {
-      window.location.href = '/login'
+      window.location.href = '/'
     }
   },
   debug: import.meta.env.DEV,

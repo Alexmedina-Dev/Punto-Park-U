@@ -122,6 +122,7 @@ function createApiClient(config: ApiConfig): AxiosInstance {
       // Skip retry for login/register requests
       const isAuthRequest =
         originalRequest.url?.includes('/auth/login') ||
+        originalRequest.url?.includes('/auth/admin/login') ||
         originalRequest.url?.includes('/auth/register')
 
       // Attempt token refresh on 401 (skip for auth requests)
@@ -140,8 +141,11 @@ function createApiClient(config: ApiConfig): AxiosInstance {
         isRefreshing = true
 
         try {
+          const refreshToken = config.getRefreshToken
+            ? await config.getRefreshToken()
+            : await config.getToken()
           const { data } = await axios.post(`${config.baseURL}/auth/refresh`, {
-            refreshToken: await config.getToken(),
+            refreshToken,
           })
           const newToken = data.token || data.accessToken
 

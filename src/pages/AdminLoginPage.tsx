@@ -15,7 +15,7 @@ export function AdminLoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({})
-  const { login, isLoading, error, clearError, isAdmin, isAuthenticated } = useAuth()
+  const { adminLogin, isLoading, error, clearError, isAdmin, isAuthenticated } = useAuth()
 
   // Redirect if already logged in as admin
   useEffect(() => {
@@ -40,7 +40,7 @@ export function AdminLoginPage() {
     e.preventDefault()
     clearError()
     if (!validate()) return
-    await login(username, password)
+    await adminLogin(username, password)
   }
 
   return (

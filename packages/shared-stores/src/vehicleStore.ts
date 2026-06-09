@@ -52,9 +52,7 @@ export const useVehicleStore = create<VehicleState>((set) => ({
   createVehicle: async (vehicleData) => {
     set({ isLoading: true, error: null })
     try {
-      console.log('[VehicleStore] Enviando createVehicle:', vehicleData)
       const vehicle = await withRetry(() => createVehicleService(vehicleData))
-      console.log('[VehicleStore] Vehículo creado:', vehicle)
       set((state) => ({
         vehicles: [vehicle, ...state.vehicles],
         isLoading: false,

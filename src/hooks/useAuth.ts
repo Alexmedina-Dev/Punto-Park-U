@@ -24,9 +24,22 @@ export function useAuth() {
 
       if (result) {
         showSuccessToast('¡Bienvenido!')
-        // Redirect admin users to /admin, others to /dashboard
-        const isAdmin = store.isAdmin || store.userRole === 'admin'
+        // Read fresh state directly from store (closure snapshot is stale after login)
+        const freshState = useAuthStore.getState()
+        const isAdmin = freshState.isAdmin || freshState.userRole === 'admin'
         navigate(isAdmin ? ROUTES.ADMIN : ROUTES.DASHBOARD)
+      }
+      return result
+    },
+    [store, navigate]
+  )
+
+  const adminLogin = useCallback(
+    async (username: string, password: string) => {
+      const result = await store.adminLogin({ username, password })
+      if (result) {
+        showSuccessToast('¡Bienvenido, Admin!')
+        navigate(ROUTES.ADMIN)
       }
       return result
     },
@@ -72,6 +85,7 @@ export function useAuth() {
     requiresTwoFactor: store.requiresTwoFactor,
     tempToken: store.tempToken,
     login,
+    adminLogin,
     register,
     logout,
     clearError: store.clearError,

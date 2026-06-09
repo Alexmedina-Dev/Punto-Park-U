@@ -179,6 +179,12 @@ const login = async (req, res, next) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Block admin from logging in via the regular user login endpoint
+    // Admin must use /api/auth/admin/login
+    if (user.role === 'admin') {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
     // Check email verification (strict mode)
     if (config.strictEmailVerification && !user.isVerified) {
       return res.status(403).json({
@@ -204,6 +210,60 @@ const login = async (req, res, next) => {
     const refreshToken = generateRefreshToken(user);
 
     // Create session record
+    await createSession(req, user._id, accessToken, refreshToken);
+
+    res.status(200).json({
+      user: formatUserResponse(user),
+      token: accessToken,
+      accessToken,
+      refreshToken,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── POST /api/auth/admin/login ────────────────────────────────────
+
+const adminLogin = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const details = errors.array().map((e) => ({
+        field: e.path,
+        message: e.msg,
+      }));
+      return res.status(400).json({ error: 'Validation error', details });
+    }
+
+    const { email, username, password } = req.body;
+
+    const user = await User.findOne({
+      $or: [
+        ...(email ? [{ email: email.toLowerCase() }] : []),
+        ...(username ? [{ username }] : []),
+      ],
+    });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Only admin can use this endpoint
+    if (user.role !== 'admin') {
+      return res.status(403).json({
+        error: 'Esta ruta es exclusiva para administradores',
+      });
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
     await createSession(req, user._id, accessToken, refreshToken);
 
     res.status(200).json({
@@ -503,6 +563,7 @@ const resetPassword = async (req, res, next) => {
 module.exports = {
   register,
   login,
+  adminLogin,
   me,
   refresh,
   logout,

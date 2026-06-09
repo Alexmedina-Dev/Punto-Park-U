@@ -58,6 +58,17 @@ export async function loginService(
   return normalizeAuthResponse(data)
 }
 
+export async function adminLoginService(
+  credentials: LoginCredentials
+): Promise<AuthResponse> {
+  const api = getApiClient()
+  const { data } = await api.post('/auth/admin/login', {
+    username: credentials.username,
+    password: credentials.password,
+  })
+  return normalizeAuthResponse(data)
+}
+
 export async function registerService(
   registerData: RegisterData
 ): Promise<{ user: User; token?: string; accessToken?: string; refreshToken?: string }> {

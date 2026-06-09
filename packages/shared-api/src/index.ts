@@ -9,6 +9,7 @@ export { parseError, withRetry } from './errorHandler.js'
 // Service re-exports
 export {
   loginService,
+  adminLoginService,
   registerService,
   logoutService,
   forgotPasswordService,

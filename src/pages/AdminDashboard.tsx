@@ -74,9 +74,9 @@ export function AdminDashboard() {
     <AdminLayout>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-primary font-headline">
+            <h1 className="text-2xl sm:text-3xl font-bold text-primary font-headline">
               Panel de Administración
             </h1>
             <p className="text-on-surface-var mt-1">
@@ -87,7 +87,7 @@ export function AdminDashboard() {
             <Badge variant="info">Admin</Badge>
             <Button variant="ghost" onClick={logout} loading={authLoading}>
               <span className="material-symbols-outlined text-base">logout</span>
-              Cerrar Sesión
+              <span className="hidden sm:inline">Cerrar Sesión</span>
             </Button>
           </div>
         </div>

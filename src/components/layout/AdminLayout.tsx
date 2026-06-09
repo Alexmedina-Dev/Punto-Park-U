@@ -22,21 +22,21 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex bg-bg text-on-bg">
-      {/* ── MOBILE/TABLET NOT SUPPORTED MESSAGE ── */}
-      <div className="fixed inset-0 z-[60] bg-bg flex flex-col items-center justify-center p-8 lg:hidden">
+      {/* ── MOBILE NOT SUPPORTED MESSAGE (only very small screens) ── */}
+      <div className="fixed inset-0 z-[60] bg-bg flex flex-col items-center justify-center p-8 sm:hidden">
         <div className="text-center max-w-md">
           <span className="material-symbols-outlined text-6xl text-primary mb-4 block">computer</span>
           <h2 className="text-2xl font-bold text-on-bg mb-3 font-headline">
             Panel de Administración
           </h2>
           <p className="text-on-surface-var mb-6">
-            El panel de administración está optimizado para pantallas grandes. 
-            Para gestionar la información del parqueadero, por favor ingresa desde un computador o tablet grande.
+            El panel de administración está optimizado para pantallas de al menos 640px de ancho. 
+            Para gestionar la información del parqueadero, por favor usa una tablet o computador.
           </p>
           <div className="space-y-3">
             <p className="text-sm text-on-surface-var">
               <span className="material-symbols-outlined text-base align-text-bottom">info</span>
-              {' '}Resolución mínima recomendada: 1024px de ancho
+              {' '}Resolución mínima recomendada: 640px de ancho
             </p>
             <Link 
               to="/" 

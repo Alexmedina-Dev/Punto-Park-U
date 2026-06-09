@@ -191,17 +191,12 @@ export function UserDashboard() {
     model: string
     color: string
   }) => {
-    console.log('[VehicleSubmit] Iniciando registro:', data)
     if (editingVehicle) {
-      console.log('[VehicleSubmit] Editando vehículo:', editingVehicle.id)
       const ok = await updateVehicle(editingVehicle.id, data)
-      console.log('[VehicleSubmit] updateVehicle resultado:', ok)
       if (ok) setShowVehicleModal(false)
       return ok
     }
-    console.log('[VehicleSubmit] Creando vehículo nuevo...')
     const ok = await createVehicle(data)
-    console.log('[VehicleSubmit] createVehicle resultado:', ok, 'vehicleError:', vehicleError)
     if (ok) setShowVehicleModal(false)
     return ok
   }

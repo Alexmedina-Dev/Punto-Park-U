@@ -10,6 +10,7 @@ import type {
 } from '@punto-park-u/shared-types'
 import {
   loginService,
+  adminLoginService,
   registerService,
   logoutService,
   forgotPasswordService,
@@ -53,6 +54,7 @@ export interface AuthState {
 
   // Actions
   login: (credentials: LoginCredentials) => Promise<boolean | LoginResponse2FA>
+  adminLogin: (credentials: LoginCredentials) => Promise<boolean>
   logout: () => void
   register: (data: RegisterData) => Promise<boolean | { needsVerification: boolean; email: string }>
   setUser: (user: User | null) => void
@@ -152,6 +154,47 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         errorMsg = error.message
       }
       set({ error: errorMsg, isLoading: false, requiresTwoFactor: false, tempToken: null })
+      return false
+    }
+  },
+
+  adminLogin: async (credentials) => {
+    set({ isLoading: true, error: null })
+    try {
+      const response = await withRetry(() => adminLoginService(credentials))
+      const { user, token } = response
+
+      const storage = getStorage()
+      if (token) {
+        await Promise.resolve(storage.setItem(STORAGE_KEYS.TOKEN, token))
+      }
+      if (response.refreshToken) {
+        await Promise.resolve(storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken))
+      }
+      if (user) {
+        await Promise.resolve(storage.setItem(STORAGE_KEYS.USER, JSON.stringify(user)))
+      }
+
+      const role = getRole(user)
+      set({
+        user,
+        token: token || null,
+        isAuthenticated: true,
+        isAdmin: role === 'admin',
+        isOperator: role === 'admin' || role === 'operator',
+        isUser: role !== 'guest',
+        isGuest: role === 'guest',
+        userRole: role,
+        isLoading: false,
+        error: null,
+      })
+      return true
+    } catch (error) {
+      let errorMsg = 'Usuario o contraseña incorrectos'
+      if (error instanceof Error) {
+        errorMsg = error.message
+      }
+      set({ error: errorMsg, isLoading: false })
       return false
     }
   },

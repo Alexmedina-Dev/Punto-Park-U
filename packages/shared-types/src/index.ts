@@ -494,6 +494,7 @@ export interface ApiConfig {
   baseURL: string
   timeout: number
   getToken: () => Promise<string | null> | string | null
+  getRefreshToken?: () => Promise<string | null> | string | null
   onAuthFailure?: () => void
   debug?: boolean
 }
