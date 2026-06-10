@@ -1,4 +1,6 @@
 {
+  "buildCommand": "npm run build:packages && npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/(.*)",
