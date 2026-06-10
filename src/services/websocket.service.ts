@@ -4,7 +4,7 @@
 // ╚══════════════════════════════════════════════════════════════════════╝
 
 import { WebSocketService as BaseWebSocketService } from '@punto-park-u/shared-api'
-import { STORAGE_KEYS } from '@/utils/constants'
+import { STORAGE_KEYS, API_BASE_URL } from '@/utils/constants'
 
 export type {
   WsEventCallback,
@@ -17,6 +17,7 @@ export type { WsSpotUpdate, WsAlertEvent, WsActivityEvent } from '@punto-park-u/
  * Uses localStorage for JWT token (browser-compatible).
  */
 const wsService = new BaseWebSocketService({
+  serverUrl: API_BASE_URL,
   getToken: () => localStorage.getItem(STORAGE_KEYS.TOKEN),
 })
 
