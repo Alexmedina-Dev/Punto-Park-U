@@ -75,24 +75,24 @@ const register = async (req, res, next) => {
       return res.status(400).json({ error: 'Validation error', details: [{ field: 'email', message: 'Email is required' }] });
     }
 
-    // Check duplicate email
-    const existingEmail = await User.findOne({ email });
-    if (existingEmail) {
-      return res.status(409).json({ error: 'Email already registered' });
-    }
-
-    // Check duplicate username
+    // Check duplicate username first (more user-friendly error)
     if (username) {
       const existingUsername = await User.findOne({ username });
       if (existingUsername) {
-        return res.status(409).json({ error: 'Username already taken' });
+        return res.status(409).json({ error: 'El usuario ya está registrado. Intentá iniciar sesión.' });
       }
+    }
+
+    // Check duplicate email
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(409).json({ error: 'El email ya está registrado. Intentá iniciar sesión.' });
     }
 
     // Check duplicate cedula
     const existingCedula = await User.findOne({ cedula });
     if (existingCedula) {
-      return res.status(409).json({ error: 'Cédula already registered' });
+      return res.status(409).json({ error: 'La cédula ya está registrada. Intentá iniciar sesión.' });
     }
 
     // Create user
