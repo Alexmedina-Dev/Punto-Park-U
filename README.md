@@ -1,5 +1,9 @@
 # Punto Park U 🅿️
 
+![Punto Park U Logo](/public/images/Logo.png)
+
+🚀 **Aplicación en vivo:** [https://punto-park-u.vercel.app](https://punto-park-u.vercel.app)
+
 Aplicativo Web para la gestión de parqueadero. Creado para la visualización de información de los usuarios de "Punto Park U".
 
 **Stack**: React 18 + TypeScript + Vite + Tailwind CSS | Node.js + Express + MongoDB
