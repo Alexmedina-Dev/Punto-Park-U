@@ -1,6 +1,5 @@
 ﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Layout } from '@/components/layout'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -30,7 +29,6 @@ export function RegisterPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-    // Clear error when user types
     if (errors[e.target.name]) {
       setErrors((prev) => {
         const next = { ...prev }
@@ -91,45 +89,39 @@ export function RegisterPage() {
     }
   }
 
-  return (
-    <Layout>
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
-        <Card variant="glass" className="w-full max-w-md">
-          <h1 className="text-3xl font-bold text-primary mb-6 text-center font-headline">
-            Registro
-          </h1>
-
-          {/* Registration done — show verification message */}
-          {registrationDone ? (
-            <div className="py-4 text-center">
-              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl text-primary">✉</span>
-              </div>
-              <h2 className="text-xl font-bold text-primary mb-2 font-headline">
-                ¡Registro exitoso!
-              </h2>
-              <p className="text-on-surface-var mb-4">
-                Hemos enviado un link de verificación a{' '}
-                <strong className="text-primary">{registeredEmail || 'tu email'}</strong>.
-                Por favor revisa tu bandeja de entrada para verificar tu cuenta.
-              </p>
-              <p className="text-sm text-on-surface-var mb-4">
-                ¿No recibiste el email?{' '}
-                <Link
-                  to="/verify-email"
-                  className="text-primary hover:text-primary-fixed transition-colors"
-                >
-                  Reenviar verificación
-                </Link>
-              </p>
-              <Link to="/login">
-                <Button variant="primary" className="w-full">
-                  Ir a Iniciar Sesión
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <>
+  const formContent = (
+    <>
+      {/* Registration done — show verification message */}
+      {registrationDone ? (
+        <div className="py-4 text-center">
+          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl text-primary">✉</span>
+          </div>
+          <h2 className="text-xl font-bold text-primary mb-2 font-headline">
+            ¡Registro exitoso!
+          </h2>
+          <p className="text-on-surface-var mb-4">
+            Hemos enviado un link de verificación a{' '}
+            <strong className="text-primary">{registeredEmail || 'tu email'}</strong>.
+            Por favor revisa tu bandeja de entrada para verificar tu cuenta.
+          </p>
+          <p className="text-sm text-on-surface-var mb-4">
+            ¿No recibiste el email?{' '}
+            <Link
+              to="/verify-email"
+              className="text-primary hover:text-primary-fixed transition-colors"
+            >
+              Reenviar verificación
+            </Link>
+          </p>
+          <Link to="/login">
+            <Button variant="primary" className="w-full">
+              Ir a Iniciar Sesión
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <>
           {/* Server error message */}
           {error && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400 text-center">
@@ -138,26 +130,27 @@ export function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="Nombres"
-                name="nombres"
-                value={formData.nombres}
-                onChange={handleChange}
-                placeholder="Nombres"
-                error={errors.nombres}
-                icon="badge"
-              />
-              <Input
-                label="Apellidos"
-                name="apellidos"
-                value={formData.apellidos}
-                onChange={handleChange}
-                placeholder="Apellidos"
-                error={errors.apellidos}
-                icon="badge"
-              />
-            </div>
+            {/* Nombres — full width on all screens */}
+            <Input
+              label="Nombres"
+              name="nombres"
+              value={formData.nombres}
+              onChange={handleChange}
+              placeholder="Nombres"
+              error={errors.nombres}
+              icon="badge"
+            />
+
+            {/* Apellidos — full width on all screens */}
+            <Input
+              label="Apellidos"
+              name="apellidos"
+              value={formData.apellidos}
+              onChange={handleChange}
+              placeholder="Apellidos"
+              error={errors.apellidos}
+              icon="badge"
+            />
 
             <Input
               label="Cédula"
@@ -189,28 +182,31 @@ export function RegisterPage() {
               icon="person"
             />
 
-            <Input
-              label="Contraseña"
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Mínimo 8 caracteres"
-              error={errors.password}
-              icon="lock"
-              showPasswordToggle
-            />
+            {/* Password fields — side by side on tablet+ */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+              <Input
+                label="Contraseña"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Mínimo 8 caracteres"
+                error={errors.password}
+                icon="lock"
+                showPasswordToggle
+              />
 
-            <Input
-              label="Confirmar Contraseña"
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Repite la contraseña"
-              error={errors.confirmPassword}
-              icon="lock"
-            />
+              <Input
+                label="Confirmar Contraseña"
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Repite la contraseña"
+                error={errors.confirmPassword}
+                icon="lock"
+              />
+            </div>
 
             <Button
               type="submit"
@@ -270,10 +266,105 @@ export function RegisterPage() {
               Inicia sesión
             </a>
           </p>
-          </>
-          )}
+        </>
+      )}
+    </>
+  )
+
+  return (
+    <div className="min-h-screen flex flex-col bg-bg text-on-bg">
+      {/* ═══════════════════════════════════════════════════════════
+          MOBILE: Centered card with logo watermark
+          ═══════════════════════════════════════════════════════════ */}
+      <div className="md:hidden flex-1 flex items-center justify-center px-4 py-8 relative overflow-hidden">
+        {/* Logo watermark — more visible on mobile */}
+        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+          <img
+            src="/images/Logo.png"
+            alt=""
+            className="w-[70%] max-w-[400px] opacity-[0.12] drop-shadow-[0_0_40px_rgba(0,116,217,0.4)]"
+            aria-hidden="true"
+          />
+        </div>
+
+        {/* Ambient glow */}
+        <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-secondary/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <Card variant="glass" className="w-full max-w-md relative z-10">
+          <h1 className="text-3xl font-bold text-primary mb-6 text-center font-headline">
+            Registro
+          </h1>
+          {formContent}
         </Card>
       </div>
-    </Layout>
+
+      {/* ═══════════════════════════════════════════════════════════
+          DESKTOP / TABLET: Split layout (matching login)
+          ═══════════════════════════════════════════════════════════ */}
+      <main className="hidden md:grid grid-cols-2 min-h-screen">
+        {/* LEFT: Form Column */}
+        <section className="flex flex-col justify-center items-center px-16 py-12 bg-bg overflow-y-auto">
+          <div className="w-full max-w-[28rem] flex flex-col gap-8">
+            {/* Brand */}
+            <div>
+              <h2 className="font-headline font-black text-[1.875rem] tracking-[-0.05em] uppercase italic text-primary">
+                &ldquo;PUNTO PARK U&rdquo;
+              </h2>
+              <p className="font-label text-[0.75rem] tracking-[0.15em] text-outline uppercase mt-1">
+                Sistema de Gestión de Parqueadero
+              </p>
+            </div>
+
+            {/* Header */}
+            <div>
+              <h1 className="text-[2.5rem] font-extrabold tracking-[-0.02em] text-on-bg leading-[1] font-headline italic">
+                Registro de Usuario
+              </h1>
+            </div>
+
+            {/* Form */}
+            {formContent}
+          </div>
+        </section>
+
+        {/* RIGHT: Visual Column — clean logo only */}
+        <section className="relative flex items-center justify-center bg-surface-low overflow-hidden py-12">
+          {/* Watermark logo — centered, clean, no extras */}
+          <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+            <img
+              src="/images/Logo.png"
+              alt=""
+              className="w-[75%] max-w-[500px] opacity-[0.25] drop-shadow-[0_0_50px_rgba(0,116,217,0.3)]"
+              aria-hidden="true"
+            />
+          </div>
+
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 z-10 bg-gradient-to-tr from-bg via-transparent to-primary/20" />
+        </section>
+      </main>
+
+      {/* HOME BUTTON */}
+      <Link
+        to="/"
+        className="fixed bottom-[90px] md:bottom-[90px] max-md:bottom-[110px] right-6 md:right-8 z-50 flex items-center justify-center bg-surface-highest/80 text-white md:px-6 md:py-4 max-md:p-4 rounded-full shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] transition-colors hover:bg-primary-container group touch-target"
+      >
+        <span className="material-symbols-outlined text-primary text-[1.5rem] group-hover:text-on-primary-container transition-colors">
+          home
+        </span>
+        <span className="hidden md:inline font-label text-[0.875rem] font-bold tracking-[0.15em] uppercase text-on-bg group-hover:text-on-primary-container transition-colors ml-2">
+          Inicio
+        </span>
+      </Link>
+
+      {/* FOOTER */}
+      <footer className="bg-bg flex flex-col items-center justify-center gap-4 py-8 border-t border-outline-variant/10 z-40">
+        <p className="font-label text-[0.875rem] text-outline-variant flex flex-wrap justify-center gap-[10px] flex-col md:flex-row gap-[5px] md:gap-[10px]">
+          <span className="whitespace-nowrap">&copy; 2026 &ldquo;Punto Park U&rdquo;</span>
+          <span className="whitespace-nowrap">Todos los derechos reservados</span>
+        </p>
+      </footer>
+    </div>
   )
 }

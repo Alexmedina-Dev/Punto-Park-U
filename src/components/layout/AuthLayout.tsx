@@ -101,25 +101,16 @@ export function AuthLayout({ children, title, showRegister = false }: AuthLayout
         </section>
       </main>
 
-      {/* ── HOME BUTTON (fixed, matching vanilla) ── */}
+      {/* ── HOME BUTTON (fixed, matching vanilla — single button, responsive label) ── */}
       <Link
         to="/"
-        className="hidden md:flex fixed bottom-[90px] right-8 z-50 items-center justify-center bg-surface-highest/80 text-white px-6 py-4 rounded-full shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] transition-colors hover:bg-primary-container group touch-target"
+        className="fixed bottom-[90px] md:bottom-[90px] max-md:bottom-[110px] right-6 md:right-8 z-50 flex items-center justify-center bg-surface-highest/80 text-white md:px-6 md:py-4 max-md:p-4 rounded-full shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] transition-colors hover:bg-primary-container group touch-target"
       >
         <span className="material-symbols-outlined text-primary text-[1.5rem] group-hover:text-on-primary-container transition-colors">
           home
         </span>
-        <span className="font-label text-[0.875rem] font-bold tracking-[0.15em] uppercase text-on-bg group-hover:text-on-primary-container transition-colors ml-2">
+        <span className="hidden md:inline font-label text-[0.875rem] font-bold tracking-[0.15em] uppercase text-on-bg group-hover:text-on-primary-container transition-colors ml-2">
           Inicio
-        </span>
-      </Link>
-      {/* Mobile: icon only, lower position */}
-      <Link
-        to="/"
-        className="md:hidden fixed bottom-24 right-6 z-50 flex items-center justify-center bg-surface-highest/80 text-white p-4 rounded-full shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] transition-colors hover:bg-primary-container group touch-target"
-      >
-        <span className="material-symbols-outlined text-primary text-[1.5rem] group-hover:text-on-primary-container transition-colors">
-          home
         </span>
       </Link>
 
