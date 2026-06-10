@@ -4,6 +4,13 @@
 
 🚀 **Aplicación en vivo:** [https://punto-park-u.vercel.app](https://punto-park-u.vercel.app)
 
+🔗 **API Backend:** [https://punto-park-u.onrender.com](https://punto-park-u.onrender.com)
+
+📦 **Stack de Deploy:**
+- **Frontend:** [Vercel](https://vercel.com) (React + Vite)
+- **Backend:** [Render](https://render.com) (Node.js + Express)
+- **Base de datos:** [MongoDB Atlas](https://www.mongodb.com/atlas) (Cloud MongoDB)
+
 Aplicativo Web para la gestión de parqueadero. Creado para la visualización de información de los usuarios de "Punto Park U".
 
 **Stack**: React 18 + TypeScript + Vite + Tailwind CSS | Node.js + Express + MongoDB
