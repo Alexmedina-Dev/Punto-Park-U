@@ -276,7 +276,7 @@ export function RegisterPage() {
       {/* ═══════════════════════════════════════════════════════════
           MOBILE: Centered card with logo watermark
           ═══════════════════════════════════════════════════════════ */}
-      <div className="md:hidden flex-1 flex items-center justify-center px-4 py-8 relative overflow-hidden">
+      <div className="md:hidden flex-1 flex items-center justify-center px-4 py-8 relative overflow-y-auto overflow-x-hidden">
         {/* Logo watermark — more visible on mobile */}
         <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
           <img

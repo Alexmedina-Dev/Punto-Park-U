@@ -25,6 +25,9 @@ app.use(express.urlencoded({ extended: true }));
 // ── Request logging ───────────────────────────────────────────────
 app.use(morgan('dev'));
 
+// ── Trust proxy (Render/Vercel) ─────────────────────────────────
+app.set('trust proxy', true);
+
 // ── Rate limiting ─────────────────────────────────────────────────
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute

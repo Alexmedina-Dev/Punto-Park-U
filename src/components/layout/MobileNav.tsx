@@ -45,6 +45,13 @@ export function MobileNav() {
     }
   }, [isMobileMenuOpen, shouldRender])
 
+  // Ensure body scroll is restored if component unmounts while menu is open
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
+
   // Close on Escape key
   useEffect(() => {
     if (!shouldRender) return

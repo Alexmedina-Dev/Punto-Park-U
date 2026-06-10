@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { API_BASE_URL } from '@/utils/constants'
 
 interface AuthLayoutProps {
   children: React.ReactNode
@@ -14,6 +16,13 @@ interface AuthLayoutProps {
  * Vanilla mobile breakpoint: 767px (not Tailwind's sm:640)
  */
 export function AuthLayout({ children, title, showRegister = false }: AuthLayoutProps) {
+  // Wake-up ping for Render free tier (cold start)
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/health`, { method: 'GET', cache: 'no-store' }).catch(() => {
+      // Silent fail — health endpoint is best-effort to wake up the server
+    })
+  }, [])
+
   return (
     <div className="min-h-screen flex flex-col bg-bg text-on-bg">
       <main className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-screen">
