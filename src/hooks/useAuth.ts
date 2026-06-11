@@ -52,6 +52,7 @@ export function useAuth() {
       apellidos: string
       cedula: string
       fechaNacimiento: string
+      email: string
       username: string
       password: string
       confirmPassword: string

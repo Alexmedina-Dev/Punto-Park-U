@@ -12,6 +12,7 @@ export function RegisterPage() {
     apellidos: '',
     cedula: '',
     fechaNacimiento: '',
+    email: '',
     username: '',
     password: '',
     confirmPassword: '',
@@ -63,6 +64,9 @@ export function RegisterPage() {
       if (age < 18) {
         newErrors.fechaNacimiento = 'Debes ser mayor de 18 años'
       }
+    }
+    if (!formData.email || !/^\S+@\S+\.\S+$/.test(formData.email)) {
+      newErrors.email = 'Debes ingresar un correo electrónico válido'
     }
     if (formData.username.length < 3) {
       newErrors.username = 'Debe tener al menos 3 caracteres'
@@ -170,6 +174,17 @@ export function RegisterPage() {
               onChange={handleChange}
               error={errors.fechaNacimiento}
               icon="calendar_month"
+            />
+
+            <Input
+              label="Correo Electrónico"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="ejemplo@correo.com"
+              error={errors.email}
+              icon="mail"
             />
 
             <Input
