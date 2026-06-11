@@ -162,11 +162,11 @@ const login = async (req, res, next) => {
 
     const { email, username, password } = req.body;
 
-    // Find user by email OR username
+    // Find user by email OR username (case-insensitive for username)
     const user = await User.findOne({
       $or: [
         ...(email ? [{ email: email.toLowerCase() }] : []),
-        ...(username ? [{ username }] : []),
+        ...(username ? [{ username: { $regex: new RegExp(`^${username}$`, 'i') } }] : []),
       ],
     });
     if (!user) {
@@ -241,7 +241,7 @@ const adminLogin = async (req, res, next) => {
     const user = await User.findOne({
       $or: [
         ...(email ? [{ email: email.toLowerCase() }] : []),
-        ...(username ? [{ username }] : []),
+        ...(username ? [{ username: { $regex: new RegExp(`^${username}$`, 'i') } }] : []),
       ],
     });
     if (!user) {
