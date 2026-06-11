@@ -39,6 +39,7 @@ function createApiClient(config: ApiConfig): AxiosInstance {
   const api = axios.create({
     baseURL: config.baseURL,
     timeout: config.timeout,
+    withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
     },

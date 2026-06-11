@@ -16,7 +16,12 @@ const app = express();
 // helmet is deferred to Phase 2 per design decision; placeholder for future use
 
 // ── CORS ──────────────────────────────────────────────────────────
-app.use(cors({ origin: config.corsOrigin }));
+app.use(cors({
+  origin: config.corsOrigin,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+}));
 
 // ── Body parsing ──────────────────────────────────────────────────
 app.use(express.json());
