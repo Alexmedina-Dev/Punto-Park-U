@@ -164,26 +164,11 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Content */}
-        <main className="p-4 lg:p-8 pb-20 lg:pb-8">
+        <main className="p-4 lg:p-8">
           {children}
         </main>
       </div>
 
-      {/* -- MOBILE BOTTOM NAV -- */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-surface-low border-t border-outline/10 z-40 lg:hidden flex justify-around pb-safe">
-        {USER_MENU.map((item) => (
-          <Link
-            key={item.key}
-            to={item.path}
-            className={`flex flex-col items-center py-2 px-3 text-xs ${
-              currentTab === item.key ? 'text-primary' : 'text-on-surface-var'
-            }`}
-          >
-            <span className="material-symbols-outlined text-xl">{item.icon}</span>
-            <span>{item.label}</span>
-          </Link>
-        ))}
-      </nav>
     </div>
   )
 }

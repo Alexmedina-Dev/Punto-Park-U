@@ -136,7 +136,7 @@ export function SessionsInline() {
             {sessions.map((session) => (
               <div
                 key={session.id}
-                className={`flex items-start gap-4 p-4 transition-colors hover:bg-surface-container/50 ${
+                className={`flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 transition-colors hover:bg-surface-container/50 ${
                   session.isCurrent ? 'bg-primary/5' : ''
                 }`}
               >
@@ -198,7 +198,7 @@ export function SessionsInline() {
                     size="sm"
                     onClick={() => handleRevoke(session.id)}
                     loading={revokingId === session.id}
-                    className="flex-shrink-0 text-error"
+                    className="flex-shrink-0 text-error self-end sm:self-auto mt-2 sm:mt-0"
                   >
                     <span className="material-symbols-outlined text-base">close</span>
                     Cerrar
