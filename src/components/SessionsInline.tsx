@@ -100,9 +100,9 @@ export function SessionsInline() {
   const activeSessions = sessions.filter((s) => !s.isExpired && !s.isInactive)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full max-w-full overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <p className="text-sm text-on-surface-var">
           {activeSessions.length} sesión(es) activa(s)
         </p>
@@ -112,6 +112,7 @@ export function SessionsInline() {
             size="sm"
             onClick={handleRevokeAll}
             loading={isLoading}
+            className="w-full sm:w-auto"
           >
             <span className="material-symbols-outlined text-base">devices_off</span>
             Cerrar todas
@@ -120,23 +121,23 @@ export function SessionsInline() {
       </div>
 
       {/* Sessions List */}
-      <Card variant="glass">
+      <Card variant="glass" className="overflow-hidden">
         {isLoading && sessions.length === 0 ? (
-          <div className="text-center py-12 text-on-surface-var">
-            <span className="material-symbols-outlined text-4xl mb-3 block">hourglass_empty</span>
-            <p>Cargando sesiones...</p>
+          <div className="text-center py-8 sm:py-12 text-on-surface-var">
+            <span className="material-symbols-outlined text-3xl sm:text-4xl mb-3 block">hourglass_empty</span>
+            <p className="text-sm sm:text-base">Cargando sesiones...</p>
           </div>
         ) : sessions.length === 0 ? (
-          <div className="text-center py-12 text-on-surface-var">
-            <span className="material-symbols-outlined text-4xl mb-3 block">devices_off</span>
-            <p>No hay sesiones activas</p>
+          <div className="text-center py-8 sm:py-12 text-on-surface-var">
+            <span className="material-symbols-outlined text-3xl sm:text-4xl mb-3 block">devices_off</span>
+            <p className="text-sm sm:text-base">No hay sesiones activas</p>
           </div>
         ) : (
           <div className="divide-y divide-outline/10">
             {sessions.map((session) => (
               <div
                 key={session.id}
-                className={`flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 transition-colors hover:bg-surface-container/50 ${
+                className={`flex flex-col sm:flex-row sm:items-start gap-3 p-3 sm:p-4 transition-colors hover:bg-surface-container/50 ${
                   session.isCurrent ? 'bg-primary/5' : ''
                 }`}
               >
@@ -148,9 +149,9 @@ export function SessionsInline() {
                 </div>
 
                 {/* Session Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-on-bg capitalize">
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="font-medium text-on-bg capitalize text-sm sm:text-base">
                       {session.device === 'desktop'
                         ? 'Computador'
                         : session.device === 'mobile'
@@ -160,32 +161,32 @@ export function SessionsInline() {
                             : session.device}
                     </span>
                     {session.isCurrent && (
-                      <Badge variant="success">Actual</Badge>
+                      <Badge variant="success" className="text-xs">Actual</Badge>
                     )}
                     {session.isInactive && !session.isCurrent && (
-                      <Badge variant="warning">Inactiva</Badge>
+                      <Badge variant="warning" className="text-xs">Inactiva</Badge>
                     )}
                   </div>
 
-                  <div className="text-sm text-on-surface-var space-y-0.5">
+                  <div className="text-xs sm:text-sm text-on-surface-var space-y-0.5">
                     {session.ipAddress && (
-                      <p className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-xs">language</span>
-                        {session.ipAddress}
+                      <p className="flex items-center gap-1 truncate">
+                        <span className="material-symbols-outlined text-xs flex-shrink-0">language</span>
+                        <span className="truncate">{session.ipAddress}</span>
                       </p>
                     )}
                     {session.userAgent && (
-                      <p className="truncate flex items-center gap-1">
-                        <span className="material-symbols-outlined text-xs">info</span>
-                        {session.userAgent}
+                      <p className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-xs flex-shrink-0">info</span>
+                        <span className="truncate block max-w-[200px] sm:max-w-none">{session.userAgent}</span>
                       </p>
                     )}
                     <p className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-xs">schedule</span>
+                      <span className="material-symbols-outlined text-xs flex-shrink-0">schedule</span>
                       Última actividad: {getRelativeTime(session.lastActiveAt)}
                     </p>
                     <p className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-xs">calendar_today</span>
+                      <span className="material-symbols-outlined text-xs flex-shrink-0">calendar_today</span>
                       Creada: {formatDate(session.createdAt)}
                     </p>
                   </div>
@@ -198,7 +199,7 @@ export function SessionsInline() {
                     size="sm"
                     onClick={() => handleRevoke(session.id)}
                     loading={revokingId === session.id}
-                    className="flex-shrink-0 text-error self-end sm:self-auto mt-2 sm:mt-0"
+                    className="flex-shrink-0 text-error self-start sm:self-auto mt-1 sm:mt-0"
                   >
                     <span className="material-symbols-outlined text-base">close</span>
                     Cerrar
@@ -212,8 +213,8 @@ export function SessionsInline() {
 
       {/* Info Box */}
       <Card variant="glass">
-        <div className="flex items-start gap-3 text-sm text-on-surface-var">
-          <span className="material-symbols-outlined text-primary">info</span>
+        <div className="flex items-start gap-3 text-xs sm:text-sm text-on-surface-var">
+          <span className="material-symbols-outlined text-primary flex-shrink-0">info</span>
           <div>
             <p className="font-medium text-on-bg mb-1">Acerca de las sesiones</p>
             <p>
