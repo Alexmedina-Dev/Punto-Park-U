@@ -11,7 +11,7 @@ const config = {
   // Google OAuth
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-  googleCallbackUrl: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/oauth/google/callback',
+  googleCallbackUrl: process.env.GOOGLE_CALLBACK_URL || 'https://punto-park-u.onrender.com/api/oauth/google/callback',
   // Email Verification
   strictEmailVerification: process.env.STRICT_EMAIL_VERIFICATION === 'true' || false,
   // Session Management
