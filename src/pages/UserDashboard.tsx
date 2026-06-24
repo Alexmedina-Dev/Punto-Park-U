@@ -78,7 +78,7 @@ export function UserDashboard() {
 
   // Profile edit
   const [isEditingProfile, setIsEditingProfile] = useState(false)
-  const [profileForm, setProfileForm] = useState({ nombres: '', apellidos: '', email: '', phone: '' })
+  const [profileForm, setProfileForm] = useState({ nombres: '', apellidos: '', email: '', phone: '', cedula: '', fechaNacimiento: '' })
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({})
   const [profileSaving, setProfileSaving] = useState(false)
 
@@ -122,6 +122,8 @@ export function UserDashboard() {
       apellidos: user?.apellidos || '',
       email: user?.email || '',
       phone: user?.phone || '',
+      cedula: user?.cedula || '',
+      fechaNacimiento: user?.fechaNacimiento || '',
     })
     setProfileErrors({})
     setIsEditingProfile(true)
@@ -148,6 +150,21 @@ export function UserDashboard() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileForm.email)) {
       errors.email = 'Formato de email inválido'
     }
+    if (profileForm.cedula && !/^\d{6,12}$/.test(profileForm.cedula)) {
+      errors.cedula = 'La cédula debe tener entre 6 y 12 dígitos'
+    }
+    if (profileForm.fechaNacimiento) {
+      const birthDate = new Date(profileForm.fechaNacimiento)
+      const today = new Date()
+      let age = today.getFullYear() - birthDate.getFullYear()
+      const monthDiff = today.getMonth() - birthDate.getMonth()
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--
+      }
+      if (age < 18) {
+        errors.fechaNacimiento = 'Debes ser mayor de 18 años'
+      }
+    }
     setProfileErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -162,6 +179,8 @@ export function UserDashboard() {
         name: fullName,
         email: profileForm.email,
         phone: profileForm.phone || undefined,
+        cedula: profileForm.cedula || undefined,
+        fechaNacimiento: profileForm.fechaNacimiento || undefined,
       })
       setUser(updatedUser)
       showSuccessToast('Perfil actualizado correctamente')
@@ -777,6 +796,22 @@ export function UserDashboard() {
                       value={profileForm.phone}
                       onChange={(e) => handleProfileChange('phone', e.target.value)}
                     />
+                    <Input
+                      label="Cédula"
+                      icon="badge"
+                      value={profileForm.cedula}
+                      onChange={(e) => handleProfileChange('cedula', e.target.value)}
+                      error={profileErrors.cedula}
+                      placeholder="Número de cédula"
+                    />
+                    <Input
+                      label="Fecha de Nacimiento"
+                      icon="calendar_month"
+                      type="date"
+                      value={profileForm.fechaNacimiento}
+                      onChange={(e) => handleProfileChange('fechaNacimiento', e.target.value)}
+                      error={profileErrors.fechaNacimiento}
+                    />
                   </div>
 
                   <div className="flex justify-end gap-3 pt-2">
@@ -810,6 +845,10 @@ export function UserDashboard() {
                     <div>
                       <label className="block text-sm text-on-surface-var mb-1">Cédula</label>
                       <p className="text-on-bg font-medium">{user?.cedula || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-on-surface-var mb-1">Fecha de Nacimiento</label>
+                      <p className="text-on-bg font-medium">{user?.fechaNacimiento ? new Date(user.fechaNacimiento).toLocaleDateString('es-CO') : '-'}</p>
                     </div>
                     <div>
                       <label className="block text-sm text-on-surface-var mb-1">Rol</label>
