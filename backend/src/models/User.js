@@ -9,20 +9,33 @@ const userSchema = new mongoose.Schema(
       trim: true,
       maxlength: [100, 'Name cannot exceed 100 characters'],
     },
+    nombres: {
+      type: String,
+      trim: true,
+      maxlength: [50, 'Nombres cannot exceed 50 characters'],
+    },
+    apellidos: {
+      type: String,
+      trim: true,
+      maxlength: [50, 'Apellidos cannot exceed 50 characters'],
+    },
     email: {
       type: String,
       required: [true, 'Email is required'],
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
+      match: [/\S+@\S+\.\S+/, 'Please provide a valid email address'],
     },
     cedula: {
       type: String,
       unique: true,
       sparse: true,
       trim: true,
-      match: [/^\d{6,10}$/, 'Cédula must be between 6 and 10 digits'],
+      match: [/\d{6,10}/, 'Cédula must be between 6 and 10 digits'],
+    },
+    fechaNacimiento: {
+      type: Date,
     },
     username: {
       type: String,

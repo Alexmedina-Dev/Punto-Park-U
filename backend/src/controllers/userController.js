@@ -8,10 +8,11 @@ const formatUserResponse = (user) => ({
   id: user._id,
   username: user.username || user.email?.split('@')[0],
   name: user.name,
-  nombres: user.name?.split(' ').slice(0, -1).join(' ') || user.name,
-  apellidos: user.name?.split(' ').slice(-1).join(' ') || '',
+  nombres: user.nombres || user.name?.split(' ').slice(0, -1).join(' ') || user.name,
+  apellidos: user.apellidos || user.name?.split(' ').slice(-1).join(' ') || '',
   email: user.email,
   cedula: user.cedula,
+  fechaNacimiento: user.fechaNacimiento,
   rol: user.role,
   role: user.role,
   phone: user.phone,
@@ -142,8 +143,34 @@ const updateUser = async (req, res, next) => {
       }
     }
 
+    // Validate fechaNacimiento if provided
+    if (req.body.fechaNacimiento) {
+      const birthDate = new Date(req.body.fechaNacimiento);
+      const today = new Date();
+      
+      // Check if date is in the future
+      if (birthDate > today) {
+        return res.status(400).json({ error: 'La fecha de nacimiento no puede ser en el futuro' });
+      }
+      
+      // Check minimum age (18 years)
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      if (age < 18) {
+        return res.status(400).json({ error: 'Debes ser mayor de 18 años' });
+      }
+      
+      // Check maximum age (reasonable limit: 100 years)
+      if (age > 100) {
+        return res.status(400).json({ error: 'Fecha de nacimiento no válida' });
+      }
+    }
+
     // Fields allowed for update
-    const allowedFields = ['name', 'email', 'phone', 'cedula', 'username'];
+    const allowedFields = ['name', 'nombres', 'apellidos', 'email', 'phone', 'cedula', 'username', 'fechaNacimiento'];
     const updates = {};
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
