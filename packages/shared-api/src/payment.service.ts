@@ -40,6 +40,7 @@ export async function createPaymentService(paymentData: {
   reservation?: string
   amount: number
   method: string
+  manualPaymentProof?: string
 }): Promise<Payment> {
   const api = getApiClient()
   const { data } = await api.post('/payments', paymentData)
@@ -61,7 +62,7 @@ export async function getPaymentStatsService(): Promise<{
 export async function createEpaycoCheckoutService(params: {
   vehicle: string
   reservation?: string
-  amount: number
+  amount?: number
   email?: string
 }): Promise<{
   payment: Payment
@@ -96,4 +97,14 @@ export async function refundEpaycoPaymentService(
   const api = getApiClient()
   const { data } = await api.post(`/payments/epayco/${paymentId}/refund`)
   return unwrapData(data)
+}
+
+// ── Manual payment confirmation ──
+
+export async function confirmManualPaymentService(
+  paymentId: string
+): Promise<Payment> {
+  const api = getApiClient()
+  const { data } = await api.post(`/payments/${paymentId}/confirm`)
+  return unwrapData<Payment>(data)
 }

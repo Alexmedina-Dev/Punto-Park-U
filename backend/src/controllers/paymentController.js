@@ -1,6 +1,7 @@
 const Payment = require('../models/Payment');
 const Reservation = require('../models/Reservation');
 const ActivityLog = require('../models/ActivityLog');
+const { emitPaymentConfirmed } = require('../services/socketService');
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -13,6 +14,9 @@ const formatPaymentResponse = (payment) => ({
   method: payment.method,
   status: payment.status,
   date: payment.date,
+  manualPaymentProof: payment.manualPaymentProof || null,
+  confirmedBy: payment.confirmedBy || null,
+  confirmedAt: payment.confirmedAt || null,
   createdAt: payment.createdAt,
   updatedAt: payment.updatedAt,
 });
@@ -44,7 +48,7 @@ const buildPaymentFilter = (query, userId, role) => {
   }
 
   // Filter by method
-  if (query.method && ['cash', 'pos', 'epayco'].includes(query.method)) {
+  if (query.method && ['cash', 'pos', 'epayco', 'nequi', 'daviplata', 'transfer'].includes(query.method)) {
     filter.method = query.method;
   }
 
@@ -130,7 +134,7 @@ const getPayment = async (req, res, next) => {
 // ── POST /api/payments ────────────────────────────────────────────────
 const createPayment = async (req, res, next) => {
   try {
-    const { vehicle, reservation, amount, method } = req.body;
+    const { vehicle, reservation, amount, method, manualPaymentProof } = req.body;
 
     const payment = await Payment.create({
       user: req.user.id,
@@ -138,7 +142,8 @@ const createPayment = async (req, res, next) => {
       reservation: reservation || null,
       amount,
       method,
-      status: 'pending',
+      manualPaymentProof: manualPaymentProof || null,
+      status: ['nequi', 'daviplata', 'transfer'].includes(method) ? 'pending' : 'pending',
     });
 
     const populated = await Payment.findById(payment._id)
@@ -373,6 +378,61 @@ const getPaymentStats = async (req, res, next) => {
   }
 };
 
+// ── POST /api/payments/:id/confirm ──────────────────────────────────
+const confirmManualPayment = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Only admin/operator can confirm
+    if (req.user.role !== 'admin' && req.user.role !== 'operator') {
+      return res.status(403).json({ error: 'Only admins or operators can confirm payments' });
+    }
+
+    const payment = await Payment.findById(id);
+    if (!payment) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    if (!['nequi', 'daviplata', 'transfer'].includes(payment.method)) {
+      return res.status(400).json({ error: 'Only manual payment methods can be confirmed' });
+    }
+
+    if (payment.status === 'completed') {
+      return res.status(400).json({ error: 'Payment is already confirmed' });
+    }
+
+    payment.status = 'completed';
+    payment.confirmedBy = req.user.id;
+    payment.confirmedAt = new Date();
+    await payment.save();
+
+    const populated = await Payment.findById(payment._id)
+      .populate('user', 'name email')
+      .populate('vehicle', 'plate type')
+      .populate('reservation', 'status');
+
+    // Emit WebSocket event to the user
+    emitPaymentConfirmed({
+      userId: payment.user._id.toString(),
+      paymentId: payment._id,
+      status: 'completed',
+      amount: payment.amount,
+      method: payment.method,
+    });
+
+    // Log activity
+    logActivity(req.user.id, 'Payment confirmed', 'payment', {
+      paymentId: payment._id,
+      amount: payment.amount,
+      method: payment.method,
+    });
+
+    res.status(200).json({ success: true, data: formatPaymentResponse(populated) });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getPayments,
   getPayment,
@@ -381,4 +441,5 @@ module.exports = {
   deletePayment,
   getMyPayments,
   getPaymentStats,
+  confirmManualPayment,
 };

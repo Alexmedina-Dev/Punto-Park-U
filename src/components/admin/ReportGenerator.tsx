@@ -38,13 +38,16 @@ export function ReportGenerator() {
 
   // Compute payment totals from report rows
   const paymentTotals: ReportPaymentKPI = useMemo(() => {
-    if (!reportContent) return { efectivo: 0, pos: 0, epayco: 0 }
-    const totals = { efectivo: 0, pos: 0, epayco: 0 }
+    if (!reportContent) return { efectivo: 0, pos: 0, epayco: 0, nequi: 0, daviplata: 0, transfer: 0 }
+    const totals = { efectivo: 0, pos: 0, epayco: 0, nequi: 0, daviplata: 0, transfer: 0 }
     reportContent.rows.forEach((r) => {
       const amount = parseInt(r.tarifa.replace(/[$.]/g, '')) || 0
       if (r.pago === 'Efectivo') totals.efectivo += amount
       else if (r.pago === 'POS') totals.pos += amount
       else if (r.pago === 'ePayco') totals.epayco += amount
+      else if (r.pago === 'Nequi') totals.nequi += amount
+      else if (r.pago === 'Daviplata') totals.daviplata += amount
+      else if (r.pago === 'Transferencia') totals.transfer += amount
     })
     return totals
   }, [reportContent])

@@ -2,9 +2,11 @@ const Reservation = require('../models/Reservation');
 const Ticket = require('../models/Ticket');
 const ParkingSpot = require('../models/ParkingSpot');
 const Tariff = require('../models/Tariff');
+const Payment = require('../models/Payment');
 const ActivityLog = require('../models/ActivityLog');
 const qrService = require('../services/qrService');
-const { emitSpotUpdate, emitNewActivity } = require('../services/socketService');
+const { emitSpotUpdate, emitNewActivity, getIO, ROOMS } = require('../services/socketService');
+const { notifyUser } = require('../services/notificationService');
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -181,6 +183,19 @@ const validateEntry = async (req, res, next) => {
       timestamp: new Date().toISOString(),
     });
 
+    // Send entry push notification to user
+    if (reservation.user) {
+      try {
+        await notifyUser({
+          userId: reservation.user.toString(),
+          type: 'entry_alert',
+          data: { plate: vehiclePlate, reservationId: reservation._id.toString(), spot: reservation.spot?.code || '' },
+        });
+      } catch (notifErr) {
+        console.warn('[qr:entry] Failed to send entry notification:', notifErr.message);
+      }
+    }
+
     res.status(200).json({
       success: true,
       data: {
@@ -266,6 +281,33 @@ const processExit = async (req, res, next) => {
     reservation.billingAmount = billingAmount;
     await reservation.save();
 
+    // Auto-create Payment record
+    const payment = await Payment.create({
+      user: reservation.user,
+      vehicle: (reservation.vehicle && reservation.vehicle._id) || reservation.vehicle,
+      reservation: reservation._id,
+      amount: billingAmount,
+      method: 'pending',
+      status: 'pending',
+    });
+
+    reservation.payment = payment._id;
+    await reservation.save();
+
+    // Emit payment:created WebSocket event
+    try {
+      const io = getIO();
+      io.to(ROOMS.user(reservation.user.toString())).emit('payment:created', {
+        paymentId: payment._id,
+        reservationId: reservation._id,
+        amount: billingAmount,
+        status: 'pending',
+        method: 'pending',
+      });
+    } catch (wsErr) {
+      console.warn('[qr:exit] Failed to emit payment:created:', wsErr.message);
+    }
+
     // Update ticket exit validation
     await Ticket.findOneAndUpdate(
       { reservation: reservation._id },
@@ -314,6 +356,24 @@ const processExit = async (req, res, next) => {
       timestamp: new Date().toISOString(),
     });
 
+    // Send exit push notification to user
+    if (reservation.user) {
+      try {
+        await notifyUser({
+          userId: reservation.user.toString(),
+          type: 'exit_alert',
+          data: {
+            plate: vehiclePlate,
+            reservationId: reservation._id.toString(),
+            billingAmount,
+            duration: durationFormatted,
+          },
+        });
+      } catch (notifErr) {
+        console.warn('[qr:exit] Failed to send exit notification:', notifErr.message);
+      }
+    }
+
     // Format duration for response
     const durationMs = exitTime.getTime() - new Date(reservation.entryTime).getTime();
     const durationMinutes = Math.floor(durationMs / (1000 * 60));
@@ -333,6 +393,7 @@ const processExit = async (req, res, next) => {
         duration: durationFormatted,
         durationMinutes,
         billingAmount,
+        paymentId: payment._id,
         status: reservation.status,
       },
     });

@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Input, Button } from '@/components/ui'
-import type { Vehicle } from '@/types'
+import { SpotSelector } from '@/components/SpotSelector'
+import { getParkingSpotsService } from '@punto-park-u/shared-api'
+import type { Vehicle, ParkingSpot } from '@/types'
 
 interface ReservationFormData {
   vehicleId: string
   date: string
   startTime: string
   endTime: string
+  spotId: string
   notes: string
 }
 
@@ -18,6 +21,7 @@ interface ReservationFormProps {
     date?: string
     startTime?: string
     endTime?: string
+    spotId?: string
     notes?: string
   }) => Promise<boolean>
   onCancel?: () => void
@@ -30,6 +34,7 @@ const INITIAL_FORM: ReservationFormData = {
   date: '',
   startTime: '',
   endTime: '',
+  spotId: '',
   notes: '',
 }
 
@@ -42,6 +47,39 @@ export function ReservationForm({
 }: ReservationFormProps) {
   const [form, setForm] = useState<ReservationFormData>(INITIAL_FORM)
   const [errors, setErrors] = useState<Partial<Record<keyof ReservationFormData, string>>>({})
+  const [spots, setSpots] = useState<ParkingSpot[]>([])
+  const [spotsLoading, setSpotsLoading] = useState(false)
+
+  const selectedVehicle = vehicles.find((v) => v.id === form.vehicleId)
+  const hasDateTime = form.date && form.startTime && form.endTime
+  const showSpotSelector = !!selectedVehicle && hasDateTime
+
+  const fetchSpots = useCallback(async () => {
+    if (!showSpotSelector) return
+    setSpotsLoading(true)
+    try {
+      const result = await getParkingSpotsService({
+        type: selectedVehicle!.type,
+        date: form.date,
+        startTime: form.startTime,
+        endTime: form.endTime,
+      })
+      setSpots(result)
+    } catch {
+      setSpots([])
+    } finally {
+      setSpotsLoading(false)
+    }
+  }, [showSpotSelector, selectedVehicle?.type, form.date, form.startTime, form.endTime])
+
+  useEffect(() => {
+    if (showSpotSelector) {
+      fetchSpots()
+    } else {
+      setSpots([])
+      setForm((prev) => ({ ...prev, spotId: '' }))
+    }
+  }, [showSpotSelector, fetchSpots])
 
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof ReservationFormData, string>> = {}
@@ -71,6 +109,10 @@ export function ReservationForm({
       newErrors.endTime = 'La hora de salida debe ser posterior a la de entrada'
     }
 
+    if (!form.spotId) {
+      newErrors.spotId = 'Selecciona un espacio de parqueo'
+    }
+
     if (form.notes && form.notes.length > 500) {
       newErrors.notes = 'Las notas no pueden exceder 500 caracteres'
     }
@@ -92,6 +134,7 @@ export function ReservationForm({
       date: form.date,
       startTime: form.startTime,
       endTime: form.endTime,
+      spotId: form.spotId || undefined,
       notes: form.notes || undefined,
     })
 
@@ -183,6 +226,22 @@ export function ReservationForm({
           error={errors.endTime}
         />
       </div>
+
+      {/* Spot Selector */}
+      {showSpotSelector && (
+        <div>
+          <SpotSelector
+            spots={spots}
+            selectedSpotId={form.spotId || null}
+            onSelect={(spotId) => handleChange('spotId', spotId)}
+            vehicleType={selectedVehicle!.type}
+            isLoading={spotsLoading}
+          />
+          {errors.spotId && (
+            <p className="mt-1 text-sm text-red-400">{errors.spotId}</p>
+          )}
+        </div>
+      )}
 
       {/* Notes */}
       <Input

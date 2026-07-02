@@ -11,4 +11,5 @@ export {
   createEpaycoCheckoutService,
   getEpaycoPaymentStatusService,
   refundEpaycoPaymentService,
+  confirmManualPaymentService,
 } from '@punto-park-u/shared-api'

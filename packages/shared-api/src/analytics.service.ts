@@ -76,3 +76,29 @@ export async function getOptimalSpotAssignmentService(reservationId: string): Pr
   }
   return data.data
 }
+
+// ── Prophet Occupancy Prediction ───────────────────────────────────
+
+export interface OccupancyForecastPoint {
+  ds: string
+  yhat: number
+  yhat_lower: number
+  yhat_upper: number
+}
+
+export interface OccupancyPrediction {
+  forecast: OccupancyForecastPoint[]
+  historical_days: number
+  model: string
+  generated_at: string
+  error?: string
+}
+
+export async function getOccupancyPredictionService(days = 7): Promise<OccupancyPrediction> {
+  const api = getApiClient()
+  const { data } = await api.get<ApiResponse<OccupancyPrediction>>(`/admin/analytics/occupancy-prediction?days=${days}`)
+  if (!data.success) {
+    throw new Error(data.message || 'Error al obtener predicción de ocupación')
+  }
+  return data.data
+}

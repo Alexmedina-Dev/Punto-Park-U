@@ -24,8 +24,11 @@ context: |
   
   Reference project: C:\Projects\Punto-Park-U-Web (vanilla, do NOT modify)
   
-  Testing: None (will be added later)
-  Strict TDD: false
+  Testing: Playwright installed for SENA evidence screenshots only. No unit/integration test runner. No linter/formatter. Strict TDD: false (user decision).
+  Monorepo: pnpm workspaces + Turbo pipeline
+  Shared packages: shared-types, shared-api, shared-stores
+  Mobile app: apps/mobile (Expo/React Native)
+  Backend: plain JavaScript (no TypeScript), Express + Mongoose
 
 rules:
   proposal:
@@ -61,11 +64,15 @@ rules:
 testing:
   enabled: false
   strict_tdd: false
-  reason: "User explicitly chose to add testing later. No test runner configured."
+  reason: "User explicitly chose to add testing later. Playwright installed for evidence screenshots only — no playwright.config.ts, no unit/integration test runner, no linter, no formatter."
   framework: ""
-  runner: ""
+  runner: "playwright (evidence only — not configured for test automation)"
+  layers:
+    unit: false
+    integration: false
+    e2e: "playwright (screenshot evidence only)"
   coverage: false
-  type_checker: ""
+  type_checker: "tsc --noEmit (available, not enforced)"
   linter: ""
   formatter: ""
 

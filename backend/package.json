@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node src/utils/seeder.js"
+    "seed": "node src/utils/seeder.js",
+    "seed:demo": "node src/utils/seeder.js --demo",
+    "seed:down": "node src/utils/seeder.js --down",
+    "seed:demo:down": "node src/utils/seeder.js --demo --down"
   },
   "keywords": [
     "parking",
@@ -31,7 +34,9 @@
     "morgan": "^1.10.0",
     "mqtt": "^5.15.1",
     "node-cron": "^4.2.1",
+    "nodemailer": "^9.0.3",
     "qrcode": "^1.5.4",
+    "resend": "^6.16.0",
     "socket.io": "^4.8.3",
     "speakeasy": "^2.0.0",
     "web-push": "^3.6.7"

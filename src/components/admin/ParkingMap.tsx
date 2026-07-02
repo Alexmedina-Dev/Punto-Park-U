@@ -61,9 +61,10 @@ export function ParkingMap() {
           // Add new spot
           updated.push({
             id: update.id,
+            code: update.id,
             zone: update.zone as 'A' | 'B' | 'C',
+            type: (update.vehicleType as 'car' | 'moto' | 'bike') || 'car',
             status: update.status,
-            vehicleType: update.vehicleType as 'car' | 'moto' | 'bike' | undefined,
             plate: update.plate,
           })
         }
@@ -95,10 +96,13 @@ export function ParkingMap() {
 
     // Fill missing spots with placeholders
     const filled: ParkingSpotType[] = [...zoneSpots]
+    const spotTypes: Record<string, 'car' | 'moto' | 'bike'> = { A: 'car', B: 'moto', C: 'bike' }
     for (let i = filled.length + 1; i <= config.spotCount; i++) {
       filled.push({
         id: `${zone}${i}`,
+        code: `${zone}${i}`,
         zone: zone as 'A' | 'B' | 'C',
+        type: spotTypes[zone] || 'car',
         status: 'libre',
       })
     }

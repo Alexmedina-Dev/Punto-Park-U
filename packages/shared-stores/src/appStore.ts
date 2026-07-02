@@ -136,22 +136,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       }))
     } catch {
       set((state) => ({
-        availability: {
-          spots: Array.from({ length: 30 }, (_, i) => ({
-            id: `${String.fromCharCode(65 + (i % 3))}${i + 1}`,
-            zone: String.fromCharCode(65 + (i % 3)) as 'A' | 'B' | 'C',
-            status: (i % 3 === 0 ? 'ocupado' : 'libre') as 'libre' | 'ocupado',
-          })),
-          stats: {
-            cars: { used: 8, total: 15 },
-            motos: { used: 3, total: 10 },
-            bikes: { used: 2, total: 5 },
-          },
-        },
+        availability: null,
         loadingState: { ...state.loadingState, availability: false },
         errorState: {
           ...state.errorState,
-          availability: 'No se pudo cargar la disponibilidad. Mostrando valores estimados.',
+          availability: 'No se pudo cargar la disponibilidad.',
         },
       }))
     }

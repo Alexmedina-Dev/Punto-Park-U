@@ -4,6 +4,7 @@ import type {
   PricingConfig,
   Schedule,
   ParkingSpot,
+  SpotType,
   ParkingStats,
   Reservation,
   ParkingEntry,
@@ -51,10 +52,14 @@ const DEFAULT_SCHEDULE: Schedule = {
   sunday: { open: '09:00', close: '17:00' },
 }
 
+const SPOT_TYPES: SpotType[] = ['car', 'moto', 'bike']
+
 const DEFAULT_AVAILABILITY = {
   spots: Array.from({ length: 30 }, (_, i) => ({
     id: `${String.fromCharCode(65 + (i % 3))}${i + 1}`,
+    code: `${String.fromCharCode(65 + (i % 3))}${i + 1}`,
     zone: String.fromCharCode(65 + (i % 3)) as 'A' | 'B' | 'C',
+    type: SPOT_TYPES[i % 3] as SpotType,
     status: (i % 3 === 0 ? 'ocupado' : 'libre') as 'libre' | 'ocupado',
   })),
   stats: {
@@ -106,7 +111,7 @@ export async function getScheduleService(): Promise<Schedule> {
 export async function getAvailabilityService(): Promise<{
   spots: ParkingSpot[]
   stats: ParkingStats
-}> {
+} | null> {
   const cacheKey = 'availability'
   const cached = getCached<{ spots: ParkingSpot[]; stats: ParkingStats }>(cacheKey)
   if (cached) return cached
@@ -120,18 +125,29 @@ export async function getAvailabilityService(): Promise<{
     setCache(cacheKey, availability, TTL.AVAILABILITY)
     return availability
   } catch {
-    return DEFAULT_AVAILABILITY
+    return null
   }
 }
 
-export async function getParkingSpotsService(): Promise<ParkingSpot[]> {
-  const cacheKey = 'parking-spots'
+export async function getParkingSpotsService(filters?: {
+  type?: string
+  date?: string
+  startTime?: string
+  endTime?: string
+}): Promise<ParkingSpot[]> {
+  const cacheKey = filters ? `parking-spots-${JSON.stringify(filters)}` : 'parking-spots'
   const cached = getCached<ParkingSpot[]>(cacheKey)
   if (cached) return cached
 
   try {
     const api = getApiClient()
-    const { data } = await api.get<ApiResponse<ParkingSpot[]> | ParkingSpot[]>('/parking/spots')
+    const params: Record<string, string> = {}
+    if (filters?.type) params.type = filters.type
+    if (filters?.date) params.date = filters.date
+    if (filters?.startTime) params.startTime = filters.startTime
+    if (filters?.endTime) params.endTime = filters.endTime
+
+    const { data } = await api.get<ApiResponse<ParkingSpot[]> | ParkingSpot[]>('/parking/spots', { params })
     const spots = unwrapResponse<ParkingSpot[]>(data)
     setCache(cacheKey, spots, TTL.SPOTS)
     return spots

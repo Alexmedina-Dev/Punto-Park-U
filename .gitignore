@@ -1,4 +1,11 @@
-# SDD — skill registry
+# SENA Evidence files - do not commit
+tests/evidencia*.spec.ts
+tests/video-evidencia*.spec.ts
+tests/responsive-fix-verification.spec.ts
+tests/visual-comparison.spec.ts
+tests/login-pages.spec.ts
+evidencia-*.png
+Evidencia_*.docx — skill registry
 .atl/
 
 # Dependencies

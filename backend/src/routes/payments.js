@@ -18,6 +18,9 @@ router.get('/epayco/:id/status', epaycoController.getPaymentStatus);
 // POST /api/payments/epayco/:id/refund — Refund ePayco payment (admin)
 router.post('/epayco/:id/refund', epaycoController.refundPayment);
 
+// POST /api/payments/:id/confirm — Confirm manual payment (admin/operator)
+router.post('/:id/confirm', paymentController.confirmManualPayment);
+
 // ── Standard payment routes ────────────────────────────────────────────
 
 // GET /api/payments/stats — must come before /:id to avoid matching "stats" as an id

@@ -40,6 +40,7 @@ const STATUS_LABELS: Record<string, string> = {
   completed: 'Completado',
   pending: 'Pendiente',
   pending_epayco: 'Pendiente de pago',
+  pending_manual: 'Pendiente de confirmación',
   failed: 'Fallido',
   refunded: 'Reembolsado',
 }
@@ -48,6 +49,7 @@ const STATUS_ICONS: Record<string, string> = {
   completed: 'check_circle',
   pending: 'schedule',
   pending_epayco: 'account_balance',
+  pending_manual: 'hourglass_top',
   failed: 'cancel',
   refunded: 'replay',
 }
@@ -186,6 +188,21 @@ export function PaymentStatus({
             <p className="text-sm text-on-surface-var mt-2 flex items-center gap-1">
               <span className="material-symbols-outlined text-sm">info</span>
               Esperando confirmación de ePayco. La página se actualizará automáticamente.
+            </p>
+          )}
+
+          {/* Manual payment pending status */}
+          {status === 'pending' && payment.method !== 'epayco' && payment.method !== 'cash' && payment.method !== 'pos' && (
+            <p className="text-sm text-on-surface-var mt-2 flex items-center gap-1">
+              <span className="material-symbols-outlined text-sm">info</span>
+              Pendiente de confirmación por un operador.
+            </p>
+          )}
+
+          {/* Manual payment proof */}
+          {payment.manualPaymentProof && (
+            <p className="text-xs text-on-surface-var mt-2 font-mono">
+              Comprobante: {payment.manualPaymentProof}
             </p>
           )}
 

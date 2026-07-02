@@ -1,5 +1,46 @@
-import axios, { AxiosInstance, AxiosError } from 'axios'
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios'
 import type { ApiConfig } from '@punto-park-u/shared-types'
+
+// ── Offline cache for GET requests ──
+
+const CACHEABLE_ENDPOINTS = ['/tariffs', '/schedule', '/parking/availability', '/parking/reservations', '/vehicles']
+
+function getCacheKey(url: string): string {
+  const path = url.split('?')[0] ?? url
+  return `cache_${path}`
+}
+
+function getCachedResponse<T>(url: string): { data: T; stale: true } | null {
+  try {
+    const key = getCacheKey(url)
+    const raw = localStorage.getItem(key)
+    if (!raw) return null
+    return { data: JSON.parse(raw) as T, stale: true }
+  } catch {
+    return null
+  }
+}
+
+function setCachedResponse(url: string, data: unknown): void {
+  try {
+    const key = getCacheKey(url)
+    localStorage.setItem(key, JSON.stringify(data))
+  } catch {}
+}
+
+function isCacheableEndpoint(url: string): boolean {
+  const path = url.split('?')[0] ?? ''
+  return CACHEABLE_ENDPOINTS.some((ep) => path === ep || path.endsWith(ep))
+}
+
+export function clearApiCache(): void {
+  const keys = Object.keys(localStorage)
+  for (const key of keys) {
+    if (key.startsWith('cache_/')) {
+      localStorage.removeItem(key)
+    }
+  }
+}
 
 // ── Module-level API instance ──
 // Services import getApiClient() to use the shared Axios instance.
@@ -113,12 +154,40 @@ function createApiClient(config: ApiConfig): AxiosInstance {
     failedQueue = []
   }
 
-  // ── Response Interceptor: Handle 401 globally ──
+  // ── Response Interceptor: Cache successful GETs + return stale on network error ──
   api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      if (
+        response.config.method === 'get' &&
+        response.config.url &&
+        isCacheableEndpoint(response.config.url)
+      ) {
+        setCachedResponse(response.config.url, response.data)
+      }
+      return response
+    },
     async (error: AxiosError) => {
       const originalRequest = error.config as { _retry?: boolean; url?: string; headers?: Record<string, string> } & typeof error.config
       if (!originalRequest) return Promise.reject(error)
+
+      // On network failure for cacheable GETs, return stale data from localStorage
+      if (
+        !error.response &&
+        originalRequest.method?.toLowerCase() === 'get' &&
+        originalRequest.url &&
+        isCacheableEndpoint(originalRequest.url)
+      ) {
+        const cached = getCachedResponse(originalRequest.url)
+        if (cached) {
+          return {
+            data: cached.data,
+            status: 200,
+            statusText: 'OK (cached)',
+            headers: {},
+            config: originalRequest,
+          } as ReturnType<AxiosInstance['get']> extends Promise<infer R> ? R : never
+        }
+      }
 
       // Skip retry for login/register requests
       const isAuthRequest =
@@ -172,7 +241,20 @@ function createApiClient(config: ApiConfig): AxiosInstance {
         const respData = data as Record<string, unknown> | undefined
 
         if (respData?.error) {
-          error.message = respData.error as string
+          let message = respData.error as string
+          // If backend sent validation details, append them
+          if (Array.isArray(respData.details) && respData.details.length > 0) {
+            const detailsText = respData.details
+              .map((d: { field?: string; message?: string }) =>
+                d.field ? `${d.field}: ${d.message}` : d.message
+              )
+              .filter(Boolean)
+              .join('; ')
+            if (detailsText) {
+              message = `${message} — ${detailsText}`
+            }
+          }
+          error.message = message
         } else if (respData?.message) {
           error.message = respData.message as string
         }

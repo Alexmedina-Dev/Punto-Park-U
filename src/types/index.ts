@@ -30,6 +30,8 @@ export type {
   PricingConfig,
   TimeRange,
   Schedule,
+  SpotType,
+  SpotStatus,
   ParkingSpot,
   ParkingStats,
   ParkingEntry,

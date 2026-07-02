@@ -48,8 +48,8 @@ export function RegisterPage() {
     if (formData.apellidos.length < 2) {
       newErrors.apellidos = 'Debe tener al menos 2 caracteres'
     }
-    if (!/^\d{6,12}$/.test(formData.cedula)) {
-      newErrors.cedula = 'Debe contener entre 6 y 12 números'
+    if (!/^\d{6,10}$/.test(formData.cedula)) {
+      newErrors.cedula = 'Debe contener entre 6 y 10 números'
     }
     if (!formData.fechaNacimiento) {
       newErrors.fechaNacimiento = 'Debes ingresar una fecha de nacimiento'

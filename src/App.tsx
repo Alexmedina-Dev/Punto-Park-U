@@ -1,12 +1,14 @@
 import { Toaster } from 'sonner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { NotificationToast } from '@/components/NotificationToast'
+import { OfflineIndicator } from '@/components/OfflineIndicator'
 import { AppRoutes } from '@/routes/AppRoutes'
 
 export function App() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-bg text-on-bg">
+        <OfflineIndicator />
         <Toaster
           position="bottom-right"
           theme="dark"

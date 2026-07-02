@@ -1,10 +1,12 @@
 import { create } from 'zustand'
 import type { AnomalyStats, Anomaly } from '@punto-park-u/shared-types'
+import type { OccupancyPrediction } from '@punto-park-u/shared-api'
 import {
   getAnomalyStatsService,
   getRecentAnomaliesService,
   runAnomalyDetectionService,
   resolveAnomalyService,
+  getOccupancyPredictionService,
   withRetry,
 } from '@punto-park-u/shared-api'
 
@@ -13,6 +15,7 @@ export interface AnalyticsState {
   stats: AnomalyStats | null
   anomalies: Anomaly[]
   recentAnomalies: Anomaly[]
+  occupancyPrediction: OccupancyPrediction | null
 
   // Loading & Error
   loading: boolean
@@ -22,12 +25,14 @@ export interface AnalyticsState {
   setStats: (stats: AnomalyStats | null) => void
   setAnomalies: (anomalies: Anomaly[]) => void
   setRecentAnomalies: (anomalies: Anomaly[]) => void
+  setOccupancyPrediction: (prediction: OccupancyPrediction | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
 
   // Async Actions
   fetchStats: () => Promise<void>
   fetchRecentAnomalies: () => Promise<void>
+  fetchOccupancyPrediction: (days?: number) => Promise<void>
   resolveAnomaly: (id: string) => Promise<void>
   runDetection: () => Promise<void>
 }
@@ -37,6 +42,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   stats: null,
   anomalies: [],
   recentAnomalies: [],
+  occupancyPrediction: null,
   loading: false,
   error: null,
 
@@ -44,6 +50,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   setStats: (stats) => set({ stats }),
   setAnomalies: (anomalies) => set({ anomalies }),
   setRecentAnomalies: (recentAnomalies) => set({ recentAnomalies }),
+  setOccupancyPrediction: (occupancyPrediction) => set({ occupancyPrediction }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
 
@@ -86,6 +93,26 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
       set({ loading: false })
     } catch (err: any) {
       set({ error: err.message || 'Error al ejecutar detección', loading: false })
+    }
+  },
+
+  // Fetch Prophet occupancy prediction
+  fetchOccupancyPrediction: async (days = 7) => {
+    set({ loading: true, error: null })
+    try {
+      const prediction = await withRetry(() => getOccupancyPredictionService(days))
+      set({ occupancyPrediction: prediction, loading: false })
+    } catch (err: any) {
+      set({
+        occupancyPrediction: {
+          forecast: [],
+          historical_days: 0,
+          model: 'prophet',
+          generated_at: new Date().toISOString(),
+          error: err.message || 'Error al obtener predicción',
+        },
+        loading: false,
+      })
     }
   },
 }))

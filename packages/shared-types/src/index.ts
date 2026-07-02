@@ -181,11 +181,18 @@ export interface Schedule {
   sunday: TimeRange
 }
 
+export type SpotType = 'car' | 'moto' | 'bike'
+
+export type SpotStatus = 'libre' | 'ocupado' | 'reservado'
+
 export interface ParkingSpot {
   id: string
+  code: string
   zone: 'A' | 'B' | 'C'
-  status: 'libre' | 'ocupado' | 'reservado'
-  vehicleType?: VehicleType
+  type: SpotType
+  status: SpotStatus
+  floor?: number | null
+  accessible?: boolean
   plate?: string
 }
 
@@ -211,7 +218,7 @@ export interface ParkingEntry {
 export interface ReportFilters {
   period: 'today' | 'week' | 'month' | 'custom'
   type: 'all' | 'car' | 'moto' | 'bike'
-  payment: 'all' | 'cash' | 'pos' | 'epayco'
+  payment: 'all' | 'cash' | 'pos' | 'epayco' | 'nequi' | 'daviplata' | 'transfer'
   dateFrom?: string
   dateTo?: string
 }
@@ -236,6 +243,9 @@ export interface ReportPaymentKPI {
   efectivo: number
   pos: number
   epayco: number
+  nequi: number
+  daviplata: number
+  transfer: number
 }
 
 export interface ReportKPI {
@@ -339,11 +349,14 @@ export interface Payment {
   vehicleId: string
   reservationId?: string
   amount: number
-  method: 'cash' | 'pos' | 'epayco'
+  method: 'cash' | 'pos' | 'epayco' | 'pending' | 'nequi' | 'daviplata' | 'transfer'
   status: 'pending' | 'pending_epayco' | 'completed' | 'failed' | 'refunded'
   date: string
   epaycoRef?: string | null
   checkoutUrl?: string | null
+  manualPaymentProof?: string | null
+  confirmedBy?: string | null
+  confirmedAt?: string | null
   createdAt?: string
   updatedAt?: string
 }

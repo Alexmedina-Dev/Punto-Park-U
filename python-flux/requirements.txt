@@ -10,3 +10,8 @@ easyocr==1.7.0
 numpy==1.26.4
 pillow==10.4.0
 python-multipart==0.0.9
+
+# ── Prophet AI Predictive Analytics ────────────────────────────────
+prophet==1.1.6
+pandas==2.2.3
+pymongo==4.10.1

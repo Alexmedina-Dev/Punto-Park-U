@@ -3,7 +3,7 @@
 // ║  Shared API services and Axios instance                             ║
 // ╚══════════════════════════════════════════════════════════════════════╝
 
-export { initApiClient, getApiClient } from './api.js'
+export { initApiClient, getApiClient, clearApiCache } from './api.js'
 export { parseError, withRetry } from './errorHandler.js'
 
 // Service re-exports
@@ -64,6 +64,7 @@ export {
   createEpaycoCheckoutService,
   getEpaycoPaymentStatusService,
   refundEpaycoPaymentService,
+  confirmManualPaymentService,
 } from './payment.service.js'
 
 export {
@@ -123,7 +124,9 @@ export {
   getPricingForecastService,
   updatePricingSettingsService,
   getOptimalSpotAssignmentService,
+  getOccupancyPredictionService,
 } from './analytics.service.js'
+export type { OccupancyForecastPoint, OccupancyPrediction } from './analytics.service.js'
 
 export {
   getSensorsService,

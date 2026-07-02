@@ -34,6 +34,9 @@ const METHOD_LABELS: Record<string, string> = {
   cash: 'Efectivo',
   pos: 'POS/Tarjeta',
   epayco: 'ePayco Online',
+  nequi: 'Nequi',
+  daviplata: 'Daviplata',
+  transfer: 'Transferencia',
 }
 
 /**

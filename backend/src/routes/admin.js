@@ -71,6 +71,9 @@ router.get('/analytics/revenue-trends', adminController.getRevenueTrends);
 // GET /api/admin/analytics/vehicle-insights — Vehicle type insights
 router.get('/analytics/vehicle-insights', adminController.getVehicleInsights);
 
+// GET /api/admin/analytics/occupancy-prediction — Prophet AI prediction
+router.get('/analytics/occupancy-prediction', adminController.getOccupancyPrediction);
+
 // ── Tariffs ────────────────────────────────────────────────────────────
 
 // PUT /api/admin/tariffs — Update parking tariffs

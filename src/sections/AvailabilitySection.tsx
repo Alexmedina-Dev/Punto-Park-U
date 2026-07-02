@@ -8,15 +8,14 @@ interface GaugeData {
   label: string
   used: number
   total: number
+  hasData: boolean
 }
 
-function GaugeChart({ used, total, icon, label }: GaugeData) {
+function GaugeChart({ used, total, icon, label, hasData }: GaugeData) {
   const percentage = total > 0 ? (used / total) * 100 : 0
   const displayPercentage = Math.round(percentage)
-  // SVG circumference for r=15.9155 is ~100
-  const dashArray = percentage
+  const dashArray = hasData ? percentage : 0
 
-  // Animated occupied count
   const { displayValue } = useCounter({
     target: used,
     duration: 1200,
@@ -24,42 +23,51 @@ function GaugeChart({ used, total, icon, label }: GaugeData) {
 
   return (
     <div className="flex flex-col items-center gap-3" data-testid={`gauge-${label.toLowerCase()}`}>
-        <div className="relative w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48">
+      <div className="relative w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-          {/* Background circle */}
           <path
             className="stroke-surface-high"
             fill="none"
             strokeWidth="3"
             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
           />
-          {/* Progress circle */}
-          <path
-            className="stroke-primary"
-            fill="none"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeDasharray={`${dashArray}, 100`}
-            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-            style={{ transition: 'stroke-dasharray 0.8s ease-in-out' }}
-          />
+          {hasData && (
+            <path
+              className="stroke-primary"
+              fill="none"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={`${dashArray}, 100`}
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              style={{ transition: 'stroke-dasharray 0.8s ease-in-out' }}
+            />
+          )}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="material-symbols-outlined text-3xl text-primary mb-1">{icon}</span>
-          <span className="text-on-bg font-headline" style={{ fontSize: '2.25rem', fontWeight: 900 }} data-testid={`gauge-count-${label.toLowerCase()}`}>
-            {displayValue}
-            <span className="text-sm font-normal text-on-surface-var">/{total}</span>
-          </span>
+          {hasData ? (
+            <span className="text-on-bg font-headline" style={{ fontSize: '2.25rem', fontWeight: 900 }} data-testid={`gauge-count-${label.toLowerCase()}`}>
+              {displayValue}
+              <span className="text-sm font-normal text-on-surface-var">/{total}</span>
+            </span>
+          ) : (
+            <span className="text-on-surface-var font-headline" style={{ fontSize: '2.25rem', fontWeight: 900 }} data-testid={`gauge-count-${label.toLowerCase()}`}>
+              —
+            </span>
+          )}
         </div>
       </div>
       <h3 className="text-primary font-headline" style={{ fontSize: '1.5rem', fontWeight: 900, textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>{label}</h3>
-      <p className="text-on-surface-var" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.3em' }}>{displayPercentage}% Ocupado</p>
+      <p className="text-on-surface-var" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.3em' }}>
+        {hasData ? `${displayPercentage}% Ocupado` : 'No hay datos disponibles'}
+      </p>
     </div>
   )
 }
 
 export function AvailabilitySection() {
   const availability = useAppStore((state) => state.availability)
+  const loadingState = useAppStore((state) => state.loadingState)
   const fetchAvailability = useAppStore((state) => state.fetchAvailability)
   const { time } = useLiveClock()
 
@@ -68,25 +76,30 @@ export function AvailabilitySection() {
   }, [fetchAvailability])
 
   const stats = availability?.stats
+  const isLoading = loadingState.availability
+  const hasData = stats != null
 
   const gauges: GaugeData[] = [
     {
       icon: 'directions_car',
       label: 'Vehículos',
-      used: stats?.cars.used ?? 8,
-      total: stats?.cars.total ?? 20,
+      used: stats?.cars.used ?? 0,
+      total: stats?.cars.total ?? 0,
+      hasData,
     },
     {
       icon: 'motorcycle',
       label: 'Motos',
-      used: stats?.motos.used ?? 7,
-      total: stats?.motos.total ?? 20,
+      used: stats?.motos.used ?? 0,
+      total: stats?.motos.total ?? 0,
+      hasData,
     },
     {
       icon: 'pedal_bike',
       label: 'Bicicletas',
-      used: stats?.bikes.used ?? 3,
-      total: stats?.bikes.total ?? 10,
+      used: stats?.bikes.used ?? 0,
+      total: stats?.bikes.total ?? 0,
+      hasData,
     },
   ]
 
@@ -116,10 +129,17 @@ export function AvailabilitySection() {
             </div>
           </div>
           <div className="text-right">
-            <div className="flex items-center gap-2 text-sm text-on-surface-var">
-              <span className="material-symbols-outlined text-base animate-spin-custom">sync</span>
-              <span>Actualizando...</span>
-            </div>
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-sm text-on-surface-var">
+                <span className="material-symbols-outlined text-base animate-spin-custom">sync</span>
+                <span>Cargando...</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-on-surface-var">
+                <span className="material-symbols-outlined text-base animate-spin-custom">sync</span>
+                <span>Actualizando...</span>
+              </div>
+            )}
             <p className="text-xs text-on-surface-var/60 mt-1" data-testid="live-timestamp">
               Última Sync: <span suppressHydrationWarning>{time}</span>
             </p>

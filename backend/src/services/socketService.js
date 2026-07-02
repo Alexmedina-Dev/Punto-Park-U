@@ -166,6 +166,23 @@ const emitCameraResult = (result) => {
   }
 };
 
+/**
+ * Emit a payment confirmed event to the user's personal room.
+ * @param {Object} data - { paymentId, status, amount, method, confirmedBy }
+ */
+const emitPaymentConfirmed = (data) => {
+  try {
+    getIO().to(ROOMS.user(data.userId)).emit('payment:update', {
+      paymentId: data.paymentId,
+      status: data.status,
+      amount: data.amount,
+      method: data.method,
+    });
+  } catch (err) {
+    console.error('[socket] Failed to emit payment:update:', err.message);
+  }
+};
+
 module.exports = {
   initSocketIO,
   getIO,
@@ -174,5 +191,6 @@ module.exports = {
   emitNewActivity,
   emitBarrierStatus,
   emitCameraResult,
+  emitPaymentConfirmed,
   ROOMS,
 };

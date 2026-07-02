@@ -4,6 +4,7 @@ const config = require('../config');
 const User = require('../models/User');
 const Session = require('../models/Session');
 const { createSession } = require('./sessionController');
+const emailService = require('../services/emailService');
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -361,19 +362,15 @@ const logout = async (req, res, next) => {
   }
 };
 
-// ── Helper: send verification email (mock — logs to console) ─────
+// ── Helper: send verification email ───────────────────────────────
 
 const sendVerificationEmail = async (user) => {
   const token = await user.generateVerificationToken();
   await user.save({ validateBeforeSave: false });
 
   const verifyUrl = `${config.frontendUrl}/verify-email?token=${token}`;
-  console.log('═══════════════════════════════════════════════════════');
-  console.log('  EMAIL VERIFICATION — SIMULATED EMAIL');
-  console.log(`  To:   ${user.email}`);
-  console.log(`  Link: ${verifyUrl}`);
-  console.log(`  Token expires: ${user.verificationTokenExpiry}`);
-  console.log('═══════════════════════════════════════════════════════');
+  await emailService.sendVerificationEmail(user, token);
+  console.log(`[auth] Verification email sent to ${user.email} → ${verifyUrl}`);
 };
 
 // ── POST /api/auth/verify/send ───────────────────────────────────
@@ -504,14 +501,10 @@ const forgotPassword = async (req, res, next) => {
     const resetToken = await user.setResetToken();
     await user.save({ validateBeforeSave: false });
 
-    // Log token to console for simulation (mock email)
+    // Send reset email
     const resetUrl = `${config.frontendUrl}/reset-password?token=${resetToken}`;
-    console.log('═══════════════════════════════════════════════════════');
-    console.log('  PASSWORD RESET — SIMULATED EMAIL');
-    console.log(`  To:   ${user.email}`);
-    console.log(`  Link: ${resetUrl}`);
-    console.log(`  Token expires: ${user.resetTokenExpiry}`);
-    console.log('═══════════════════════════════════════════════════════');
+    await emailService.sendPasswordResetEmail(user, resetUrl);
+    console.log(`[auth] Password reset email sent to ${user.email} → ${resetUrl}`);
 
     res.status(200).json({ success: true, message: successMessage });
   } catch (err) {

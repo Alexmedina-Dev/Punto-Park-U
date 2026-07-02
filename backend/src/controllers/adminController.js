@@ -1,3 +1,4 @@
+const axios = require('axios');
 const Tariff = require('../models/Tariff');
 const Schedule = require('../models/Schedule');
 const analyticsService = require('../services/analyticsService');
@@ -218,44 +219,14 @@ const getReportData = async (req, res, next) => {
     const Reservation = require('../models/Reservation');
     const Vehicle = require('../models/Vehicle');
 
-    let data = { labels: [], datasets: [] };
-
-    if (type === 'financial') {
-      // Daily income for the past 7 days
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        d.setHours(0, 0, 0, 0);
-        const end = new Date(d);
-        end.setHours(23, 59, 59, 999);
-        days.push({ start: d, end, label: d.toLocaleDateString('es-CO', { weekday: 'short' }) });
-      }
-
-      const incomeData = await Promise.all(
-        days.map(async (day) => {
-          const result = await Payment.aggregate([
-            { $match: { date: { $gte: day.start, $lte: day.end }, status: 'completed' } },
-            { $group: { _id: null, total: { $sum: '$amount' } } },
-          ]);
-          return result[0]?.total || 0;
-        })
-      );
-
-      data = {
-        labels: days.map((d) => d.label),
-        datasets: [
-          { label: 'Ingresos', data: incomeData, color: 'rgba(0, 240, 255, 0.6)' },
-        ],
-      };
-    } else if (type === 'occupancy') {
-      // Simulated occupancy data by hour
+    // ── Chart endpoints (occupancy, users) — keep existing behavior ────
+    if (type === 'occupancy') {
       const hours = [];
       for (let i = 6; i <= 20; i++) {
         hours.push(`${i}:00`);
       }
 
-      data = {
+      const data = {
         labels: hours,
         datasets: [
           {
@@ -265,16 +236,194 @@ const getReportData = async (req, res, next) => {
           },
         ],
       };
-    } else if (type === 'users') {
-      data = {
+      return res.json({ success: true, data });
+    }
+
+    if (type === 'users') {
+      const data = {
         labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
         datasets: [
           { label: 'Usuarios', data: [12, 19, 25, 32, 40, 48], color: 'rgba(192, 132, 252, 0.6)' },
         ],
       };
+      return res.json({ success: true, data });
     }
 
-    res.json({ success: true, data });
+    // ── Financial report — ReportContent format for exports ────────────
+    if (type === 'financial') {
+      const { period = 'week', type: vehicleTypeFilter = 'all', payment: paymentFilter = 'all', dateFrom, dateTo } = req.query;
+
+      // 1. Compute date range
+      const now = new Date();
+      let startDate, endDate;
+      if (period === 'custom' && dateFrom && dateTo) {
+        startDate = new Date(dateFrom);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(dateTo);
+        endDate.setHours(23, 59, 59, 999);
+      } else if (period === 'today') {
+        startDate = new Date(now); startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(now); endDate.setHours(23, 59, 59, 999);
+      } else if (period === 'month') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      } else {
+        // week (default: last 7 days)
+        startDate = new Date(now);
+        startDate.setDate(startDate.getDate() - 6);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(now);
+        endDate.setHours(23, 59, 59, 999);
+      }
+
+      const periodLabels = {
+        today: 'Hoy',
+        week: 'Semana actual',
+        month: new Date().toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }),
+        custom: `${dateFrom || '—'} → ${dateTo || '—'}`,
+      };
+
+      // 2. Build payment match filter
+      const paymentMatch = {
+        date: { $gte: startDate, $lte: endDate },
+        status: 'completed',
+      };
+      if (vehicleTypeFilter !== 'all') {
+        // We'll filter after populate, so no vehicle type filter here
+      }
+      if (paymentFilter !== 'all') {
+        paymentMatch.method = paymentFilter;
+      }
+
+      // 3. Query payments with populated vehicle + user
+      const payments = await Payment.find(paymentMatch)
+        .populate('vehicle', 'plate type brand model')
+        .populate('user', 'nombres apellidos')
+        .sort({ date: -1 })
+        .lean();
+
+      // 4. Filter by vehicle type after populate
+      const filteredPayments = vehicleTypeFilter !== 'all'
+        ? payments.filter((p) => p.vehicle?.type === vehicleTypeFilter)
+        : payments;
+
+      // 5. Build rows
+      const tipoMap = { car: 'Automóvil', moto: 'Motocicleta', bike: 'Bicicleta' };
+      const methodMap = { cash: 'Efectivo', pos: 'POS', epayco: 'ePayco' };
+
+      const rows = filteredPayments.map((p) => {
+        const resv = p.reservation;
+        const entryDate = p.date;
+        const durationMs = 0;
+        const durationMin = 0;
+
+        return {
+          placa: p.vehicle?.plate || 'N/A',
+          tipo: tipoMap[p.vehicle?.type] || p.vehicle?.type || 'N/A',
+          ingreso: entryDate ? entryDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+          salida: p.date ? p.date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+          duracion: durationMin > 0 ? `${Math.floor(durationMin / 60)}h ${durationMin % 60}m` : '—',
+          tarifa: `$${(p.amount || 0).toLocaleString('es-CO')}`,
+          pago: methodMap[p.method] || p.method || 'N/A',
+          conductor: p.user ? `${p.user.nombres || ''} ${p.user.apellidos || ''}`.trim() || 'Cliente' : 'Cliente',
+        };
+      });
+
+      // 6. Aggregate summary stats
+      const totalIngresos = filteredPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+      const totalVehiculos = filteredPayments.length;
+      const ticketPromedio = totalVehiculos > 0 ? Math.round(totalIngresos / totalVehiculos) : 0;
+      const diffMs = endDate - startDate;
+      const diffHours = Math.max(diffMs / (1000 * 60 * 60), 1);
+      const ingresosPorHora = Math.round(totalIngresos / diffHours);
+
+      // 7. Breakdown by vehicle type
+      const typeCounts = {};
+      const typeIngresos = {};
+      filteredPayments.forEach((p) => {
+        const key = tipoMap[p.vehicle?.type] || p.vehicle?.type || 'Otro';
+        typeCounts[key] = (typeCounts[key] || 0) + 1;
+        typeIngresos[key] = (typeIngresos[key] || 0) + (p.amount || 0);
+      });
+      const breakdown = Object.keys(typeCounts).map((tipo) => ({
+        tipo,
+        cantidad: typeCounts[tipo],
+        ingresos: typeIngresos[tipo],
+        porcentaje: totalVehiculos > 0 ? Math.round((typeCounts[tipo] / totalVehiculos) * 100) : 0,
+      }));
+
+      // 8. Payment method totals for KPIs
+      const paymentTotals = { efectivo: 0, pos: 0, epayco: 0 };
+      filteredPayments.forEach((p) => {
+        if (p.method === 'cash') paymentTotals.efectivo += p.amount || 0;
+        else if (p.method === 'pos') paymentTotals.pos += p.amount || 0;
+        else if (p.method === 'epayco') paymentTotals.epayco += p.amount || 0;
+      });
+
+      // 9. Build KPIs
+      const kpis = [
+        { label: 'Ticket promedio', value: `$${ticketPromedio.toLocaleString('es-CO')}`, detail: `${totalVehiculos} transacciones`, status: 'ok' },
+        { label: 'Ingresos por hora', value: `$${ingresosPorHora.toLocaleString('es-CO')}`, detail: `Período: ${diffHours.toFixed(0)}h`, status: 'ok' },
+        { label: 'Efectivo', value: `$${paymentTotals.efectivo.toLocaleString('es-CO')}`, detail: `${totalIngresos > 0 ? Math.round((paymentTotals.efectivo / totalIngresos) * 100) : 0}% del total`, status: 'ok' },
+        { label: 'POS', value: `$${paymentTotals.pos.toLocaleString('es-CO')}`, detail: `${totalIngresos > 0 ? Math.round((paymentTotals.pos / totalIngresos) * 100) : 0}% del total`, status: 'ok' },
+        { label: 'ePayco', value: `$${paymentTotals.epayco.toLocaleString('es-CO')}`, detail: `${totalIngresos > 0 ? Math.round((paymentTotals.epayco / totalIngresos) * 100) : 0}% del total`, status: 'ok' },
+      ];
+
+      // 10. Average parking time from reservations
+      let avgParkingTime = '—';
+      try {
+        const reservationsWithExit = await Reservation.find({
+          entryTime: { $gte: startDate, $lte: endDate },
+          exitTime: { $ne: null },
+        }).lean();
+        if (reservationsWithExit.length > 0) {
+          const totalMinutes = reservationsWithExit.reduce((sum, r) => {
+            return sum + (new Date(r.exitTime) - new Date(r.entryTime)) / (1000 * 60);
+          }, 0);
+          const avgMin = Math.round(totalMinutes / reservationsWithExit.length);
+          avgParkingTime = `${Math.floor(avgMin / 60)}h ${avgMin % 60}m`;
+        }
+      } catch {
+        // Reservation query failed — leave default
+      }
+
+      // 11. Tasa ocupación from active reservations
+      let tasaOcupacion = 0;
+      try {
+        const totalSpots = await require('../models/ParkingSpot').countDocuments();
+        const occupiedSpots = await require('../models/ParkingSpot').countDocuments({ status: 'ocupado' });
+        tasaOcupacion = totalSpots > 0 ? Math.round((occupiedSpots / totalSpots) * 100) : 0;
+      } catch {
+        // ParkingSpot model may not exist — leave 0
+      }
+
+      const content = {
+        meta: {
+          title: 'Análisis Financiero — Punto Park U',
+          subtitle: period === 'custom'
+            ? `Período personalizado: ${dateFrom} → ${dateTo}`
+            : `Análisis financiero del período seleccionado`,
+          generatedAt: now.toLocaleString('es-CO'),
+          period: periodLabels[period] || period,
+        },
+        summary: {
+          totalIngresos,
+          totalVehiculos,
+          tasaOcupacion,
+          ticketPromedio,
+          tiempoPromedio: avgParkingTime,
+          ingresosPorHora,
+        },
+        breakdown,
+        kpis,
+        rows,
+      };
+
+      return res.json({ success: true, data: content });
+    }
+
+    // Unknown report type
+    return res.status(400).json({ success: false, message: `Tipo de reporte "${type}" no soportado` });
   } catch (err) {
     next(err);
   }
@@ -386,6 +535,36 @@ const getVehicleInsights = async (req, res, next) => {
   }
 };
 
+// ── GET /api/admin/analytics/occupancy-prediction ─────────────────────
+const getOccupancyPrediction = async (req, res, next) => {
+  try {
+    const days = parseInt(req.query.days, 10) || 7;
+    const prophetUrl = process.env.PROPHET_API_URL || 'http://localhost:4002';
+
+    const response = await axios.post(`${prophetUrl}/predict/occupancy`, null, {
+      params: { days },
+      timeout: 30000,
+    });
+
+    res.json({ success: true, data: response.data });
+  } catch (err) {
+    // If Python service is down, return empty forecast gracefully
+    if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT') {
+      return res.json({
+        success: true,
+        data: {
+          forecast: [],
+          historical_days: 0,
+          model: 'prophet',
+          generated_at: new Date().toISOString(),
+          error: 'Prophet service unavailable',
+        },
+      });
+    }
+    next(err);
+  }
+};
+
 module.exports = {
   updateTariffs,
   updateSchedule,
@@ -398,4 +577,5 @@ module.exports = {
   getOccupancyForecast,
   getRevenueTrends,
   getVehicleInsights,
+  getOccupancyPrediction,
 };

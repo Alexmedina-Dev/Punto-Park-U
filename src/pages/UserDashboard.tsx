@@ -8,6 +8,7 @@ import { PaymentCard } from '@/components/PaymentCard'
 import { PaymentButton } from '@/components/PaymentButton'
 import { PaymentStatus } from '@/components/PaymentStatus'
 import { ReceiptModal } from '@/components/ReceiptModal'
+import { ManualPaymentButton } from '@/components/ManualPaymentButton'
 import { QRDisplay } from '@/components/QRDisplay'
 import { SessionsInline } from '@/components/SessionsInline'
 import { useAuth } from '@/hooks/useAuth'
@@ -150,8 +151,8 @@ export function UserDashboard() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileForm.email)) {
       errors.email = 'Formato de email inválido'
     }
-    if (profileForm.cedula && !/^\d{6,12}$/.test(profileForm.cedula)) {
-      errors.cedula = 'La cédula debe tener entre 6 y 12 dígitos'
+    if (profileForm.cedula && !/^\d{6,10}$/.test(profileForm.cedula)) {
+      errors.cedula = 'La cédula debe tener entre 6 y 10 dígitos'
     }
     if (profileForm.fechaNacimiento) {
       const birthDate = new Date(profileForm.fechaNacimiento)
@@ -334,9 +335,14 @@ export function UserDashboard() {
                   </div>
                   <div className="mt-2">
                     <div className="h-1.5 bg-outline/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: '80%' }} />
+                      <div
+                        className="h-full bg-primary rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(100, ((reservationStats?.completed ?? 0) / 30) * 100)}%` }}
+                      />
                     </div>
-                    <p className="text-xs text-on-surface-var mt-1">24 visitas · 6 para siguiente nivel</p>
+                    <p className="text-xs text-on-surface-var mt-1">
+                      {reservationsLoading ? '...' : `${reservationStats?.completed ?? 0} visitas · ${Math.max(0, 30 - (reservationStats?.completed ?? 0))} para siguiente nivel`}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -658,22 +664,29 @@ export function UserDashboard() {
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-on-bg text-sm">
-                        Paga tu reserva en línea
+                        Paga tu reserva
                       </p>
                       <p className="text-xs text-on-surface-var">
-                        Usa ePayco para pagar de forma rápida y segura
+                        Elige tu método de pago preferido
                       </p>
                     </div>
                   </div>
-                  <PaymentButton
-                    amount={5000}
-                    vehicleId={activeReservations[0]?.vehicleId || vehicles[0]?.id || ''}
-                    reservationId={activeReservations[0]?.id}
-                    email={user?.email}
-                    label="Pagar ahora"
-                    variant="primary"
-                    size="sm"
-                  />
+                  <div className="flex items-center gap-2">
+                    <ManualPaymentButton
+                      vehicleId={activeReservations[0]?.vehicleId || vehicles[0]?.id || ''}
+                      reservationId={activeReservations[0]?.id}
+                      amount={5000}
+                    />
+                    <PaymentButton
+                      amount={5000}
+                      vehicleId={activeReservations[0]?.vehicleId || vehicles[0]?.id || ''}
+                      reservationId={activeReservations[0]?.id}
+                      email={user?.email}
+                      label="ePayco"
+                      variant="primary"
+                      size="sm"
+                    />
+                  </div>
                 </div>
               </Card>
             )}

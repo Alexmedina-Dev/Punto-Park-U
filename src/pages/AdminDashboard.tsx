@@ -2,14 +2,14 @@
 import { useLocation } from 'react-router-dom'
 import { AdminLayout } from '@/components/layout'
 import { Card, Button, Badge } from '@/components/ui'
-import { KPICard, OccupancyChart, VehiclesTable, AlertsPanel, ActivityFeed, HistoryLog, TariffEditor, ScheduleEditor, ParkingMap, ReportGenerator, AnalyticsPanel, PricingPanel, HardwarePanel } from '@/components/admin'
+import { KPICard, OccupancyChart, OccupancyForecast, VehiclesTable, AlertsPanel, ActivityFeed, HistoryLog, TariffEditor, ScheduleEditor, ParkingMap, ReportGenerator, AnalyticsPanel, PricingPanel, HardwarePanel, ManualPaymentsPanel } from '@/components/admin'
 import { useAuth } from '@/hooks/useAuth'
 import { useAdminStore } from '@/stores/adminStore'
 import { formatCurrency, formatPercentage, formatNumber, formatDuration } from '@/utils/formatters'
 import wsService from '@/services/websocket.service'
 import type { Alert, ActivityLog } from '@/types'
 
-type AdminTab = 'dashboard' | 'reports' | 'users' | 'tariffs' | 'schedule' | 'map' | 'activity' | 'analytics' | 'pricing' | 'hardware'
+type AdminTab = 'dashboard' | 'reports' | 'users' | 'tariffs' | 'schedule' | 'map' | 'activity' | 'analytics' | 'pricing' | 'hardware' | 'payments'
 
 export function AdminDashboard() {
   const { user, logout, isLoading: authLoading } = useAuth()
@@ -198,7 +198,10 @@ export function AdminDashboard() {
 
         {/* ──────────────── ANALYTICS TAB ──────────────── */}
         {activeTab === 'analytics' && (
-          <AnalyticsPanel />
+          <div className="space-y-6">
+            <AnalyticsPanel />
+            <OccupancyForecast />
+          </div>
         )}
 
         {/* ──────────────── PRICING TAB ──────────────── */}
@@ -209,6 +212,11 @@ export function AdminDashboard() {
         {/* ──────────────── HARDWARE TAB ──────────────── */}
         {activeTab === 'hardware' && (
           <HardwarePanel />
+        )}
+
+        {/* ──────────────── PAYMENTS TAB ──────────────── */}
+        {activeTab === 'payments' && (
+          <ManualPaymentsPanel />
         )}
 
         {/* ──────────────── ACTIVITY TAB ──────────────── */}

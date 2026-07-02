@@ -29,13 +29,12 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 
   try {
-    const registration = await navigator.serviceWorker.register('/service-worker.js', {
-      scope: '/',
-    })
-    console.log('[notifications] Service Worker registered:', registration.scope)
+    // vite-plugin-pwa auto-registers the SW — wait for it
+    const registration = await navigator.serviceWorker.ready
+    console.log('[notifications] Service Worker ready:', registration.scope)
     return registration
   } catch (err) {
-    console.error('[notifications] Service Worker registration failed:', err)
+    console.error('[notifications] Service Worker not available:', err)
     return null
   }
 }

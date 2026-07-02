@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#7aa2f7" />
+    <title>Punto Park U — Sin conexión</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #1a1b26;
+        color: #e1e2ec;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .container {
+        text-align: center;
+        padding: 2rem;
+        max-width: 400px;
+      }
+      .logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        opacity: 0.8;
+      }
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      .subtitle {
+        color: #8b919e;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+      }
+      .cached-info {
+        background: #1d1f27;
+        border: 1px solid #32353d;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        text-align: left;
+        font-size: 0.85rem;
+      }
+      .cached-info h2 {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #8b919e;
+        margin-bottom: 0.75rem;
+      }
+      .cached-info .item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.35rem 0;
+        border-bottom: 1px solid #32353d;
+      }
+      .cached-info .item:last-child { border: none; }
+      .cached-info .label { color: #c1c6d5; }
+      .cached-info .value { color: #a7c8ff; font-weight: 600; }
+      .cached-info .no-data { color: #8b919e; font-style: italic; }
+      .btn-retry {
+        background: #7aa2f7;
+        color: #1a1b26;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .btn-retry:hover { background: #a7c8ff; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img src="/images/Logo.png" alt="Punto Park U" class="logo" />
+      <h1>Sin conexión a internet</h1>
+      <p class="subtitle">No se pudo conectar con el servidor</p>
+
+      <div class="cached-info" id="cachedInfo">
+        <h2>Datos guardados</h2>
+        <div id="cachedContent"><p class="no-data">Cargando datos en caché...</p></div>
+      </div>
+
+      <button class="btn-retry" onclick="location.reload()">Reintentar</button>
+    </div>
+
+    <script>
+      function showCachedData() {
+        const container = document.getElementById('cachedContent');
+        const entries = [];
+
+        try {
+          const tariffs = localStorage.getItem('cache_/tariffs');
+          if (tariffs) {
+            const data = JSON.parse(tariffs);
+            entries.push({ label: 'Tarifas', value: `$${data.car?.hour || '—'}/h carro` });
+          }
+        } catch {}
+
+        try {
+          const schedule = localStorage.getItem('cache_/schedule');
+          if (schedule) {
+            const data = JSON.parse(schedule);
+            entries.push({ label: 'Horario', value: `${data.weekday?.open || '—'} – ${data.weekday?.close || '—'}` });
+          }
+        } catch {}
+
+        try {
+          const availability = localStorage.getItem('cache_/parking/availability');
+          if (availability) {
+            const data = JSON.parse(availability);
+            const stats = data.stats;
+            if (stats) {
+              const total = (stats.cars?.total || 0) + (stats.motos?.total || 0) + (stats.bikes?.total || 0);
+              const used = (stats.cars?.used || 0) + (stats.motos?.used || 0) + (stats.bikes?.used || 0);
+              entries.push({ label: 'Cupos', value: `${total - used} libres de ${total}` });
+            }
+          }
+        } catch {}
+
+        if (entries.length === 0) {
+          container.innerHTML = '<p class="no-data">No hay datos guardados disponibles</p>';
+          return;
+        }
+
+        container.innerHTML = entries
+          .map(e => '<div class="item"><span class="label">' + e.label + '</span><span class="value">' + e.value + '</span></div>')
+          .join('');
+      }
+
+      showCachedData();
+    </script>
+  </body>
+</html>

@@ -46,6 +46,9 @@ const config = {
   // Camera Configuration (Phase 7 — Hardware)
   cameraServiceUrl: process.env.CAMERA_SERVICE_URL || 'http://localhost:4001',
   ocrConfidenceThreshold: parseFloat(process.env.OCR_CONFIDENCE_THRESHOLD) || 0.60,
+  // Email (Resend)
+  resendApiKey: process.env.RESEND_API_KEY || '',
+  emailFrom: process.env.EMAIL_FROM || 'Punto Park U <no-reply@puntoparku.com>',
 };
 
 const requiredVars = ['jwtSecret', 'jwtRefreshSecret'];

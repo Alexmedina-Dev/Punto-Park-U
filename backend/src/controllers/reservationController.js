@@ -1,6 +1,7 @@
 const Reservation = require('../models/Reservation');
 const Schedule = require('../models/Schedule');
 const ActivityLog = require('../models/ActivityLog');
+const { notifyUser } = require('../services/notificationService');
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -11,6 +12,7 @@ const formatReservationResponse = (reservation) => ({
   spotId: reservation.spot,
   entryTime: reservation.entryTime,
   exitTime: reservation.exitTime,
+  billingAmount: reservation.billingAmount,
   date: reservation.date,
   startTime: reservation.startTime,
   endTime: reservation.endTime,
@@ -200,6 +202,19 @@ const createReservation = async (req, res, next) => {
       reservationId: reservation._id,
       status: reservation.status,
     });
+
+    // Send reservation creation push notification
+    try {
+      await notifyUser({
+        userId: req.user.id,
+        type: 'system_alert',
+        title: 'Reserva creada',
+        message: `Tu reserva ha sido creada exitosamente. Estado: pendiente.`,
+        data: { reservationId: reservation._id.toString(), status: 'pending' },
+      });
+    } catch (notifErr) {
+      console.warn('[reservation] Failed to send creation notification:', notifErr.message);
+    }
 
     res.status(201).json({ success: true, data: formatReservationResponse(populated) });
   } catch (err) {

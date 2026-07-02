@@ -5,6 +5,7 @@ import { useAppStore } from '@/stores/appStore'
 import { showSuccessToast } from '@/utils/errorHandler'
 import { ROUTES } from '@/utils/constants'
 import { NotificationBell } from '@/components/NotificationBell'
+import { NotificationPrompt } from '@/components/NotificationPrompt'
 
 const NAV_ITEMS = [
   { id: 'why', label: 'Tu Aliado' },
@@ -324,6 +325,7 @@ export function Header() {
           )}
         </div>
       </nav>
+      {isAuthenticated && <NotificationPrompt />}
     </header>
   )
 }

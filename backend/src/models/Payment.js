@@ -26,7 +26,7 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Payment method is required'],
       enum: {
-        values: ['cash', 'pos', 'epayco'],
+        values: ['cash', 'pos', 'epayco', 'pending', 'nequi', 'daviplata', 'transfer'],
         message: '{VALUE} is not a valid payment method',
       },
     },
@@ -50,6 +50,20 @@ const paymentSchema = new mongoose.Schema(
     },
     checkoutUrl: {
       type: String,
+      default: null,
+    },
+    // ── Manual payment fields (Nequi, Daviplata, Transfer) ──────
+    manualPaymentProof: {
+      type: String,
+      default: null,
+    },
+    confirmedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    confirmedAt: {
+      type: Date,
       default: null,
     },
     webhookLogs: {

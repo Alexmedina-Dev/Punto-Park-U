@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 const ADMIN_MENU = [
   { key: 'reports', label: 'Reportes', icon: 'bar_chart', path: '/admin?tab=reports' },
+  { key: 'payments', label: 'Pagos', icon: 'payments', path: '/admin?tab=payments' },
   { key: 'tariffs', label: 'Tarifas', icon: 'attach_money', path: '/admin?tab=tariffs' },
   { key: 'schedule', label: 'Horarios', icon: 'schedule', path: '/admin?tab=schedule' },
   { key: 'map', label: 'Mapa', icon: 'map', path: '/admin?tab=map' },

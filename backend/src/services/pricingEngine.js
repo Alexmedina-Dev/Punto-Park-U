@@ -222,6 +222,28 @@ async function getPricingStats() {
   };
 }
 
+// ── Calculate Amount for Duration ──────────────────────────────────────
+
+/**
+ * Calculate billing amount for a given entry/exit window and vehicle type.
+ * Reusable by qrService and paymentController.
+ * @param {Date} entryTime
+ * @param {Date} exitTime
+ * @param {string} vehicleType - 'car' | 'moto' | 'bike'
+ * @returns {Promise<number>} Billing amount in COP
+ */
+async function calculateAmountForDuration(entryTime, exitTime, vehicleType = 'car') {
+  const tariff = await Tariff.findOne({ vehicleType });
+  if (!tariff) {
+    throw new Error(`No tariff configured for vehicle type: ${vehicleType}`);
+  }
+
+  const durationMs = new Date(exitTime).getTime() - new Date(entryTime).getTime();
+  const durationHours = durationMs / (1000 * 60 * 60);
+  const billableHours = Math.max(1, Math.ceil(durationHours));
+  return Math.round(billableHours * tariff.hourlyRate);
+}
+
 module.exports = {
   calculateDemandLevel,
   getCurrentPricing,
@@ -229,5 +251,6 @@ module.exports = {
   getOptimalSpotAssignment,
   updateDynamicPricingSettings,
   getPricingStats,
+  calculateAmountForDuration,
   TIERS,
 };

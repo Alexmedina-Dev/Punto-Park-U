@@ -108,11 +108,17 @@ export function ReportTable({ rows, filters, className = '' }: ReportTableProps)
                           ? 'bg-green-500/15 text-green-400'
                           : r.pago === 'POS'
                           ? 'bg-blue-500/15 text-blue-400'
+                          : r.pago === 'Nequi'
+                          ? 'bg-cyan-500/15 text-cyan-400'
+                          : r.pago === 'Daviplata'
+                          ? 'bg-orange-500/15 text-orange-400'
+                          : r.pago === 'Transferencia'
+                          ? 'bg-amber-500/15 text-amber-400'
                           : 'bg-purple-500/15 text-purple-400'
                       }`}
                     >
                       <span className="material-symbols-outlined text-xs">
-                        {r.pago === 'Efectivo' ? 'payments' : r.pago === 'POS' ? 'credit_card' : 'account_balance'}
+                        {r.pago === 'Efectivo' ? 'payments' : r.pago === 'POS' ? 'credit_card' : r.pago === 'Nequi' ? 'smartphone' : r.pago === 'Daviplata' ? 'account_balance_wallet' : r.pago === 'Transferencia' ? 'swap_horiz' : 'account_balance'}
                       </span>
                       {r.pago}
                     </span>

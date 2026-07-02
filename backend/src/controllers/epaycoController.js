@@ -3,6 +3,7 @@ const Reservation = require('../models/Reservation');
 const ActivityLog = require('../models/ActivityLog');
 const epaycoService = require('../services/epaycoService');
 const { emitNewActivity } = require('../services/socketService');
+const { notifyUser } = require('../services/notificationService');
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -39,7 +40,22 @@ const createCheckout = async (req, res, next) => {
   try {
     const { vehicle, reservation, amount, email } = req.body;
 
-    if (!vehicle || !amount || amount <= 0) {
+    let finalAmount = amount;
+
+    // Auto-fill amount from reservation billingAmount if not provided
+    if (!finalAmount && reservation) {
+      const reservationDoc = await Reservation.findById(reservation).populate('vehicle', 'plate type');
+      if (!reservationDoc) {
+        return res.status(404).json({ error: 'Reservation not found' });
+      }
+      if (reservationDoc.billingAmount && reservationDoc.billingAmount > 0) {
+        finalAmount = reservationDoc.billingAmount;
+      } else {
+        return res.status(400).json({ error: 'Reservation has no billing amount — complete the reservation first' });
+      }
+    }
+
+    if (!vehicle || !finalAmount || finalAmount <= 0) {
       return res.status(400).json({ error: 'Vehicle and valid amount are required' });
     }
 
@@ -50,15 +66,15 @@ const createCheckout = async (req, res, next) => {
       user: req.user.id,
       vehicle,
       reservation: reservation || null,
-      amount,
+      amount: finalAmount,
       method: 'epayco',
       status: 'pending_epayco',
     });
 
     // Call ePayco to get a checkout URL
     const checkout = await epaycoService.createCheckout({
-      amount,
-      description: `Pago Punto Park U — ${amount} COP`,
+      amount: finalAmount,
+      description: `Pago Punto Park U — ${finalAmount} COP`,
       email: userEmail,
       extra: {
         paymentId: payment._id.toString(),
@@ -80,7 +96,7 @@ const createCheckout = async (req, res, next) => {
     logActivity(req.user.id, 'ePayco checkout created', 'payment', {
       paymentId: payment._id,
       epaycoRef: checkout.ref,
-      amount,
+      amount: finalAmount,
     });
 
     res.status(201).json({
@@ -176,6 +192,21 @@ const handleWebhook = async (req, res, next) => {
         status: payment.status,
         amount: payment.amount,
       });
+
+      // Send push notification on successful payment
+      if (payment.status === 'completed') {
+        try {
+          await notifyUser({
+            userId: payment.user.toString(),
+            type: 'payment_confirmed',
+            title: 'Pago confirmado',
+            message: `Tu pago de $${payment.amount.toLocaleString()} COP ha sido procesado exitosamente.`,
+            data: { paymentId: payment._id.toString(), amount: payment.amount },
+          });
+        } catch (notifErr) {
+          console.warn('[epayco:webhook] Failed to send payment notification:', notifErr.message);
+        }
+      }
     }
 
     res.status(200).json({ success: true, message: 'Webhook processed' });

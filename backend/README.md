@@ -72,6 +72,19 @@ backend/
 | `JWT_SECRET`        | —                                                | JWT signing secret     |
 | `JWT_REFRESH_SECRET`| —                                                | Refresh token secret   |
 | `CORS_ORIGIN`       | `http://localhost:5173`                           | Allowed CORS origin    |
+| `VAPID_PUBLIC_KEY`  | —                                                | Web Push VAPID public key |
+| `VAPID_PRIVATE_KEY` | —                                                | Web Push VAPID private key |
+| `VAPID_SUBJECT`     | `mailto:admin@puntoparku.com`                    | VAPID subject (contact) |
+
+### Generating VAPID Keys
+
+Push notifications require VAPID keys. Generate them once and add to `.env`:
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Copy the output values into `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` in your `.env` file.
 
 ## Scripts
 

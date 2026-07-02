@@ -143,7 +143,31 @@ export function ReportKPIs({ summary, paymentTotals, projection, className = '' 
           subtitle="recaudado"
         />
 
-        {/* 10. Proyección del mes */}
+        {/* 10. Nequi */}
+        <KPIItem
+          title="Nequi"
+          value={formatCurrency(paymentTotals.nequi)}
+          icon="smartphone"
+          subtitle="recaudado"
+        />
+
+        {/* 11. Daviplata */}
+        <KPIItem
+          title="Daviplata"
+          value={formatCurrency(paymentTotals.daviplata)}
+          icon="account_balance_wallet"
+          subtitle="recaudado"
+        />
+
+        {/* 12. Transferencia */}
+        <KPIItem
+          title="Transferencia"
+          value={formatCurrency(paymentTotals.transfer)}
+          icon="swap_horiz"
+          subtitle="recaudado"
+        />
+
+        {/* 13. Proyección del mes */}
         <KPIItem
           title="Proyección del mes"
           value={formatCurrency(projection)}

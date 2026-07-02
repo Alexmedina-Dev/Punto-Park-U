@@ -1,6 +1,7 @@
 const Tariff = require('../models/Tariff');
 const Schedule = require('../models/Schedule');
 const ParkingSpot = require('../models/ParkingSpot');
+const Reservation = require('../models/Reservation');
 
 // ── Default data ──────────────────────────────────────────────────────
 
@@ -168,7 +169,7 @@ const getAvailability = async (req, res, next) => {
 
 const getParkingSpots = async (req, res, next) => {
   try {
-    const { zone, type } = req.query;
+    const { zone, type, date, startTime, endTime } = req.query;
 
     // Build filter from query params
     const filter = {};
@@ -182,11 +183,47 @@ const getParkingSpots = async (req, res, next) => {
       return res.json({ success: true, data: generateDefaultSpots() });
     }
 
+    // Filter out spots with overlapping reservations if date/time provided
+    let excludedSpotIds = new Set();
+    if (date && startTime && endTime) {
+      const requestDate = new Date(date);
+      const dayStart = new Date(requestDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(requestDate);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      // Find active/pending reservations that overlap the requested window
+      const overlapping = await Reservation.find({
+        status: { $in: ['pending', 'active'] },
+        spot: { $ne: null },
+        $or: [
+          // Reservation has date + time fields (new format)
+          {
+            date: { $gte: dayStart, $lte: dayEnd },
+            startTime: { $lt: endTime },
+            endTime: { $gt: startTime },
+          },
+          // Fallback: reservation uses entryTime/exitTime (legacy format)
+          {
+            entryTime: { $lte: dayEnd },
+            $or: [
+              { exitTime: { $gte: dayStart } },
+              { exitTime: null },
+            ],
+          },
+        ],
+      }).select('spot').lean();
+
+      excludedSpotIds = new Set(overlapping.map((r) => r.spot?.toString()).filter(Boolean));
+    }
+
     const data = spots.map((s) => ({
       id: s.code,
       zone: s.zone,
       type: s.type,
-      status: STATUS_MAP[s.status] || s.status,
+      floor: s.floor || null,
+      accessible: s.accessible || false,
+      status: excludedSpotIds.has(s._id.toString()) ? 'reserved' : (STATUS_MAP[s.status] || s.status),
     }));
 
     res.json({ success: true, data });

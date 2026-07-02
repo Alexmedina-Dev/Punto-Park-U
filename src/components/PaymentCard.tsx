@@ -6,12 +6,18 @@ const METHOD_LABELS: Record<string, string> = {
   cash: 'Efectivo',
   pos: 'POS/Tarjeta',
   epayco: 'ePayco',
+  nequi: 'Nequi',
+  daviplata: 'Daviplata',
+  transfer: 'Transferencia',
 }
 
 const METHOD_ICONS: Record<string, string> = {
   cash: 'payments',
   pos: 'credit_card',
   epayco: 'account_balance',
+  nequi: 'smartphone',
+  daviplata: 'account_balance_wallet',
+  transfer: 'swap_horiz',
 }
 
 const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'error' | 'info'> = {

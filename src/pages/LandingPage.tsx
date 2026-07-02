@@ -26,6 +26,14 @@ export function LandingPage() {
     fetchAvailability()
   }, [fetchTariffs, fetchSchedule, fetchAvailability])
 
+  // 30-second polling for live availability data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchAvailability()
+    }, 30_000)
+    return () => clearInterval(interval)
+  }, [fetchAvailability])
+
   // Scroll to top button visibility (debounced)
   useEffect(() => {
     const handleScroll = () => {
