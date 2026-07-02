@@ -68,20 +68,20 @@ export function KPICard({
   className = '',
 }: KPICardProps) {
   return (
-    <Card variant="glass" padding="md" className={`flex flex-col gap-2 ${className}`}>
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-xl">{icon}</span>
-          <span className="text-xs font-semibold text-on-surface-var uppercase tracking-wider">
+    <Card variant="glass" padding="md" className={`flex flex-col gap-2 min-w-0 ${className}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="material-symbols-outlined text-primary text-xl shrink-0">{icon}</span>
+          <span className="text-xs font-semibold text-on-surface-var uppercase tracking-wider truncate">
             {title}
           </span>
         </div>
         {trend && <Sparkline data={trend} color={trendColor} />}
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="text-2xl font-bold text-primary font-headline">{value}</span>
+        <span className="text-2xl font-bold text-primary font-headline truncate">{value}</span>
         {subtitle && (
-          <span className="text-xs text-on-surface-var">{subtitle}</span>
+          <span className="text-xs text-on-surface-var shrink-0">{subtitle}</span>
         )}
       </div>
     </Card>

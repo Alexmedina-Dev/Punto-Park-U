@@ -35,7 +35,7 @@ export const RETRY_CONFIG = {
 } as const
 
 // ── Parking ──
-export const VEHICLE_TYPES = ['car', 'moto', 'bike'] as const
+export const VEHICLE_TYPES = ['car', 'moto', 'camioneta', 'bike'] as const
 export const PARKING_ZONES = ['A', 'B', 'C'] as const
 
 // ── Session ──

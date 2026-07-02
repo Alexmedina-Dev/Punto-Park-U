@@ -8,7 +8,7 @@ interface VehiclesTableProps {
   className?: string
 }
 
-const VEHICLE_FILTERS = ['all', 'car', 'moto', 'suv', 'bike'] as const
+const VEHICLE_FILTERS = ['all', 'car', 'moto', 'camioneta', 'bike'] as const
 const PAYMENT_FILTERS = ['all', 'paid', 'pending'] as const
 
 /**

@@ -7,7 +7,7 @@ const tariffSchema = new mongoose.Schema(
       required: [true, 'Vehicle type is required'],
       unique: true,
       enum: {
-        values: ['car', 'moto', 'suv', 'bike'],
+        values: ['car', 'moto', 'camioneta', 'bike'],
         message: '{VALUE} is not a valid vehicle type',
       },
     },

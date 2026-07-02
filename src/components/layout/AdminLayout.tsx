@@ -8,9 +8,8 @@ const ADMIN_MENU = [
   { key: 'tariffs', label: 'Tarifas', icon: 'attach_money', path: '/admin?tab=tariffs' },
   { key: 'schedule', label: 'Horarios', icon: 'schedule', path: '/admin?tab=schedule' },
   { key: 'map', label: 'Mapa', icon: 'map', path: '/admin?tab=map' },
-  { key: 'analytics', label: 'Analítica', icon: 'insights', path: '/admin?tab=analytics' },
-  { key: 'pricing', label: 'Precios', icon: 'trending_up', path: '/admin?tab=pricing' },
-  { key: 'hardware', label: 'Hardware', icon: 'memory', path: '/admin?tab=hardware' },
+  { key: 'analytics', label: 'Analítica IA', icon: 'insights', path: '/admin?tab=analytics' },
+  { key: 'pricing', label: 'Precios Dinámicos', icon: 'trending_up', path: '/admin?tab=pricing' },
   { key: 'activity', label: 'Actividad', icon: 'history', path: '/admin?tab=activity' },
 ]
 

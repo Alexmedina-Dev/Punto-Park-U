@@ -16,7 +16,7 @@ const vehicleSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Vehicle type is required'],
       enum: {
-        values: ['car', 'moto', 'bike'],
+        values: ['car', 'moto', 'camioneta', 'bike'],
         message: '{VALUE} is not a valid vehicle type',
       },
     },

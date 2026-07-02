@@ -101,7 +101,7 @@ export interface RetryConfig {
   maxDelay: number
 }
 
-export type VehicleType = 'car' | 'moto' | 'bike'
+export type VehicleType = 'car' | 'moto' | 'camioneta' | 'bike'
 
 export type UserRole = 'admin' | 'operator' | 'user' | 'guest'
 
@@ -168,6 +168,7 @@ export interface PriceSet {
 export interface PricingConfig {
   car: PriceSet
   moto: PriceSet
+  camioneta: PriceSet
   bike: PriceSet
 }
 
@@ -181,7 +182,7 @@ export interface Schedule {
   sunday: TimeRange
 }
 
-export type SpotType = 'car' | 'moto' | 'bike'
+export type SpotType = 'car' | 'moto' | 'camioneta' | 'bike'
 
 export type SpotStatus = 'libre' | 'ocupado' | 'reservado'
 
@@ -217,7 +218,7 @@ export interface ParkingEntry {
 
 export interface ReportFilters {
   period: 'today' | 'week' | 'month' | 'custom'
-  type: 'all' | 'car' | 'moto' | 'bike'
+  type: 'all' | 'car' | 'moto' | 'camioneta' | 'bike'
   payment: 'all' | 'cash' | 'pos' | 'epayco' | 'nequi' | 'daviplata' | 'transfer'
   dateFrom?: string
   dateTo?: string

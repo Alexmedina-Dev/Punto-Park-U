@@ -8,6 +8,7 @@ const Reservation = require('../models/Reservation');
 const DEFAULT_TARIFFS = {
   car: { hour: 3000, day: 25000, month: 500000 },
   moto: { hour: 1500, day: 12000, month: 300000 },
+  camioneta: { hour: 4000, day: 30000, month: 400000 },
   bike: { hour: 1000, day: 8000, month: 200000 },
 };
 
@@ -70,6 +71,7 @@ const getTariffs = async (req, res, next) => {
     const data = {
       car: { hour: 0, day: 0, month: 0 },
       moto: { hour: 0, day: 0, month: 0 },
+      camioneta: { hour: 0, day: 0, month: 0 },
       bike: { hour: 0, day: 0, month: 0 },
     };
 

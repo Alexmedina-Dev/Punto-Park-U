@@ -42,14 +42,68 @@ export function AnalyticsPanel() {
     }
   }
 
+  if (loading && !stats) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-on-bg font-headline">
+            Analítica Predictiva — Flux AI v2.0
+          </h2>
+          <p className="text-sm text-on-surface-var mt-1">
+            Motor de inteligencia artificial para predicción de ocupación y detección de anomalías
+          </p>
+        </div>
+        <Card variant="glass" padding="lg">
+          <div className="text-center py-8 text-on-surface-var">
+            <span className="material-symbols-outlined text-4xl mb-2 animate-spin">refresh</span>
+            <p>Cargando datos de analítica...</p>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  if (error && !stats) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-on-bg font-headline">
+            Analítica Predictiva — Flux AI v2.0
+          </h2>
+          <p className="text-sm text-on-surface-var mt-1">
+            Motor de inteligencia artificial para predicción de ocupación y detección de anomalías
+          </p>
+        </div>
+        <Card variant="glass" padding="lg">
+          <div className="text-center py-8 text-on-surface-var">
+            <span className="material-symbols-outlined text-4xl mb-2">error</span>
+            <p>No se pudieron cargar los datos de analítica.</p>
+            <p className="text-sm mt-2">El servicio de IA puede no estar disponible. Verifique la conexión con el backend.</p>
+            <button
+              onClick={() => { fetchStats(); fetchRecentAnomalies() }}
+              className="mt-4 px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-primary-light transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-on-bg font-headline">
-          Analítica Predictiva — Flux AI v2.0
-        </h2>
-        <div className="flex gap-2">
+      {/* Header with description */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-on-bg font-headline break-words">
+            Analítica Predictiva — Flux AI v2.0
+          </h2>
+          <p className="text-sm text-on-surface-var mt-1 break-words">
+            Motor de inteligencia artificial para predicción de ocupación y detección de anomalías
+          </p>
+        </div>
+        <div className="flex gap-2 shrink-0">
           <button
             onClick={() => setActiveSection('overview')}
             className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${
@@ -72,6 +126,23 @@ export function AnalyticsPanel() {
           </button>
         </div>
       </div>
+
+      {/* System Status Banner */}
+      <Card variant="glass" padding="md">
+        <div className="flex items-center gap-4 flex-wrap min-w-0">
+          <div className="flex items-center gap-2 shrink-0">
+            <div className={`w-3 h-3 rounded-full ${stats?.status === 'active' ? 'bg-success animate-pulse' : 'bg-warning'}`} />
+            <span className="text-sm font-bold text-on-bg">
+              {stats?.status === 'active' ? 'Motor IA Activo' : 'Motor en entrenamiento'}
+            </span>
+          </div>
+          <div className="h-4 w-px bg-outline/20 shrink-0" />
+          <div className="text-xs text-on-surface-var min-w-0 break-words">
+            <span className="material-symbols-outlined text-xs align-text-bottom">info</span>
+            {' '}Modelo de predicción de ocupación basado en Prophet y detección de anomalías en tiempo real
+          </div>
+        </div>
+      </Card>
 
       {/* Overview Section */}
       {activeSection === 'overview' && stats && (
@@ -134,32 +205,32 @@ export function AnalyticsPanel() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card variant="glass" title="Métricas de Predicción">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-outline">
-                  <span className="text-sm text-on-surface-var">MAE (Error Absoluto Medio)</span>
-                  <span className="font-bold text-on-bg">{formatNumber(stats.mae)}</span>
+            <Card variant="glass" title="Métricas del Modelo Predictivo">
+                <div className="space-y-3">
+                <div className="flex justify-between items-center gap-3 py-2 border-b border-outline min-w-0">
+                  <span className="text-sm text-on-surface-var break-words min-w-0">MAE (Error Absoluto Medio)</span>
+                  <span className="font-bold text-on-bg shrink-0">{formatNumber(stats.mae)}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-outline">
-                  <span className="text-sm text-on-surface-var">RMSE (Raíz Error Cuadrático)</span>
-                  <span className="font-bold text-on-bg">{formatNumber(stats.rmse)}</span>
+                <div className="flex justify-between items-center gap-3 py-2 border-b border-outline min-w-0">
+                  <span className="text-sm text-on-surface-var break-words min-w-0">RMSE (Raíz Error Cuadrático)</span>
+                  <span className="font-bold text-on-bg shrink-0">{formatNumber(stats.rmse)}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-outline">
-                  <span className="text-sm text-on-surface-var">R² (Coeficiente de Determinación)</span>
-                  <span className="font-bold text-on-bg">{formatNumber(stats.r2)}</span>
+                <div className="flex justify-between items-center gap-3 py-2 border-b border-outline min-w-0">
+                  <span className="text-sm text-on-surface-var break-words min-w-0">R² (Coeficiente de Determinación)</span>
+                  <span className="font-bold text-on-bg shrink-0">{formatNumber(stats.r2)}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-outline">
-                  <span className="text-sm text-on-surface-var">Tasa de Predicción Temprana</span>
-                  <span className="font-bold text-on-bg">{formatPercentage(stats.earlyPredictionRate * 100)}</span>
+                <div className="flex justify-between items-center gap-3 py-2 border-b border-outline min-w-0">
+                  <span className="text-sm text-on-surface-var break-words min-w-0">Tasa de Predicción Temprana</span>
+                  <span className="font-bold text-on-bg shrink-0">{formatPercentage(stats.earlyPredictionRate * 100)}</span>
                 </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-sm text-on-surface-var">Predicciones Últimos 7 Días</span>
-                  <span className="font-bold text-on-bg">{formatNumber(stats.predictionsLast7Days)}</span>
+                <div className="flex justify-between items-center gap-3 py-2 min-w-0">
+                  <span className="text-sm text-on-surface-var break-words min-w-0">Predicciones Últimos 7 Días</span>
+                  <span className="font-bold text-on-bg shrink-0">{formatNumber(stats.predictionsLast7Days)}</span>
                 </div>
               </div>
             </Card>
 
-            <Card variant="glass" title="Estado del Sistema">
+            <Card variant="glass" title="Estado del Sistema IA">
               <div className="space-y-3">
                 <div className="flex items-center gap-3 py-2">
                   <div className={`w-3 h-3 rounded-full ${stats.status === 'active' ? 'bg-success' : 'bg-warning'}`} />
@@ -195,13 +266,13 @@ export function AnalyticsPanel() {
       {/* Anomalies Section */}
       {activeSection === 'anomalies' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <p className="text-sm text-on-surface-var">
               {recentAnomalies.length} anomalías sin resolver
             </p>
             <button
               onClick={handleRunDetection}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-primary-light transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-primary-light transition-colors self-start sm:self-auto"
               disabled={loading}
             >
               <span className="material-symbols-outlined text-base">play_arrow</span>
@@ -214,15 +285,16 @@ export function AnalyticsPanel() {
               <div className="text-center text-on-surface-var">
                 <span className="material-symbols-outlined text-4xl mb-2">check_circle</span>
                 <p>No hay anomalías detectadas recientemente</p>
+                <p className="text-sm mt-2">El sistema está operando dentro de parámetros normales</p>
               </div>
             </Card>
           ) : (
             <div className="space-y-3">
               {recentAnomalies.map((anomaly) => (
                 <Card key={anomaly._id} variant="glass" padding="md">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Badge className={getSeverityColor(anomaly.severity)}>
                           {anomaly.severity}
                         </Badge>
@@ -230,8 +302,8 @@ export function AnalyticsPanel() {
                           {new Date(anomaly.timestamp).toLocaleString('es-CO')}
                         </span>
                       </div>
-                      <p className="text-sm font-bold text-on-bg">{anomaly.title}</p>
-                      <p className="text-sm text-on-surface-var">{anomaly.message}</p>
+                      <p className="text-sm font-bold text-on-bg break-words">{anomaly.title}</p>
+                      <p className="text-sm text-on-surface-var break-words">{anomaly.message}</p>
                       {anomaly.score && (
                         <p className="text-xs text-on-surface-var">
                           Score: {formatNumber(anomaly.score)}

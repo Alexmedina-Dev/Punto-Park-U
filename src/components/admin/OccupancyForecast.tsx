@@ -149,16 +149,16 @@ export function OccupancyForecast({ className = '' }: OccupancyForecastProps) {
 
   return (
     <Card variant="glass" className={className}>
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-bold text-on-bg font-headline">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div className="min-w-0">
+          <h3 className="text-lg font-bold text-on-bg font-headline break-words">
             Predicción de Ocupación
           </h3>
-          <p className="text-xs text-on-surface-var mt-0.5">
+          <p className="text-xs text-on-surface-var mt-0.5 break-words">
             Predicción generada por IA (Prophet) — {forecastDays} días
           </p>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 shrink-0">
           {[3, 7, 14].map((d) => (
             <button
               key={d}

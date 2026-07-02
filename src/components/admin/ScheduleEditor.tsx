@@ -69,14 +69,14 @@ export function ScheduleEditor() {
   return (
     <div className="space-y-6">
       {/* Header with Save */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="min-w-0">
           <h3 className="text-xl font-bold text-primary font-headline">Horarios de Atención</h3>
           <p className="text-sm text-on-surface-var mt-1">
             Configura los horarios de apertura y cierre del parqueadero
           </p>
         </div>
-        <Button onClick={handleSave} loading={isSaving}>
+        <Button onClick={handleSave} loading={isSaving} className="self-start sm:self-auto">
           <span className="material-symbols-outlined text-base">save</span>
           Guardar Horarios
         </Button>
@@ -90,7 +90,7 @@ export function ScheduleEditor() {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-primary">{getDayLabel(day)}</span>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                 <div className="flex-1">
                   <label className="block text-xs text-on-surface-var mb-1">
                     <span className="material-symbols-outlined text-base align-middle mr-1">wb_sunny</span>
@@ -105,7 +105,8 @@ export function ScheduleEditor() {
                       transition-colors"
                   />
                 </div>
-                <span className="text-on-surface-var mt-6 text-lg">→</span>
+                <span className="hidden sm:inline text-on-surface-var mt-6 text-lg">→</span>
+                <span className="sm:hidden text-on-surface-var text-center text-lg">↓</span>
                 <div className="flex-1">
                   <label className="block text-xs text-on-surface-var mb-1">
                     <span className="material-symbols-outlined text-base align-middle mr-1">nights_stay</span>
@@ -129,13 +130,13 @@ export function ScheduleEditor() {
       {/* Live Preview */}
       <Card variant="glass" title="Vista Previa en Vivo" padding="md">
         <div className="space-y-3">
-          <div className="flex items-center justify-between py-2 px-3 bg-surface-container rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 px-3 bg-surface-container rounded-lg">
             <span className="text-sm font-bold text-on-bg">Lunes a Sábado</span>
             <span className="text-sm text-primary font-bold">
               {formatTime(schedule.weekday.open)} — {formatTime(schedule.weekday.close)}
             </span>
           </div>
-          <div className="flex items-center justify-between py-2 px-3 bg-surface-container rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 px-3 bg-surface-container rounded-lg">
             <span className="text-sm font-bold text-on-bg">Domingos y Festivos</span>
             <span className="text-sm text-primary font-bold">
               {formatTime(schedule.sunday.open)} — {formatTime(schedule.sunday.close)}

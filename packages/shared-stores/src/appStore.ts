@@ -86,6 +86,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         tariffs: {
           car: { hour: 3000, day: 25000, month: 300000 },
           moto: { hour: 1500, day: 12000, month: 150000 },
+          camioneta: { hour: 4000, day: 30000, month: 400000 },
           bike: { hour: 1000, day: 8000, month: 100000 },
         },
         loadingState: { ...state.loadingState, tariffs: false },

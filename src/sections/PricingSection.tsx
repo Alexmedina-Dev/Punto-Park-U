@@ -9,6 +9,8 @@ interface PricingCardData {
   priceKey: 'car' | 'moto' | 'bike'
   fallbackPrice: number
   features: string[]
+  objectFit?: 'cover' | 'contain'
+  imageBg?: string
 }
 
 const PRICING_CARDS: PricingCardData[] = [
@@ -43,6 +45,8 @@ const PRICING_CARDS: PricingCardData[] = [
     priceKey: 'bike',
     fallbackPrice: 1000,
     features: ['Rack Seguro', 'Zona Protegida'],
+    objectFit: 'contain',
+    imageBg: 'bg-surface-container',
   },
 ]
 
@@ -83,11 +87,11 @@ export function PricingSection() {
               className="overflow-hidden text-center animate-slide-up hover-scale border-b-8 border-primary-container bg-surface"
               data-testid={`pricing-card-${card.title.toLowerCase().replace(/[\s/]+/g, '-')}`}
             >
-              <div className="aspect-[4/3] overflow-hidden img-hover-zoom">
+              <div className={`aspect-[4/3] overflow-hidden img-hover-zoom ${card.imageBg ?? ''}`}>
                 <img
                   src={card.image}
                   alt={card.alt}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full ${card.objectFit === 'contain' ? 'object-contain p-2' : 'object-cover'}`}
                   loading="lazy"
                 />
               </div>

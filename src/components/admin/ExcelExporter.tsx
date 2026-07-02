@@ -17,7 +17,7 @@ interface ExcelExporterProps {
  *   - Column widths, colors, merged cells, borders
  */
 async function generateExcel(content: ReportContent): Promise<void> {
-  const XLSX = await import('xlsx')
+  const XLSX = await import('xlsx-js-style')
 
   const s = content.summary
   const rows = content.rows

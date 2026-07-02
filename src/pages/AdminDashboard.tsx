@@ -2,14 +2,14 @@
 import { useLocation } from 'react-router-dom'
 import { AdminLayout } from '@/components/layout'
 import { Card, Button, Badge } from '@/components/ui'
-import { KPICard, OccupancyChart, OccupancyForecast, VehiclesTable, AlertsPanel, ActivityFeed, HistoryLog, TariffEditor, ScheduleEditor, ParkingMap, ReportGenerator, AnalyticsPanel, PricingPanel, HardwarePanel, ManualPaymentsPanel } from '@/components/admin'
+import { KPICard, OccupancyChart, OccupancyForecast, VehiclesTable, AlertsPanel, ActivityFeed, HistoryLog, TariffEditor, ScheduleEditor, ParkingMap, ReportGenerator, AnalyticsPanel, PricingPanel, ManualPaymentsPanel } from '@/components/admin'
 import { useAuth } from '@/hooks/useAuth'
 import { useAdminStore } from '@/stores/adminStore'
 import { formatCurrency, formatPercentage, formatNumber, formatDuration } from '@/utils/formatters'
 import wsService from '@/services/websocket.service'
 import type { Alert, ActivityLog } from '@/types'
 
-type AdminTab = 'dashboard' | 'reports' | 'users' | 'tariffs' | 'schedule' | 'map' | 'activity' | 'analytics' | 'pricing' | 'hardware' | 'payments'
+type AdminTab = 'dashboard' | 'reports' | 'users' | 'tariffs' | 'schedule' | 'map' | 'activity' | 'analytics' | 'pricing' | 'payments'
 
 export function AdminDashboard() {
   const { user, logout, isLoading: authLoading } = useAuth()
@@ -25,13 +25,14 @@ export function AdminDashboard() {
     fetchHourlyOccupancy,
     fetchParkedVehicles,
   } = useAdminStore()
-  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard')
+  const [activeTab, setActiveTab] = useState<AdminTab | null>(null)
   
   // Read tab from URL query params
   const location = useLocation()
   useEffect(() => {
     const tab = new URLSearchParams(location.search).get('tab') as AdminTab
     if (tab) setActiveTab(tab)
+    else setActiveTab(null)
   }, [location.search])
 
   const fetchAll = useCallback(() => {
@@ -74,16 +75,16 @@ export function AdminDashboard() {
     <AdminLayout>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-primary font-headline">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-primary font-headline break-words">
               Panel de Administración
             </h1>
-            <p className="text-on-surface-var mt-1">
+            <p className="text-on-surface-var mt-1 truncate">
               Bienvenido, {user?.nombres || user?.username || 'Admin'}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <Badge variant="info">Admin</Badge>
             <Button variant="ghost" onClick={logout} loading={authLoading}>
               <span className="material-symbols-outlined text-base">logout</span>
@@ -91,6 +92,47 @@ export function AdminDashboard() {
             </Button>
           </div>
         </div>
+
+        {/* ──────────────── WELCOME / NO TAB SELECTED ──────────────── */}
+        {activeTab === null && (
+          <div className="space-y-6">
+            <Card variant="glass" padding="lg">
+              <div className="text-center py-12 max-w-2xl mx-auto">
+                <span className="material-symbols-outlined text-6xl text-primary mb-4 block">
+                  admin_panel_settings
+                </span>
+                <h2 className="text-2xl font-bold text-primary font-headline mb-3">
+                  Panel de Control
+                </h2>
+                <p className="text-on-surface-var mb-8 leading-relaxed">
+                  Selecciona una sección del menú lateral para comenzar a gestionar tu parqueadero.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { icon: 'dashboard', label: 'Dashboard', desc: 'KPIs y métricas en tiempo real', tab: 'dashboard' },
+                    { icon: 'bar_chart', label: 'Reportes', desc: 'Genera y exporta reportes', tab: 'reports' },
+                    { icon: 'local_parking', label: 'Mapa', desc: 'Estado del parqueadero', tab: 'map' },
+                    { icon: 'paid', label: 'Tarifas', desc: 'Configura precios por vehículo', tab: 'tariffs' },
+                    { icon: 'schedule', label: 'Horarios', desc: 'Gestiona turnos y horarios', tab: 'schedule' },
+                    { icon: 'monitoring', label: 'Analítica', desc: 'Tendencias y pronósticos', tab: 'analytics' },
+                  ].map((item) => (
+                    <button
+                      key={item.tab}
+                      onClick={() => setActiveTab(item.tab as AdminTab)}
+                      className="flex flex-col items-center gap-2 p-5 rounded-xl border border-outline/10 bg-surface hover:bg-surface-container hover:border-primary/30 transition-all duration-200 cursor-pointer group"
+                    >
+                      <span className="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform">
+                        {item.icon}
+                      </span>
+                      <span className="font-semibold text-on-surface text-sm">{item.label}</span>
+                      <span className="text-xs text-on-surface-var text-center">{item.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
 
         {/* ──────────────── DASHBOARD TAB ──────────────── */}
         {activeTab === 'dashboard' && (
@@ -209,11 +251,6 @@ export function AdminDashboard() {
           <PricingPanel />
         )}
 
-        {/* ──────────────── HARDWARE TAB ──────────────── */}
-        {activeTab === 'hardware' && (
-          <HardwarePanel />
-        )}
-
         {/* ──────────────── PAYMENTS TAB ──────────────── */}
         {activeTab === 'payments' && (
           <ManualPaymentsPanel />
@@ -221,7 +258,7 @@ export function AdminDashboard() {
 
         {/* ──────────────── ACTIVITY TAB ──────────────── */}
         {activeTab === 'activity' && (
-          <ActivityFeed entries={activityFeed} onNewEntry={handleNewActivity} />
+          <ActivityFeed entries={activityFeed} onNewEntry={handleNewActivity} standalone />
         )}
       </div>
     </AdminLayout>

@@ -20,6 +20,7 @@ interface VehicleFormProps {
 const VEHICLE_TYPES = [
   { value: 'car', label: 'Vehículo', icon: 'directions_car' },
   { value: 'moto', label: 'Moto', icon: 'two_wheeler' },
+  { value: 'camioneta', label: 'Camioneta', icon: 'local_shipping' },
   { value: 'bike', label: 'Bicicleta', icon: 'pedal_bike' },
 ]
 
@@ -123,7 +124,7 @@ export function VehicleForm({
         <label className="block text-sm font-medium text-on-surface-var mb-2">
           Tipo de Vehículo
         </label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {VEHICLE_TYPES.map((vt) => (
             <button
               key={vt.value}

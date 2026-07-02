@@ -15,7 +15,8 @@ type RGB = [number, number, number]
  */
 async function generatePDF(content: ReportContent): Promise<void> {
   const { jsPDF } = await import('jspdf')
-  await import('jspdf-autotable')
+  const { applyPlugin } = await import('jspdf-autotable')
+  applyPlugin(jsPDF)
 
   const doc: any = new jsPDF('p', 'mm', 'a4')
   const pw = doc.internal.pageSize.getWidth()

@@ -9,6 +9,7 @@ interface ActivityFeedProps {
   entries: ActivityLog[]
   className?: string
   onNewEntry?: (entry: ActivityLog) => void
+  standalone?: boolean
 }
 
 const typeIcons: Record<string, string> = {
@@ -27,6 +28,15 @@ const typeColors: Record<string, string> = {
   payment: 'text-green-400',
   entry: 'text-primary',
   exit: 'text-yellow-400',
+}
+
+const typeLabels: Record<string, string> = {
+  create: 'Creación',
+  update: 'Actualización',
+  delete: 'Eliminación',
+  payment: 'Pago',
+  entry: 'Entrada',
+  exit: 'Salida',
 }
 
 /**
@@ -51,7 +61,7 @@ function mapWsActivityToLog(wsActivity: WsActivityEvent): ActivityLog {
  * Shows a timeline of the latest actions in the system.
  * Subscribes to real-time activity updates via WebSocket.
  */
-export function ActivityFeed({ entries, className = '', onNewEntry }: ActivityFeedProps) {
+export function ActivityFeed({ entries, className = '', onNewEntry, standalone = false }: ActivityFeedProps) {
   // Subscribe to real-time activity
   useEffect(() => {
     wsService.connect()
@@ -66,25 +76,35 @@ export function ActivityFeed({ entries, className = '', onNewEntry }: ActivityFe
     }
   }, [onNewEntry])
 
+  const displayEntries = standalone ? entries : entries.slice(0, 10)
+
   if (entries.length === 0) {
     return (
       <Card variant="glass" title="Actividad Reciente" className={className}>
         <div className="text-center py-6 text-on-surface-var text-sm">
           <span className="material-symbols-outlined text-3xl mb-2 block">history</span>
           <p>No hay actividad reciente.</p>
+          {standalone && (
+            <p className="text-xs mt-2">Las acciones en el sistema aparecerán aquí en tiempo real</p>
+          )}
         </div>
       </Card>
     )
   }
 
   return (
-    <Card variant="glass" title="Actividad Reciente" className={className}>
+    <Card variant="glass" title={standalone ? 'Registro Completo de Actividad' : 'Actividad Reciente'} className={className}>
+      {standalone && (
+        <p className="text-sm text-on-surface-var mb-4">
+          Historial de todas las acciones realizadas en el sistema, ordenadas de más reciente a más antigua.
+        </p>
+      )}
       <div className="relative">
         {/* Timeline line */}
         <div className="absolute left-3.5 top-3 bottom-3 w-px bg-outline/20" />
 
         <div className="space-y-0">
-          {entries.slice(0, 10).map((entry, i) => (
+          {displayEntries.map((entry, i) => (
             <div key={entry.id} className="flex gap-3 py-2.5 relative">
               {/* Timeline dot */}
               <div className="relative z-10 flex items-start pt-0.5">
@@ -107,8 +127,13 @@ export function ActivityFeed({ entries, className = '', onNewEntry }: ActivityFe
                   }>
                     {entry.user}
                   </Badge>
+                  {standalone && (
+                    <span className="text-[10px] text-on-surface-var/60 uppercase tracking-wide">
+                      {typeLabels[entry.type] || entry.type}
+                    </span>
+                  )}
                 </div>
-                <p className="text-xs text-on-surface-var mt-0.5 line-clamp-1">
+                <p className="text-xs text-on-surface-var mt-0.5 line-clamp-2">
                   {entry.description}
                 </p>
                 <p className="text-[10px] text-on-surface-var/60 mt-0.5">
@@ -119,6 +144,13 @@ export function ActivityFeed({ entries, className = '', onNewEntry }: ActivityFe
           ))}
         </div>
       </div>
+      {standalone && entries.length > 20 && (
+        <div className="text-center pt-4 border-t border-outline/10">
+          <p className="text-xs text-on-surface-var">
+            Mostrando {displayEntries.length} de {entries.length} registros
+          </p>
+        </div>
+      )}
     </Card>
   )
 }

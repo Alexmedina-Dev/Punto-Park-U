@@ -95,6 +95,7 @@ export function formatPercentage(value: number): string {
 const VEHICLE_LABELS: Record<string, string> = {
   car: 'Vehículo',
   moto: 'Moto',
+  camioneta: 'Camioneta',
   bike: 'Bicicleta',
 }
 

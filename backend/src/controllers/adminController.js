@@ -8,6 +8,7 @@ const analyticsService = require('../services/analyticsService');
 const DEFAULT_TARIFFS = {
   car: { hour: 3000, day: 25000, month: 500000 },
   moto: { hour: 1500, day: 12000, month: 300000 },
+  camioneta: { hour: 4000, day: 30000, month: 400000 },
   bike: { hour: 1000, day: 8000, month: 200000 },
 };
 
@@ -24,7 +25,7 @@ const updateTariffs = async (req, res, next) => {
     const tariffs = req.body;
 
     // Validate structure
-    for (const type of ['car', 'moto', 'bike']) {
+    for (const type of ['car', 'moto', 'camioneta', 'bike']) {
       if (!tariffs[type] || typeof tariffs[type] !== 'object') {
         return res.status(400).json({
           success: false,
@@ -47,7 +48,7 @@ const updateTariffs = async (req, res, next) => {
     }
 
     // Upsert each vehicle type tariff
-    const operations = ['car', 'moto', 'bike'].map((type) => ({
+    const operations = ['car', 'moto', 'camioneta', 'bike'].map((type) => ({
       updateOne: {
         filter: { vehicleType: type },
         update: {
@@ -68,6 +69,7 @@ const updateTariffs = async (req, res, next) => {
     const data = {
       car: { hour: tariffs.car.hour, day: tariffs.car.day, month: tariffs.car.month },
       moto: { hour: tariffs.moto.hour, day: tariffs.moto.day, month: tariffs.moto.month },
+      camioneta: { hour: tariffs.camioneta.hour, day: tariffs.camioneta.day, month: tariffs.camioneta.month },
       bike: { hour: tariffs.bike.hour, day: tariffs.bike.day, month: tariffs.bike.month },
     };
 
@@ -308,7 +310,7 @@ const getReportData = async (req, res, next) => {
         : payments;
 
       // 5. Build rows
-      const tipoMap = { car: 'Automóvil', moto: 'Motocicleta', bike: 'Bicicleta' };
+      const tipoMap = { car: 'Automóvil', moto: 'Motocicleta', camioneta: 'Camioneta', bike: 'Bicicleta' };
       const methodMap = { cash: 'Efectivo', pos: 'POS', epayco: 'ePayco' };
 
       const rows = filteredPayments.map((p) => {

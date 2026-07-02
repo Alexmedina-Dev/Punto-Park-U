@@ -6,24 +6,27 @@ import { formatCurrency } from '@/utils/formatters'
 import { showErrorToast, showSuccessToast } from '@/utils/errorHandler'
 import type { PricingConfig } from '@/types'
 
-type VehicleKey = 'car' | 'moto' | 'bike'
+type VehicleKey = 'car' | 'moto' | 'camioneta' | 'bike'
 type PeriodKey = 'hour' | 'day' | 'month'
 
 const VEHICLE_LABELS: Record<VehicleKey, string> = {
   car: 'Carros',
   moto: 'Motos',
+  camioneta: 'Camionetas',
   bike: 'Bicicletas',
 }
 
 const VEHICLE_ICONS: Record<VehicleKey, string> = {
   car: 'directions_car',
   moto: 'two_wheeler',
+  camioneta: 'local_shipping',
   bike: 'pedal_bike',
 }
 
 const VEHICLE_SUBTITLE: Record<VehicleKey, string> = {
-  car: 'Incluye camionetas',
+  car: 'Automóviles',
   moto: 'Motocicletas',
+  camioneta: 'SUV, camionetas y pick-ups',
   bike: 'Ciclas y patinetas',
 }
 
@@ -36,6 +39,7 @@ const PERIOD_LABELS: Record<PeriodKey, { label: string; icon: string; desc: stri
 const DEFAULT_TARIFFS: PricingConfig = {
   car: { hour: 3000, day: 15000, month: 250000 },
   moto: { hour: 1500, day: 8000, month: 120000 },
+  camioneta: { hour: 4000, day: 20000, month: 350000 },
   bike: { hour: 1000, day: 5000, month: 80000 },
 }
 
@@ -109,13 +113,13 @@ export function TariffEditor() {
       </div>
 
       {/* Vehicle Selector Tabs */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {(Object.keys(VEHICLE_LABELS) as VehicleKey[]).map((key) => (
           <button
             key={key}
             onClick={() => setActiveVehicle(key)}
             className={`
-              flex items-center gap-3 px-4 py-3 rounded-lg border transition-all
+              flex items-center gap-3 px-4 py-3 rounded-lg border transition-all min-w-0
               ${
                 activeVehicle === key
                   ? 'bg-primary/10 border-primary text-primary'
@@ -123,10 +127,10 @@ export function TariffEditor() {
               }
             `}
           >
-            <span className="material-symbols-outlined text-2xl">{VEHICLE_ICONS[key]}</span>
-            <div className="text-left">
-              <div className="text-sm font-bold">{VEHICLE_LABELS[key]}</div>
-              <div className="text-xs opacity-70">{VEHICLE_SUBTITLE[key]}</div>
+            <span className="material-symbols-outlined text-2xl shrink-0">{VEHICLE_ICONS[key]}</span>
+            <div className="text-left min-w-0">
+              <div className="text-sm font-bold truncate">{VEHICLE_LABELS[key]}</div>
+              <div className="text-xs opacity-70 truncate">{VEHICLE_SUBTITLE[key]}</div>
             </div>
           </button>
         ))}
