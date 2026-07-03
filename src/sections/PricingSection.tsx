@@ -61,12 +61,28 @@ export function PricingSection() {
     }
   }, [tariffs, fetchTariffs])
 
-  const getPrice = (card: PricingCardData): string => {
-    if (!tariffs) return formatCurrency(card.fallbackPrice)
+  const getPrices = (card: PricingCardData) => {
+    if (!tariffs) {
+      return {
+        hour: formatCurrency(card.fallbackPrice),
+        day: formatCurrency(card.fallbackPrice * 5),
+        month: formatCurrency(card.fallbackPrice * 30),
+      }
+    }
     const priceSet = tariffs[card.priceKey]
-    if (!priceSet) return formatCurrency(card.fallbackPrice)
+    if (!priceSet) {
+      return {
+        hour: formatCurrency(card.fallbackPrice),
+        day: formatCurrency(card.fallbackPrice * 5),
+        month: formatCurrency(card.fallbackPrice * 30),
+      }
+    }
 
-    return formatCurrency(priceSet.hour)
+    return {
+      hour: formatCurrency(priceSet.hour),
+      day: formatCurrency(priceSet.day),
+      month: formatCurrency(priceSet.month),
+    }
   }
 
   return (
@@ -104,10 +120,26 @@ export function PricingSection() {
                 <h3 className="text-primary font-label uppercase tracking-[0.3em] mb-3" style={{ fontSize: '0.875rem', fontWeight: 700 }}>
                   {card.title}
                 </h3>
-                <p className="text-on-bg mb-4" style={{ fontSize: '2.25rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
-                  {getPrice(card)}{' '}
+                
+                {/* Precio por hora - destacado */}
+                <p className="text-on-bg mb-2" style={{ fontSize: '2.25rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
+                  {getPrices(card).hour}{' '}
                   <span className="text-sm font-normal text-on-surface-var">/ hora</span>
                 </p>
+                
+                {/* Precios por día y mes */}
+                <div className="flex items-center justify-center gap-4 mb-4 text-sm">
+                  <div className="text-on-surface-var">
+                    <span className="font-bold text-on-bg">{getPrices(card).day}</span>
+                    <span className="text-xs ml-1">/ día</span>
+                  </div>
+                  <div className="w-px h-4 bg-outline/30" />
+                  <div className="text-on-surface-var">
+                    <span className="font-bold text-on-bg">{getPrices(card).month}</span>
+                    <span className="text-xs ml-1">/ mes</span>
+                  </div>
+                </div>
+                
                 <ul className="space-y-2">
                   {card.features.map((feature) => (
                     <li
