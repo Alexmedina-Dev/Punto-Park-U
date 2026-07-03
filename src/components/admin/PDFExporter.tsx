@@ -101,7 +101,7 @@ async function generatePDF(content: ReportContent): Promise<void> {
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(200, 210, 220)
-    doc.text('NIT: 901.123.456-7  ·  Parqueadero autorizado  ·  Resolución 4100 de 2004', LM, 22)
+    doc.text('NIT: 901.123.456-7  ·  Parqueadero autorizado  ·  Resolución 4100 de 2004', LM, 24)
   }
 
   // ── Helper: KPI cards ───────────────────────────────────────────────
