@@ -43,12 +43,15 @@ export function SpotSelector({
 
   if (sortedSpots.length === 0) {
     return (
-      <div className="text-center py-8">
+      <div className="text-center py-8 bg-surface-container rounded-lg">
         <span className="material-symbols-outlined text-4xl text-on-surface-var mb-2 block">
           parking
         </span>
-        <p className="text-on-surface-var text-sm">
+        <p className="text-on-surface-var text-sm font-bold mb-1">
           No hay espacios disponibles para este horario
+        </p>
+        <p className="text-on-surface-var text-xs">
+          Intenta con otra fecha u horario. Los espacios pueden estar reservados por otros usuarios.
         </p>
       </div>
     )
