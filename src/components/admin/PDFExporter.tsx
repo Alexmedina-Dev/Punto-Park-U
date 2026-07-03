@@ -23,6 +23,26 @@ function parseTarifa(tarifa: string): number {
 }
 
 /**
+ * Load image as base64 data URL
+ */
+function loadImage(src: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.width
+      canvas.height = img.height
+      const ctx = canvas.getContext('2d')
+      ctx?.drawImage(img, 0, 0)
+      resolve(canvas.toDataURL('image/png'))
+    }
+    img.onerror = reject
+    img.src = src
+  })
+}
+
+/**
  * Export the current report as a professional PDF using jsPDF + jspdf-autotable.
  * Professional design with navy header, KPI cards, and clean tables.
  */
@@ -43,18 +63,45 @@ async function generatePDF(content: ReportContent): Promise<void> {
   const rows = content.rows
   const breakdown = content.breakdown || []
 
+  // Load logo
+  let logoDataUrl: string | null = null
+  try {
+    logoDataUrl = await loadImage('/images/Logo.png')
+  } catch {
+    // Logo not available, continue without it
+  }
+
   // ── Helper: draw header bar ─────────────────────────────────────────
   function drawHeaderBar() {
     doc.setFillColor(...NAVY)
-    doc.rect(0, 0, pw, 22, 'F')
-    doc.setFontSize(20)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...WHITE)
-    doc.text('PUNTO PARK U', LM, 13)
-    doc.setFontSize(9)
+    doc.rect(0, 0, pw, 26, 'F')
+    
+    // Draw logo if available
+    if (logoDataUrl) {
+      try {
+        doc.addImage(logoDataUrl, 'PNG', LM, 4, 18, 18)
+        doc.setFontSize(18)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(...WHITE)
+        doc.text('PUNTO PARK U', LM + 22, 14)
+      } catch {
+        // Fallback to text only
+        doc.setFontSize(18)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(...WHITE)
+        doc.text('PUNTO PARK U', LM, 14)
+      }
+    } else {
+      doc.setFontSize(18)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...WHITE)
+      doc.text('PUNTO PARK U', LM, 14)
+    }
+    
+    doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(200, 210, 220)
-    doc.text('NIT: 901.123.456-7  ·  Parqueadero autorizado  ·  Resolución 4100 de 2004', LM, 19)
+    doc.text('NIT: 901.123.456-7  ·  Parqueadero autorizado  ·  Resolución 4100 de 2004', LM, 22)
   }
 
   // ── Helper: KPI cards ───────────────────────────────────────────────
@@ -93,7 +140,7 @@ async function generatePDF(content: ReportContent): Promise<void> {
       doc.addPage()
       y = 15
       drawHeaderBar()
-      y = 28
+      y = 32
     }
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
@@ -118,7 +165,7 @@ async function generatePDF(content: ReportContent): Promise<void> {
   // PAGE 1: Summary + Breakdown + Payments
   // ════════════════════════════════════════════════════════════════════
   drawHeaderBar()
-  y = 28
+  y = 32
 
   // Title
   doc.setFontSize(14)
@@ -213,7 +260,7 @@ async function generatePDF(content: ReportContent): Promise<void> {
   // ════════════════════════════════════════════════════════════════════
   doc.addPage()
   drawHeaderBar()
-  y = 28
+  y = 32
 
   sectionTitle('REGISTRO DE VEHÍCULOS')
   doc.autoTable({
@@ -250,7 +297,7 @@ async function generatePDF(content: ReportContent): Promise<void> {
   if (y > 220) {
     doc.addPage()
     drawHeaderBar()
-    y = 28
+    y = 32
   }
 
   doc.setDrawColor(...NAVY)
