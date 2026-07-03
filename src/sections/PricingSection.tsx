@@ -7,7 +7,7 @@ interface PricingCardData {
   image: string
   alt: string
   title: string
-  priceKey: 'car' | 'moto' | 'bike'
+  priceKey: 'car' | 'moto' | 'camioneta' | 'bike'
   fallbackPrice: number
   features: string[]
   objectFit?: 'cover' | 'contain'
@@ -35,7 +35,7 @@ const PRICING_CARDS: PricingCardData[] = [
     image: '/images/Google AI/camioneta.png',
     alt: 'Camioneta en espacio amplio',
     title: 'Camioneta / SUV',
-    priceKey: 'car',
+    priceKey: 'camioneta',
     fallbackPrice: 3500,
     features: ['Espacios Amplios', 'Alta Comodidad'],
   },
@@ -66,10 +66,6 @@ export function PricingSection() {
     const priceSet = tariffs[card.priceKey]
     if (!priceSet) return formatCurrency(card.fallbackPrice)
 
-    // For Camioneta/SUV, use car price * 1.17 approx (3500 vs 3000)
-    if (card.title === 'Camioneta / SUV') {
-      return formatCurrency(Math.round(priceSet.hour * 1.17))
-    }
     return formatCurrency(priceSet.hour)
   }
 
