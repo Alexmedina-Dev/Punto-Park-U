@@ -95,7 +95,7 @@ export function ReservationForm({
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       if (selected < today) {
-        newErrors.date = 'La fecha no puede ser en el pasado'
+        newErrors.date = 'La fecha no puede ser en el pasado. Puedes reservar para hoy o mañana.'
       }
     }
 
