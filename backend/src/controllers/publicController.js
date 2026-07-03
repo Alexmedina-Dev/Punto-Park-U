@@ -220,7 +220,8 @@ const getParkingSpots = async (req, res, next) => {
     }
 
     const data = spots.map((s) => ({
-      id: s.code,
+      id: s._id.toString(),
+      code: s.code,
       zone: s.zone,
       type: s.type,
       floor: s.floor || null,
