@@ -94,8 +94,10 @@ export function ReservationForm({
       const selected = new Date(form.date)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      if (selected < today) {
-        newErrors.date = 'La fecha no puede ser en el pasado. Puedes reservar para hoy o mañana.'
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      if (selected < tomorrow) {
+        newErrors.date = 'Debes reservar con al menos 1 día de anticipación. Selecciona a partir de mañana.'
       }
     }
 
@@ -151,7 +153,9 @@ export function ReservationForm({
   }
 
   // Get today's date in YYYY-MM-DD for min attribute
-  const todayStr = new Date().toISOString().split('T')[0]
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const minDateStr = tomorrow.toISOString().split('T')[0]
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -206,7 +210,7 @@ export function ReservationForm({
           icon="calendar_month"
           value={form.date}
           onChange={(e) => handleChange('date', e.target.value)}
-          min={todayStr}
+          min={minDateStr}
           error={errors.date}
         />
         <Input
