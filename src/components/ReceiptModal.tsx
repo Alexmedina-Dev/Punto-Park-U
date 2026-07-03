@@ -32,7 +32,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const METHOD_LABELS: Record<string, string> = {
   cash: 'Efectivo',
-  pos: 'POS/Tarjeta',
+  pos: 'Datáfono',
   epayco: 'ePayco Online',
   nequi: 'Nequi',
   daviplata: 'Daviplata',

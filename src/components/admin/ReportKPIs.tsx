@@ -60,7 +60,7 @@ function KPIItem({ title, value, icon, trend, subtitle }: KPIItemProps) {
  *   5. Tiempo promedio
  *   6. Ingreso por hora operativa
  *   7. Efectivo
- *   8. POS
+ *   8. Datáfono
  *   9. ePayco
  *   10. Proyección del mes
  */
@@ -127,9 +127,9 @@ export function ReportKPIs({ summary, paymentTotals, projection, className = '' 
           subtitle="recaudado"
         />
 
-        {/* 8. POS */}
+        {/* 8. Datáfono */}
         <KPIItem
-          title="POS"
+          title="Datáfono"
           value={formatCurrency(paymentTotals.pos)}
           icon="credit_card"
           subtitle="recaudado"

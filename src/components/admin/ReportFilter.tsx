@@ -24,7 +24,7 @@ const VEHICLE_TYPES = [
 const PAYMENT_METHODS = [
   { key: 'all' as const, label: 'Todos' },
   { key: 'cash' as const, label: 'Efectivo' },
-  { key: 'pos' as const, label: 'POS' },
+  { key: 'pos' as const, label: 'Datáfono' },
   { key: 'epayco' as const, label: 'ePayco' },
   { key: 'nequi' as const, label: 'Nequi' },
   { key: 'daviplata' as const, label: 'Daviplata' },

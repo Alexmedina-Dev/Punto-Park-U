@@ -4,7 +4,7 @@ import { formatCurrency, formatDateTime } from '@/utils/formatters'
 
 const METHOD_LABELS: Record<string, string> = {
   cash: 'Efectivo',
-  pos: 'POS/Tarjeta',
+  pos: 'Datáfono',
   epayco: 'ePayco',
   nequi: 'Nequi',
   daviplata: 'Daviplata',

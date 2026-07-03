@@ -311,7 +311,7 @@ const getReportData = async (req, res, next) => {
 
       // 5. Build rows
       const tipoMap = { car: 'Automóvil', moto: 'Motocicleta', camioneta: 'Camioneta', bike: 'Bicicleta' };
-      const methodMap = { cash: 'Efectivo', pos: 'POS', epayco: 'ePayco' };
+      const methodMap = { cash: 'Efectivo', pos: 'Datáfono', epayco: 'ePayco' };
 
       const rows = filteredPayments.map((p) => {
         const resv = p.reservation;
@@ -367,7 +367,7 @@ const getReportData = async (req, res, next) => {
         { label: 'Ticket promedio', value: `$${ticketPromedio.toLocaleString('es-CO')}`, detail: `${totalVehiculos} transacciones`, status: 'ok' },
         { label: 'Ingresos por hora', value: `$${ingresosPorHora.toLocaleString('es-CO')}`, detail: `Período: ${diffHours.toFixed(0)}h`, status: 'ok' },
         { label: 'Efectivo', value: `$${paymentTotals.efectivo.toLocaleString('es-CO')}`, detail: `${totalIngresos > 0 ? Math.round((paymentTotals.efectivo / totalIngresos) * 100) : 0}% del total`, status: 'ok' },
-        { label: 'POS', value: `$${paymentTotals.pos.toLocaleString('es-CO')}`, detail: `${totalIngresos > 0 ? Math.round((paymentTotals.pos / totalIngresos) * 100) : 0}% del total`, status: 'ok' },
+        { label: 'Datáfono', value: `$${paymentTotals.pos.toLocaleString('es-CO')}`, detail: `${totalIngresos > 0 ? Math.round((paymentTotals.pos / totalIngresos) * 100) : 0}% del total`, status: 'ok' },
         { label: 'ePayco', value: `$${paymentTotals.epayco.toLocaleString('es-CO')}`, detail: `${totalIngresos > 0 ? Math.round((paymentTotals.epayco / totalIngresos) * 100) : 0}% del total`, status: 'ok' },
       ];
 

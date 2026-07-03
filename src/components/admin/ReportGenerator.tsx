@@ -43,7 +43,7 @@ export function ReportGenerator() {
     displayContent.rows.forEach((r) => {
       const amount = parseInt(r.tarifa.replace(/[$.]/g, '')) || 0
       if (r.pago === 'Efectivo') totals.efectivo += amount
-      else if (r.pago === 'POS') totals.pos += amount
+      else if (r.pago === 'Datáfono') totals.pos += amount
       else if (r.pago === 'ePayco') totals.epayco += amount
       else if (r.pago === 'Nequi') totals.nequi += amount
       else if (r.pago === 'Daviplata') totals.daviplata += amount
