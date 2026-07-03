@@ -570,26 +570,145 @@ const getOccupancyPrediction = async (req, res, next) => {
 // ── GET /api/admin/analytics/ai-insights ──────────────────────────────
 const getAIInsights = async (req, res, next) => {
   try {
-    const prophetUrl = process.env.PROPHET_API_URL || 'http://localhost:4002';
-
-    const response = await axios.get(`${prophetUrl}/insights`, {
-      timeout: 30000,
+    const Payment = require('../models/Payment');
+    const Reservation = require('../models/Reservation');
+    const Vehicle = require('../models/Vehicle');
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    // Get stats from MongoDB
+    const totalReservations = await Reservation.countDocuments();
+    const todayReservations = await Reservation.countDocuments({
+      entryTime: { $gte: today }
     });
-
-    res.json({ success: true, data: response.data });
-  } catch (err) {
-    // If Python service is down, return fallback insights
-    if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT') {
-      return res.json({
-        success: true,
-        data: {
-          insights: ['⚠️ Servicio Prophet no disponible. Mostrando datos locales.'],
-          recommendations: ['Verifica que el servicio Prophet esté ejecutándose.'],
-          stats: {},
-          generated_at: new Date().toISOString(),
-        },
-      });
+    const weekReservations = await Reservation.countDocuments({
+      entryTime: { $gte: weekAgo }
+    });
+    
+    // Revenue
+    const revenueResult = await Payment.aggregate([
+      { $match: { status: 'completed' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
+    
+    // Today's revenue
+    const todayRevenueResult = await Payment.aggregate([
+      { $match: { status: 'completed', date: { $gte: today } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const todayRevenue = todayRevenueResult.length > 0 ? todayRevenueResult[0].total : 0;
+    
+    // Vehicle type distribution
+    const typeDistribution = await Reservation.aggregate([
+      { $group: { _id: '$vehicleType', count: { $sum: 1 } } }
+    ]);
+    
+    // Payment method distribution
+    const paymentDistribution = await Payment.aggregate([
+      { $match: { status: 'completed' } },
+      { $group: { _id: '$method', count: { $sum: 1 }, total: { $sum: '$amount' } } }
+    ]);
+    
+    // Peak hours
+    const peakHours = await Reservation.aggregate([
+      { $match: { entryTime: { $exists: true } } },
+      { $group: { _id: { $hour: '$entryTime' }, count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 3 }
+    ]);
+    
+    // Generate insights
+    const insights = [];
+    const recommendations = [];
+    
+    // Insight 1: Daily trend
+    if (weekReservations > 0) {
+      const dailyAvg = weekReservations / 7;
+      if (todayReservations > dailyAvg * 1.2) {
+        insights.push(`📈 Hoy tenemos ${todayReservations} reservas, ${((todayReservations/dailyAvg - 1) * 100).toFixed(0)}% por encima del promedio diario (${Math.round(dailyAvg)}).`);
+      } else if (todayReservations < dailyAvg * 0.8) {
+        insights.push(`📉 Hoy tenemos ${todayReservations} reservas, ${((1 - todayReservations/dailyAvg) * 100).toFixed(0)}% por debajo del promedio diario (${Math.round(dailyAvg)}).`);
+      } else {
+        insights.push(`✅ Hoy tenemos ${todayReservations} reservas, en línea con el promedio diario de ${Math.round(dailyAvg)}.`);
+      }
     }
+    
+    // Insight 2: Revenue
+    if (totalRevenue > 0) {
+      insights.push(`💰 Ingresos totales acumulados: $${totalRevenue.toLocaleString('es-CO')} COP.`);
+      if (todayRevenue > 0) {
+        insights.push(`💵 Ingresos de hoy: $${todayRevenue.toLocaleString('es-CO')} COP.`);
+      }
+    }
+    
+    // Insight 3: Peak hours
+    if (peakHours.length > 0) {
+      const peakHourStr = peakHours.map(h => `${h._id.toString().padStart(2, '0')}:00`).join(', ');
+      insights.push(`⏰ Horas pico: ${peakHourStr}. Considera tener más personal disponible.`);
+    }
+    
+    // Insight 4: Vehicle types
+    if (typeDistribution.length > 0) {
+      const topType = typeDistribution.reduce((a, b) => a.count > b.count ? a : b);
+      const typeMap = { car: 'Automóvil', moto: 'Motocicleta', camioneta: 'Camioneta', bike: 'Bicicleta' };
+      insights.push(`🚗 El vehículo más común es ${typeMap[topType._id] || topType._id} con ${topType.count} reservas.`);
+    }
+    
+    // Insight 5: Payment methods
+    if (paymentDistribution.length > 0) {
+      const topPayment = paymentDistribution.reduce((a, b) => a.total > b.total ? a : b);
+      const paymentMap = { cash: 'Efectivo', pos: 'Datáfono', epayco: 'ePayco', nequi: 'Nequi', daviplata: 'Daviplata', transfer: 'Transferencia' };
+      insights.push(`💳 El método de pago más usado es ${paymentMap[topPayment._id] || topPayment._id} con $${topPayment.total.toLocaleString('es-CO')} COP.`);
+    }
+    
+    // Recommendations
+    if (todayReservations < 5 && totalReservations > 20) {
+      recommendations.push('🎯 La ocupación está baja hoy. Considera lanzar una promoción para atraer más clientes.');
+    }
+    
+    if (peakHours.length > 0) {
+      recommendations.push('👥 Aumenta el personal durante las horas pico para mejorar el servicio y reducir tiempos de espera.');
+    }
+    
+    if (paymentDistribution.length > 0) {
+      const hasDigital = paymentDistribution.some(p => ['epayco', 'nequi', 'daviplata'].includes(p._id));
+      if (!hasDigital) {
+        recommendations.push('📱 Considera implementar más métodos de pago digital para facilitar a los clientes.');
+      }
+    }
+    
+    recommendations.push('📊 Revisa el reporte de Análisis Financiero para ver detalles completos de ingresos y ocupación.');
+    recommendations.push('🔮 Consulta la Predicción de Ocupación para planificar la próxima semana.');
+    
+    res.json({
+      success: true,
+      data: {
+        insights: insights.length > 0 ? insights : ['📊 Aún no hay suficientes datos para generar insights detallados.'],
+        recommendations: recommendations.length > 0 ? recommendations : ['Sigue operando para acumular más datos y obtener mejores recomendaciones.'],
+        stats: {
+          total_reservations: totalReservations,
+          today_reservations: todayReservations,
+          week_reservations: weekReservations,
+          total_revenue: totalRevenue,
+          today_revenue: todayRevenue,
+          peak_hours: peakHours.map(h => h._id),
+          vehicle_distribution: typeDistribution.reduce((acc, item) => {
+            acc[item._id] = item.count;
+            return acc;
+          }, {}),
+          payment_distribution: paymentDistribution.reduce((acc, item) => {
+            acc[item._id] = { count: item.count, total: item.total };
+            return acc;
+          }, {})
+        },
+        generated_at: new Date().toISOString()
+      }
+    });
+  } catch (err) {
     next(err);
   }
 };
