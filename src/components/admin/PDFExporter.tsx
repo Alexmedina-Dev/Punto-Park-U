@@ -74,16 +74,16 @@ async function generatePDF(content: ReportContent): Promise<void> {
   // ── Helper: draw header bar ─────────────────────────────────────────
   function drawHeaderBar() {
     doc.setFillColor(...NAVY)
-    doc.rect(0, 0, pw, 26, 'F')
+    doc.rect(0, 0, pw, 32, 'F')
     
     // Draw logo if available
     if (logoDataUrl) {
       try {
-        doc.addImage(logoDataUrl, 'PNG', LM, 4, 18, 18)
+        doc.addImage(logoDataUrl, 'PNG', LM, 4, 22, 22)
         doc.setFontSize(18)
         doc.setFont('helvetica', 'bold')
         doc.setTextColor(...WHITE)
-        doc.text('PUNTO PARK U', LM + 22, 14)
+        doc.text('PUNTO PARK U', LM + 26, 14)
       } catch {
         // Fallback to text only
         doc.setFontSize(18)
@@ -101,7 +101,7 @@ async function generatePDF(content: ReportContent): Promise<void> {
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(200, 210, 220)
-    doc.text('NIT: 901.123.456-7  ·  Parqueadero autorizado  ·  Resolución 4100 de 2004', LM, 24)
+    doc.text('NIT: 901.123.456-7  ·  Parqueadero autorizado  ·  Resolución 4100 de 2004', LM, 30)
   }
 
   // ── Helper: KPI cards ───────────────────────────────────────────────
@@ -140,7 +140,7 @@ async function generatePDF(content: ReportContent): Promise<void> {
       doc.addPage()
       y = 15
       drawHeaderBar()
-      y = 32
+      y = 38
     }
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
@@ -165,7 +165,7 @@ async function generatePDF(content: ReportContent): Promise<void> {
   // PAGE 1: Summary + Breakdown + Payments
   // ════════════════════════════════════════════════════════════════════
   drawHeaderBar()
-  y = 32
+  y = 38
 
   // Title
   doc.setFontSize(14)
@@ -260,7 +260,7 @@ async function generatePDF(content: ReportContent): Promise<void> {
   // ════════════════════════════════════════════════════════════════════
   doc.addPage()
   drawHeaderBar()
-  y = 32
+  y = 38
 
   sectionTitle('REGISTRO DE VEHÍCULOS')
   doc.autoTable({
@@ -297,7 +297,7 @@ async function generatePDF(content: ReportContent): Promise<void> {
   if (y > 220) {
     doc.addPage()
     drawHeaderBar()
-    y = 32
+    y = 38
   }
 
   doc.setDrawColor(...NAVY)

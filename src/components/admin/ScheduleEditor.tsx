@@ -85,13 +85,13 @@ export function ScheduleEditor() {
       {/* Schedule Blocks */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {(['weekday', 'sunday'] as const).map((day) => (
-          <Card key={day} variant="glass" padding="md">
+          <Card key={day} variant="glass" padding="md" className="overflow-hidden">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-primary">{getDayLabel(day)}</span>
               </div>
-              <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-3 xl:gap-4">
-                <div className="flex-1 min-w-0">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+                <div className="min-w-0">
                   <label className="block text-xs text-on-surface-var mb-1">
                     <span className="material-symbols-outlined text-base align-middle mr-1">wb_sunny</span>
                     Apertura
@@ -100,14 +100,13 @@ export function ScheduleEditor() {
                     type="time"
                     value={schedule[day].open}
                     onChange={(e) => handleTimeChange(day, 'open', e.target.value)}
-                    className="w-full px-3 py-2 bg-bg border border-outline/20 rounded-lg text-on-bg
+                    className="w-full max-w-full px-3 py-2 bg-bg border border-outline/20 rounded-lg text-on-bg text-sm
                       focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30
-                      transition-colors"
+                      transition-colors [color-scheme:dark]"
                   />
                 </div>
-                <span className="hidden xl:inline text-on-surface-var mt-6 text-lg">→</span>
-                <span className="xl:hidden text-on-surface-var text-center text-lg">↓</span>
-                <div className="flex-1 min-w-0">
+                <span className="text-on-surface-var text-lg pb-2">→</span>
+                <div className="min-w-0">
                   <label className="block text-xs text-on-surface-var mb-1">
                     <span className="material-symbols-outlined text-base align-middle mr-1">nights_stay</span>
                     Cierre
@@ -116,9 +115,9 @@ export function ScheduleEditor() {
                     type="time"
                     value={schedule[day].close}
                     onChange={(e) => handleTimeChange(day, 'close', e.target.value)}
-                    className="w-full px-3 py-2 bg-bg border border-outline/20 rounded-lg text-on-bg
+                    className="w-full max-w-full px-3 py-2 bg-bg border border-outline/20 rounded-lg text-on-bg text-sm
                       focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30
-                      transition-colors"
+                      transition-colors [color-scheme:dark]"
                   />
                 </div>
               </div>
