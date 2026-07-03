@@ -150,6 +150,124 @@ async def predict_occupancy(days: int = 7):
                 pass
 
 
+@app.post("/insights")
+async def generate_insights():
+    """
+    Generate AI insights and recommendations based on current data.
+    Returns actionable recommendations for the parking administrator.
+    """
+    db, client = None, None
+    try:
+        db, client = get_mongodb()
+        
+        # Get today's date
+        today = datetime.now()
+        today_start = today.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_ago = today_start - pd.Timedelta(days=7)
+        
+        # Aggregate statistics
+        total_reservations = db.reservations.count_documents({})
+        today_reservations = db.reservations.count_documents({
+            'entryTime': {'$gte': today_start}
+        })
+        week_reservations = db.reservations.count_documents({
+            'entryTime': {'$gte': week_ago}
+        })
+        
+        # Revenue stats
+        revenue_pipeline = [
+            {'$match': {'status': 'completed'}},
+            {'$group': {'_id': None, 'total': {'$sum': '$amount'}}}
+        ]
+        revenue_result = list(db.payments.aggregate(revenue_pipeline))
+        total_revenue = revenue_result[0]['total'] if revenue_result else 0
+        
+        # Vehicle type distribution
+        type_pipeline = [
+            {'$group': {'_id': '$vehicleType', 'count': {'$sum': 1}}}
+        ]
+        type_distribution = list(db.reservations.aggregate(type_pipeline))
+        
+        # Peak hours
+        hour_pipeline = [
+            {'$match': {'entryTime': {'$exists': True}}},
+            {'$group': {
+                '_id': {'$hour': '$entryTime'},
+                'count': {'$sum': 1}
+            }},
+            {'$sort': {'count': -1}},
+            {'$limit': 3}
+        ]
+        peak_hours = list(db.reservations.aggregate(hour_pipeline))
+        
+        # Generate insights
+        insights = []
+        recommendations = []
+        
+        # Insight 1: Weekly trend
+        if week_reservations > 0:
+            daily_avg = week_reservations / 7
+            if today_reservations > daily_avg * 1.2:
+                insights.append(f"📈 Hoy tenemos {today_reservations} reservas, {((today_reservations/daily_avg - 1) * 100):.0f}% por encima del promedio diario.")
+            elif today_reservations < daily_avg * 0.8:
+                insights.append(f"📉 Hoy tenemos {today_reservations} reservas, {((1 - today_reservations/daily_avg) * 100):.0f}% por debajo del promedio diario.")
+            else:
+                insights.append(f"✅ Hoy tenemos {today_reservations} reservas, en línea con el promedio diario de {daily_avg:.0f}.")
+        
+        # Insight 2: Peak hours
+        if peak_hours:
+            peak_hour_str = ", ".join([f"{h['_id']:02d}:00" for h in peak_hours])
+            insights.append(f"⏰ Horas pico: {peak_hour_str}. Considera tener más personal disponible.")
+        
+        # Insight 3: Vehicle types
+        if type_distribution:
+            top_type = max(type_distribution, key=lambda x: x['count'])
+            insights.append(f"🚗 El vehículo más común es {top_type['_id']} con {top_type['count']} reservas.")
+        
+        # Insight 4: Revenue
+        if total_revenue > 0:
+            insights.append(f"💰 Ingresos totales acumulados: ${total_revenue:,.0f} COP.")
+        
+        # Recommendations
+        if today_reservations < 5:
+            recommendations.append("🎯 Considera lanzar una promoción para aumentar la ocupación.")
+        
+        if peak_hours and len(peak_hours) > 0:
+            recommendations.append("👥 Aumenta el personal durante las horas pico para mejorar el servicio.")
+        
+        recommendations.append("📊 Revisa el reporte de 'Análisis Financiero' para detalles completos.")
+        recommendations.append("🔮 Consulta la predicción de ocupación para planificar la próxima semana.")
+        
+        return {
+            "insights": insights,
+            "recommendations": recommendations,
+            "stats": {
+                "total_reservations": total_reservations,
+                "today_reservations": today_reservations,
+                "week_reservations": week_reservations,
+                "total_revenue": total_revenue,
+                "peak_hours": [h['_id'] for h in peak_hours],
+                "vehicle_distribution": {item['_id']: item['count'] for item in type_distribution}
+            },
+            "generated_at": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Insights error: {str(e)}")
+        return {
+            "insights": ["⚠️ No se pudieron generar insights en este momento."],
+            "recommendations": ["Intenta más tarde cuando haya más datos disponibles."],
+            "stats": {},
+            "generated_at": datetime.now().isoformat()
+        }
+    finally:
+        if client:
+            try:
+                client.close()
+            except Exception:
+                pass
+
+
 def get_mongodb():
     client = MongoClient(get_mongodb_uri(), serverSelectionTimeoutMS=5000)
     db = client['punto-park-u']

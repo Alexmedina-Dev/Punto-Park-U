@@ -1,12 +1,13 @@
 import { create } from 'zustand'
 import type { AnomalyStats, Anomaly } from '@punto-park-u/shared-types'
-import type { OccupancyPrediction } from '@punto-park-u/shared-api'
+import type { OccupancyPrediction, AIInsight } from '@punto-park-u/shared-api'
 import {
   getAnomalyStatsService,
   getRecentAnomaliesService,
   runAnomalyDetectionService,
   resolveAnomalyService,
   getOccupancyPredictionService,
+  getAIInsightsService,
   withRetry,
 } from '@punto-park-u/shared-api'
 
@@ -16,6 +17,7 @@ export interface AnalyticsState {
   anomalies: Anomaly[]
   recentAnomalies: Anomaly[]
   occupancyPrediction: OccupancyPrediction | null
+  aiInsights: AIInsight | null
 
   // Loading & Error
   loading: boolean
@@ -26,6 +28,7 @@ export interface AnalyticsState {
   setAnomalies: (anomalies: Anomaly[]) => void
   setRecentAnomalies: (anomalies: Anomaly[]) => void
   setOccupancyPrediction: (prediction: OccupancyPrediction | null) => void
+  setAIInsights: (insights: AIInsight | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
 
@@ -33,6 +36,7 @@ export interface AnalyticsState {
   fetchStats: () => Promise<void>
   fetchRecentAnomalies: () => Promise<void>
   fetchOccupancyPrediction: (days?: number) => Promise<void>
+  fetchAIInsights: () => Promise<void>
   resolveAnomaly: (id: string) => Promise<void>
   runDetection: () => Promise<void>
 }
@@ -43,6 +47,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   anomalies: [],
   recentAnomalies: [],
   occupancyPrediction: null,
+  aiInsights: null,
   loading: false,
   error: null,
 
@@ -51,6 +56,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   setAnomalies: (anomalies) => set({ anomalies }),
   setRecentAnomalies: (recentAnomalies) => set({ recentAnomalies }),
   setOccupancyPrediction: (occupancyPrediction) => set({ occupancyPrediction }),
+  setAIInsights: (aiInsights) => set({ aiInsights }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
 
@@ -110,6 +116,25 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
           model: 'prophet',
           generated_at: new Date().toISOString(),
           error: err.message || 'Error al obtener predicción',
+        },
+        loading: false,
+      })
+    }
+  },
+
+  // Fetch AI Insights from Prophet
+  fetchAIInsights: async () => {
+    set({ loading: true, error: null })
+    try {
+      const insights = await withRetry(() => getAIInsightsService())
+      set({ aiInsights: insights, loading: false })
+    } catch (err: any) {
+      set({
+        aiInsights: {
+          insights: ['⚠️ No se pudieron cargar los insights.'],
+          recommendations: ['Intenta nuevamente más tarde.'],
+          stats: {},
+          generated_at: new Date().toISOString(),
         },
         loading: false,
       })

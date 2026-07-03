@@ -567,6 +567,33 @@ const getOccupancyPrediction = async (req, res, next) => {
   }
 };
 
+// ── GET /api/admin/analytics/ai-insights ──────────────────────────────
+const getAIInsights = async (req, res, next) => {
+  try {
+    const prophetUrl = process.env.PROPHET_API_URL || 'http://localhost:4002';
+
+    const response = await axios.get(`${prophetUrl}/insights`, {
+      timeout: 30000,
+    });
+
+    res.json({ success: true, data: response.data });
+  } catch (err) {
+    // If Python service is down, return fallback insights
+    if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT') {
+      return res.json({
+        success: true,
+        data: {
+          insights: ['⚠️ Servicio Prophet no disponible. Mostrando datos locales.'],
+          recommendations: ['Verifica que el servicio Prophet esté ejecutándose.'],
+          stats: {},
+          generated_at: new Date().toISOString(),
+        },
+      });
+    }
+    next(err);
+  }
+};
+
 module.exports = {
   updateTariffs,
   updateSchedule,
@@ -580,4 +607,5 @@ module.exports = {
   getRevenueTrends,
   getVehicleInsights,
   getOccupancyPrediction,
+  getAIInsights,
 };

@@ -102,3 +102,21 @@ export async function getOccupancyPredictionService(days = 7): Promise<Occupancy
   }
   return data.data
 }
+
+// ── Prophet AI Insights ─────────────────────────────────────────────
+
+export interface AIInsight {
+  insights: string[]
+  recommendations: string[]
+  stats: Record<string, any>
+  generated_at: string
+}
+
+export async function getAIInsightsService(): Promise<AIInsight> {
+  const api = getApiClient()
+  const { data } = await api.get<ApiResponse<AIInsight>>('/admin/analytics/ai-insights')
+  if (!data.success) {
+    throw new Error(data.message || 'Error al obtener insights de IA')
+  }
+  return data.data
+}

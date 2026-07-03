@@ -2,7 +2,7 @@
 import { useLocation } from 'react-router-dom'
 import { AdminLayout } from '@/components/layout'
 import { Card, Button, Badge } from '@/components/ui'
-import { KPICard, OccupancyChart, OccupancyForecast, VehiclesTable, AlertsPanel, ActivityFeed, HistoryLog, TariffEditor, ScheduleEditor, ParkingMap, ReportGenerator, AnalyticsPanel, PricingPanel, ManualPaymentsPanel } from '@/components/admin'
+import { KPICard, OccupancyChart, OccupancyForecast, VehiclesTable, AlertsPanel, ActivityFeed, HistoryLog, TariffEditor, ScheduleEditor, ParkingMap, ReportGenerator, AnalyticsPanel, PricingPanel, ManualPaymentsPanel, ProphetAIAssistant } from '@/components/admin'
 import { useAuth } from '@/hooks/useAuth'
 import { useAdminStore } from '@/stores/adminStore'
 import { formatCurrency, formatPercentage, formatNumber, formatDuration } from '@/utils/formatters'
@@ -247,6 +247,7 @@ export function AdminDashboard() {
         {/* ──────────────── ANALYTICS TAB ──────────────── */}
         {activeTab === 'analytics' && (
           <div className="space-y-6">
+            <ProphetAIAssistant />
             <AnalyticsPanel />
             <OccupancyForecast />
           </div>

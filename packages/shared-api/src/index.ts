@@ -125,8 +125,9 @@ export {
   updatePricingSettingsService,
   getOptimalSpotAssignmentService,
   getOccupancyPredictionService,
+  getAIInsightsService,
 } from './analytics.service.js'
-export type { OccupancyForecastPoint, OccupancyPrediction } from './analytics.service.js'
+export type { OccupancyForecastPoint, OccupancyPrediction, AIInsight } from './analytics.service.js'
 
 export {
   getSensorsService,
