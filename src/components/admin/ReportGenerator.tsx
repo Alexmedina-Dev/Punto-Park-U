@@ -53,6 +53,11 @@ export function ReportGenerator() {
     return totals
   }, [reportContent])
 
+  // Check if report has real data or is empty
+  const hasRealData = reportContent && reportContent.summary && reportContent.summary.totalIngresos > 0
+  const displayContent = hasRealData ? reportContent : getDemoReportContent(filters)
+  const displayPaymentTotals = hasRealData ? paymentTotals : { efectivo: 154000, pos: 68000, epayco: 1425000, nequi: 576000, daviplata: 125000, transfer: 106000 }
+  
   // Compute monthly projection
   const projection: number = useMemo(() => {
     if (!reportContent) return 0
@@ -64,6 +69,8 @@ export function ReportGenerator() {
     if (today === 0) return income
     return Math.round((income / today) * daysInMonth)
   }, [reportContent, filters.period])
+  
+  const displayProjection = hasRealData ? projection : 4900000
 
   const loadReportData = useCallback(async (newFilters: ReportFilters) => {
     setIsLoading(true)
@@ -137,7 +144,7 @@ export function ReportGenerator() {
             </Card>
           ) : reportContent || true ? (
             <>
-              {!reportContent && (
+              {!hasRealData && (
                 <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-sm text-primary flex items-center gap-2">
                   <span className="material-symbols-outlined">info</span>
                   <span>Mostrando datos de demostración. El parqueadero lleva 15 días operando desde su inauguración.</span>
@@ -145,9 +152,9 @@ export function ReportGenerator() {
               )}
               {/* 10 KPIs */}
               <ReportKPIs
-                summary={(reportContent || getDemoReportContent(filters)).summary}
-                paymentTotals={reportContent ? paymentTotals : { efectivo: 154000, pos: 68000, epayco: 1425000, nequi: 576000, daviplata: 125000, transfer: 106000 }}
-                projection={reportContent ? projection : 4900000}
+                summary={displayContent.summary}
+                paymentTotals={displayPaymentTotals}
+                projection={displayProjection}
               />
 
               {/* 4 Charts */}
@@ -160,7 +167,7 @@ export function ReportGenerator() {
               />
 
               {/* Data Table */}
-              <ReportTable rows={(reportContent || getDemoReportContent(filters)).rows} filters={filters} />
+              <ReportTable rows={displayContent.rows} filters={filters} />
             </>
           ) : (
             <Card variant="glass" padding="lg">

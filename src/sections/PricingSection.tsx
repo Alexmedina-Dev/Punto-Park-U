@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui'
 import { useAppStore } from '@/stores/appStore'
 import { formatCurrency } from '@/utils/formatters'
+import { useEffect } from 'react'
 
 interface PricingCardData {
   image: string
@@ -46,12 +47,19 @@ const PRICING_CARDS: PricingCardData[] = [
     fallbackPrice: 1000,
     features: ['Rack Seguro', 'Zona Protegida'],
     objectFit: 'cover' as const,
-    objectPosition: 'bottom' as const,
+    objectPosition: '50% 15%' as const,
   },
 ]
 
 export function PricingSection() {
   const tariffs = useAppStore((state) => state.tariffs)
+  const fetchTariffs = useAppStore((state) => state.fetchTariffs)
+
+  useEffect(() => {
+    if (!tariffs) {
+      fetchTariffs()
+    }
+  }, [tariffs, fetchTariffs])
 
   const getPrice = (card: PricingCardData): string => {
     if (!tariffs) return formatCurrency(card.fallbackPrice)

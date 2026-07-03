@@ -4,6 +4,7 @@ import { getTariffsService } from '@/services/parking.service'
 import { updateTariffsService } from '@/services/admin.service'
 import { formatCurrency } from '@/utils/formatters'
 import { showErrorToast, showSuccessToast } from '@/utils/errorHandler'
+import { useAppStore } from '@/stores/appStore'
 import type { PricingConfig } from '@/types'
 
 type VehicleKey = 'car' | 'moto' | 'camioneta' | 'bike'
@@ -80,6 +81,8 @@ export function TariffEditor() {
     setIsSaving(true)
     try {
       await updateTariffsService(tariffs as unknown as Record<string, unknown>)
+      // Refresh global store so landing page gets updated prices
+      await useAppStore.getState().fetchTariffs()
       showSuccessToast('Tarifas actualizadas correctamente')
     } catch (err) {
       showErrorToast(err)
