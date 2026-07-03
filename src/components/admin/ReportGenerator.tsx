@@ -109,12 +109,12 @@ export function ReportGenerator() {
         </div>
         <div className="flex items-center gap-2">
           <PDFExporter
-            content={reportContent || getEmptyReportContent(filters)}
-            disabled={!reportContent && !isLoading}
+            content={displayContent}
+            disabled={false}
           />
           <ExcelExporter
-            content={reportContent || getEmptyReportContent(filters)}
-            disabled={!reportContent && !isLoading}
+            content={displayContent}
+            disabled={false}
           />
         </div>
       </div>
