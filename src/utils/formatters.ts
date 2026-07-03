@@ -5,6 +5,7 @@
  * Example: 3000 → "$3.000"
  */
 export function formatCurrency(value: number): string {
+  if (typeof value !== 'number' || isNaN(value)) return '$0'
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
@@ -18,6 +19,7 @@ export function formatCurrency(value: number): string {
  * Example: 3000 → "3.000"
  */
 export function formatNumber(value: number): string {
+  if (typeof value !== 'number' || isNaN(value)) return '0'
   return new Intl.NumberFormat('es-CO').format(value)
 }
 
@@ -72,6 +74,7 @@ export function formatTime(timeString: string): string {
  * Example: 150 → "2 h 30 min"
  */
 export function formatDuration(minutes: number): string {
+  if (typeof minutes !== 'number' || isNaN(minutes) || minutes < 0) return '0 min'
   const hours = Math.floor(minutes / 60)
   const remainingMinutes = minutes % 60
 
@@ -87,6 +90,7 @@ export function formatDuration(minutes: number): string {
  * Example: 0.75 → "75%"
  */
 export function formatPercentage(value: number): string {
+  if (typeof value !== 'number' || isNaN(value)) return '0%'
   return `${Math.round(value * 100)}%`
 }
 

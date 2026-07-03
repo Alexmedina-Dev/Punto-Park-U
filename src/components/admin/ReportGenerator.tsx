@@ -7,6 +7,7 @@ import { ReportTable } from './ReportTable'
 import { PDFExporter } from './PDFExporter'
 import { ExcelExporter } from './ExcelExporter'
 import { fetchReportData, getDailyIncomeData, getOccupancyByTypeData, getPaymentMethodData, getHourlyIncomeData } from '@/services/reportService'
+import { showSuccessToast } from '@/utils/errorHandler'
 import type { ReportFilters, ReportContent, ReportPaymentKPI, DailyIncome, OccupancyByType, PaymentMethodStat } from '@/types'
 
 /**
@@ -134,13 +135,19 @@ export function ReportGenerator() {
                 <p className="text-sm text-red-400">{error}</p>
               </div>
             </Card>
-          ) : reportContent ? (
+          ) : reportContent || true ? (
             <>
+              {!reportContent && (
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-sm text-primary flex items-center gap-2">
+                  <span className="material-symbols-outlined">info</span>
+                  <span>Mostrando datos de demostración. El parqueadero lleva 15 días operando desde su inauguración.</span>
+                </div>
+              )}
               {/* 10 KPIs */}
               <ReportKPIs
-                summary={reportContent.summary}
-                paymentTotals={paymentTotals}
-                projection={projection}
+                summary={(reportContent || getDemoReportContent(filters)).summary}
+                paymentTotals={reportContent ? paymentTotals : { efectivo: 154000, pos: 68000, epayco: 1425000, nequi: 576000, daviplata: 125000, transfer: 106000 }}
+                projection={reportContent ? projection : 4900000}
               />
 
               {/* 4 Charts */}
@@ -153,7 +160,7 @@ export function ReportGenerator() {
               />
 
               {/* Data Table */}
-              <ReportTable rows={reportContent.rows} filters={filters} />
+              <ReportTable rows={(reportContent || getDemoReportContent(filters)).rows} filters={filters} />
             </>
           ) : (
             <Card variant="glass" padding="lg">
@@ -172,26 +179,64 @@ export function ReportGenerator() {
 }
 
 /**
- * Get an empty report content object for disabled export states.
+ * Get demo report content with fictional data for presentation.
+ * Shows 15 days of operation since inauguration.
  */
-function getEmptyReportContent(filters: ReportFilters): ReportContent {
+function getDemoReportContent(filters: ReportFilters): ReportContent {
+  const now = new Date()
+  const generatedAt = now.toLocaleString('es-CO')
+  const periodLabel = filters.period === 'today' ? 'Hoy' : filters.period === 'week' ? 'Últimos 7 días' : filters.period === 'month' ? 'Últimos 15 días' : 'Período personalizado'
+  
+  // Mock data: 15 days of operation, 127 vehicles, $2.4M income
+  const totalIngresos = 2450000
+  const totalVehiculos = 127
+  const tasaOcupacion = 68
+  const ticketPromedio = 19291
+  const tiempoPromedio = '2h 15min'
+  const ingresosPorHora = 10208
+  
+  const breakdown = [
+    { tipo: 'Automóvil', cantidad: 68, ingresos: 1428000, porcentaje: 58 },
+    { tipo: 'Camioneta', cantidad: 24, ingresos: 576000, porcentaje: 24 },
+    { tipo: 'Motocicleta', cantidad: 28, ingresos: 336000, porcentaje: 14 },
+    { tipo: 'Bicicleta', cantidad: 7, ingresos: 70000, porcentaje: 4 },
+  ]
+  
+  const rows = [
+    { placa: 'ABC123', tipo: 'Automóvil', ingreso: '07:30 a.m.', salida: '09:45 a.m.', duracion: '2h 15min', tarifa: '$38.500', pago: 'ePayco', conductor: 'Juan Pérez' },
+    { placa: 'DEF456', tipo: 'Camioneta', ingreso: '08:15 a.m.', salida: '12:30 p.m.', duracion: '4h 15min', tarifa: '$68.000', pago: 'Nequi', conductor: 'María García' },
+    { placa: 'GHI789', tipo: 'Motocicleta', ingreso: '09:00 a.m.', salida: '11:00 a.m.', duracion: '2h 00min', tarifa: '$15.000', pago: 'Efectivo', conductor: 'Carlos López' },
+    { placa: 'JKL012', tipo: 'Automóvil', ingreso: '10:30 a.m.', salida: '02:45 p.m.', duracion: '4h 15min', tarifa: '$57.500', pago: 'Daviplata', conductor: 'Ana Martínez' },
+    { placa: 'MNO345', tipo: 'Bicicleta', ingreso: '11:00 a.m.', salida: '01:00 p.m.', duracion: '2h 00min', tarifa: '$5.000', pago: 'Transferencia', conductor: 'Luis Torres' },
+    { placa: 'PQR678', tipo: 'Automóvil', ingreso: '12:15 p.m.', salida: '03:30 p.m.', duracion: '3h 15min', tarifa: '$48.750', pago: 'ePayco', conductor: 'Sofia Ramírez' },
+    { placa: 'STU901', tipo: 'Camioneta', ingreso: '01:00 p.m.', salida: '05:15 p.m.', duracion: '4h 15min', tarifa: '$72.000', pago: 'POS', conductor: 'Diego Herrera' },
+    { placa: 'VWX234', tipo: 'Motocicleta', ingreso: '02:30 p.m.', salida: '04:00 p.m.', duracion: '1h 30min', tarifa: '$11.250', pago: 'Efectivo', conductor: 'Laura Castro' },
+  ]
+  
   return {
     meta: {
       title: 'Análisis Financiero — Punto Park U',
-      subtitle: 'Sin datos',
-      generatedAt: new Date().toLocaleString('es-CO'),
-      period: '—',
+      subtitle: 'Reporte de operación',
+      generatedAt,
+      period: `${periodLabel} · Desde inauguración (15 días operando)`,
     },
     summary: {
-      totalIngresos: 0,
-      totalVehiculos: 0,
-      tasaOcupacion: 0,
-      ticketPromedio: 0,
-      tiempoPromedio: '0 min',
-      ingresosPorHora: 0,
+      totalIngresos,
+      totalVehiculos,
+      tasaOcupacion,
+      ticketPromedio,
+      tiempoPromedio,
+      ingresosPorHora,
     },
-    breakdown: [],
+    breakdown,
     kpis: [],
-    rows: [],
+    rows,
   }
+}
+
+/**
+ * Get an empty report content object for disabled export states.
+ */
+function getEmptyReportContent(filters: ReportFilters): ReportContent {
+  return getDemoReportContent(filters)
 }

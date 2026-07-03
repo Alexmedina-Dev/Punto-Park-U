@@ -19,7 +19,7 @@ const VEHICLE_LABELS: Record<VehicleKey, string> = {
 const VEHICLE_ICONS: Record<VehicleKey, string> = {
   car: 'directions_car',
   moto: 'two_wheeler',
-  camioneta: 'local_shipping',
+  camioneta: 'airport_shuttle',
   bike: 'pedal_bike',
 }
 

@@ -102,32 +102,38 @@ export function AdminDashboard() {
                   admin_panel_settings
                 </span>
                 <h2 className="text-2xl font-bold text-primary font-headline mb-3">
-                  Panel de Control
+                  Bienvenido al Panel de Administración
                 </h2>
-                <p className="text-on-surface-var mb-8 leading-relaxed">
-                  Selecciona una sección del menú lateral para comenzar a gestionar tu parqueadero.
+                <p className="text-on-surface-var mb-6 leading-relaxed">
+                  Hola, <strong>{user?.nombres || user?.username || 'Admin'}</strong>. Este es tu centro de control 
+                  para gestionar Punto Park U. Desde aquí puedes monitorear el estado del parqueadero en tiempo real, 
+                  generar reportes financieros, ajustar tarifas, configurar horarios de atención y analizar 
+                  tendencias de uso.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    { icon: 'dashboard', label: 'Dashboard', desc: 'KPIs y métricas en tiempo real', tab: 'dashboard' },
-                    { icon: 'bar_chart', label: 'Reportes', desc: 'Genera y exporta reportes', tab: 'reports' },
-                    { icon: 'local_parking', label: 'Mapa', desc: 'Estado del parqueadero', tab: 'map' },
-                    { icon: 'paid', label: 'Tarifas', desc: 'Configura precios por vehículo', tab: 'tariffs' },
-                    { icon: 'schedule', label: 'Horarios', desc: 'Gestiona turnos y horarios', tab: 'schedule' },
-                    { icon: 'monitoring', label: 'Analítica', desc: 'Tendencias y pronósticos', tab: 'analytics' },
-                  ].map((item) => (
-                    <button
-                      key={item.tab}
-                      onClick={() => setActiveTab(item.tab as AdminTab)}
-                      className="flex flex-col items-center gap-2 p-5 rounded-xl border border-outline/10 bg-surface hover:bg-surface-container hover:border-primary/30 transition-all duration-200 cursor-pointer group"
-                    >
-                      <span className="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform">
-                        {item.icon}
-                      </span>
-                      <span className="font-semibold text-on-surface text-sm">{item.label}</span>
-                      <span className="text-xs text-on-surface-var text-center">{item.desc}</span>
-                    </button>
-                  ))}
+                
+                <div className="bg-surface-container rounded-xl p-5 text-left space-y-3">
+                  <div className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-2xl text-primary mt-0.5">auto_awesome</span>
+                    <div>
+                      <p className="text-sm font-bold text-on-bg">Inteligencia Artificial Integrada</p>
+                      <p className="text-xs text-on-surface-var leading-relaxed">
+                        Tu parqueadero cuenta con análisis predictivo impulsado por IA (Prophet) que anticipa 
+                        la ocupación para los próximos 7 días. Además, el sistema de precios dinámicos ajusta 
+                        automáticamente las tarifas según la demanda en tiempo real, maximizando tus ingresos 
+                        sin intervención manual.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-2xl text-success mt-0.5">check_circle</span>
+                    <div>
+                      <p className="text-sm font-bold text-on-bg">Todo bajo control</p>
+                      <p className="text-xs text-on-surface-var leading-relaxed">
+                        Selecciona cualquier opción del menú lateral para comenzar. Todas las secciones 
+                        están diseñadas para ser intuitivas y fáciles de usar.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Card>

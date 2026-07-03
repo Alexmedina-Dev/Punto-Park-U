@@ -1,5 +1,6 @@
 ﻿import React from 'react'
 import { Button } from '@/components/ui'
+import { showSuccessToast, showErrorToast } from '@/utils/errorHandler'
 import type { ReportContent } from '@/types'
 
 interface PDFExporterProps {
@@ -258,8 +259,10 @@ export function PDFExporter({ content, disabled = false }: PDFExporterProps) {
   const handleExport = async () => {
     try {
       await generatePDF(content)
+      showSuccessToast('PDF descargado correctamente')
     } catch (err) {
       console.error('PDF export error:', err)
+      showErrorToast('Error al descargar el PDF')
     }
   }
 

@@ -1,5 +1,6 @@
 ﻿import React from 'react'
 import { Button } from '@/components/ui'
+import { showSuccessToast, showErrorToast } from '@/utils/errorHandler'
 import type { ReportContent } from '@/types'
 
 interface ExcelExporterProps {
@@ -272,8 +273,10 @@ export function ExcelExporter({ content, disabled = false }: ExcelExporterProps)
   const handleExport = async () => {
     try {
       await generateExcel(content)
+      showSuccessToast('Excel descargado correctamente')
     } catch (err) {
       console.error('Excel export error:', err)
+      showErrorToast('Error al descargar el Excel')
     }
   }
 
