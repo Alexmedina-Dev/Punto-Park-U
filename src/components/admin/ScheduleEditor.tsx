@@ -90,8 +90,8 @@ export function ScheduleEditor() {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-primary">{getDayLabel(day)}</span>
               </div>
-              <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-4">
-                <div className="flex-1">
+              <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-3 xl:gap-4">
+                <div className="flex-1 min-w-0">
                   <label className="block text-xs text-on-surface-var mb-1">
                     <span className="material-symbols-outlined text-base align-middle mr-1">wb_sunny</span>
                     Apertura
@@ -105,9 +105,9 @@ export function ScheduleEditor() {
                       transition-colors"
                   />
                 </div>
-                <span className="hidden lg:inline text-on-surface-var mt-6 text-lg">→</span>
-                <span className="lg:hidden text-on-surface-var text-center text-lg">↓</span>
-                <div className="flex-1">
+                <span className="hidden xl:inline text-on-surface-var mt-6 text-lg">→</span>
+                <span className="xl:hidden text-on-surface-var text-center text-lg">↓</span>
+                <div className="flex-1 min-w-0">
                   <label className="block text-xs text-on-surface-var mb-1">
                     <span className="material-symbols-outlined text-base align-middle mr-1">nights_stay</span>
                     Cierre
