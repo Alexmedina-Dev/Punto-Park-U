@@ -33,7 +33,9 @@ export function SpotSelector({
   isLoading,
 }: SpotSelectorProps) {
   const sortedSpots = useMemo(
-    () => [...spots].sort((a, b) => a.code.localeCompare(b.code)),
+    () => [...spots]
+      .filter((s) => s && s.code)
+      .sort((a, b) => (a.code || '').localeCompare(b.code || '')),
     [spots]
   )
 
