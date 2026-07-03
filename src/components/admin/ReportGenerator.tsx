@@ -6,20 +6,17 @@ import { ReportCharts } from './ReportCharts'
 import { ReportTable } from './ReportTable'
 import { PDFExporter } from './PDFExporter'
 import { ExcelExporter } from './ExcelExporter'
-import { fetchReportData, getDailyIncomeData, getOccupancyByTypeData, getPaymentMethodData, getHourlyIncomeData } from '@/services/reportService'
-import { showSuccessToast } from '@/utils/errorHandler'
-import type { ReportFilters, ReportContent, ReportPaymentKPI, DailyIncome, OccupancyByType, PaymentMethodStat } from '@/types'
+import { fetchReportData, getDailyIncomeData, getOccupancyByTypeData, getPaymentMethodData, getHourlyIncomeData, generateDemoReport } from '@/services/reportService'
+import type { ReportFilters, ReportContent, ReportPaymentKPI } from '@/types'
 
 /**
  * Report Generator — Orchestrates all report sub-components.
  * Handles:
  *   - Filter state management
- *   - Data fetching (API with mock fallback)
- *   - KPI calculation (including payment totals and projection)
- *   - Chart data derivation
+ *   - Data fetching (API with dynamic demo fallback)
+ *   - KPI calculation from actual or demo data
+ *   - Chart data that varies by filter
  *   - Export to PDF / Excel
- *
- * Matches the vanilla Punto Park U "Análisis Financiero" reports tab.
  */
 export function ReportGenerator() {
   const [filters, setFilters] = useState<ReportFilters>({
@@ -31,17 +28,19 @@ export function ReportGenerator() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Derived chart data from filters (independent of API)
-  const dailyIncome: DailyIncome[] = useMemo(() => getDailyIncomeData(filters), [filters])
-  const occupancyByType: OccupancyByType[] = useMemo(() => getOccupancyByTypeData(filters), [filters])
-  const paymentMethods: PaymentMethodStat[] = useMemo(() => getPaymentMethodData(filters), [filters])
-  const hourlyIncome: { hour: string; income: number }[] = useMemo(() => getHourlyIncomeData(filters), [filters])
+  // Check if report has real data or is empty
+  const hasRealData = reportContent && reportContent.summary && reportContent.summary.totalIngresos > 0
 
-  // Compute payment totals from report rows
+  // Use real data if available, otherwise generate dynamic demo data based on filters
+  const displayContent: ReportContent = useMemo(() => {
+    if (hasRealData && reportContent) return reportContent
+    return generateDemoReport(filters)
+  }, [hasRealData, reportContent, filters])
+
+  // Compute payment totals from display content rows (works for both real and demo)
   const paymentTotals: ReportPaymentKPI = useMemo(() => {
-    if (!reportContent) return { efectivo: 0, pos: 0, epayco: 0, nequi: 0, daviplata: 0, transfer: 0 }
     const totals = { efectivo: 0, pos: 0, epayco: 0, nequi: 0, daviplata: 0, transfer: 0 }
-    reportContent.rows.forEach((r) => {
+    displayContent.rows.forEach((r) => {
       const amount = parseInt(r.tarifa.replace(/[$.]/g, '')) || 0
       if (r.pago === 'Efectivo') totals.efectivo += amount
       else if (r.pago === 'POS') totals.pos += amount
@@ -51,26 +50,24 @@ export function ReportGenerator() {
       else if (r.pago === 'Transferencia') totals.transfer += amount
     })
     return totals
-  }, [reportContent])
+  }, [displayContent])
 
-  // Check if report has real data or is empty
-  const hasRealData = reportContent && reportContent.summary && reportContent.summary.totalIngresos > 0
-  const displayContent = hasRealData ? reportContent : getDemoReportContent(filters)
-  const displayPaymentTotals = hasRealData ? paymentTotals : { efectivo: 154000, pos: 68000, epayco: 1425000, nequi: 576000, daviplata: 125000, transfer: 106000 }
-  
-  // Compute monthly projection
+  // Compute monthly projection from display content
   const projection: number = useMemo(() => {
-    if (!reportContent) return 0
     if (filters.period === 'month') return 0 // N/A for full month
     const now = new Date()
     const today = now.getDate()
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
-    const income = reportContent.summary.totalIngresos
+    const income = displayContent.summary.totalIngresos
     if (today === 0) return income
     return Math.round((income / today) * daysInMonth)
-  }, [reportContent, filters.period])
-  
-  const displayProjection = hasRealData ? projection : 4900000
+  }, [displayContent, filters.period])
+
+  // Chart data that varies by filters
+  const dailyIncome = useMemo(() => getDailyIncomeData(filters), [filters])
+  const occupancyByType = useMemo(() => getOccupancyByTypeData(filters), [filters])
+  const paymentMethods = useMemo(() => getPaymentMethodData(filters), [filters])
+  const hourlyIncome = useMemo(() => getHourlyIncomeData(filters), [filters])
 
   const loadReportData = useCallback(async (newFilters: ReportFilters) => {
     setIsLoading(true)
@@ -81,6 +78,8 @@ export function ReportGenerator() {
     } catch (err) {
       console.error('Failed to load report data:', err)
       setError('Error al cargar datos del reporte')
+      // On error, clear reportContent so demo data is shown
+      setReportContent(null)
     } finally {
       setIsLoading(false)
     }
@@ -142,22 +141,22 @@ export function ReportGenerator() {
                 <p className="text-sm text-red-400">{error}</p>
               </div>
             </Card>
-          ) : reportContent || true ? (
+          ) : (
             <>
               {!hasRealData && (
                 <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-sm text-primary flex items-center gap-2">
                   <span className="material-symbols-outlined">info</span>
-                  <span>Mostrando datos de demostración. El parqueadero lleva 15 días operando desde su inauguración.</span>
+                  <span>Mostrando datos de demostración. Los filtros aplicados afectan estos datos.</span>
                 </div>
               )}
-              {/* 10 KPIs */}
+              {/* KPIs */}
               <ReportKPIs
                 summary={displayContent.summary}
-                paymentTotals={displayPaymentTotals}
-                projection={displayProjection}
+                paymentTotals={paymentTotals}
+                projection={projection}
               />
 
-              {/* 4 Charts */}
+              {/* Charts */}
               <ReportCharts
                 filters={filters}
                 dailyIncome={dailyIncome}
@@ -169,81 +168,9 @@ export function ReportGenerator() {
               {/* Data Table */}
               <ReportTable rows={displayContent.rows} filters={filters} />
             </>
-          ) : (
-            <Card variant="glass" padding="lg">
-              <div className="text-center py-8 text-on-surface-var text-sm">
-                <span className="material-symbols-outlined text-3xl mb-2 block text-primary">
-                  bar_chart
-                </span>
-                <p>Selecciona los filtros y presiona "Actualizar Reporte" para ver los datos.</p>
-              </div>
-            </Card>
           )}
         </div>
       </div>
     </div>
   )
-}
-
-/**
- * Get demo report content with fictional data for presentation.
- * Shows 15 days of operation since inauguration.
- */
-function getDemoReportContent(filters: ReportFilters): ReportContent {
-  const now = new Date()
-  const generatedAt = now.toLocaleString('es-CO')
-  const periodLabel = filters.period === 'today' ? 'Hoy' : filters.period === 'week' ? 'Últimos 7 días' : filters.period === 'month' ? 'Últimos 15 días' : 'Período personalizado'
-  
-  // Mock data: 15 days of operation, 127 vehicles, $2.4M income
-  const totalIngresos = 2450000
-  const totalVehiculos = 127
-  const tasaOcupacion = 68
-  const ticketPromedio = 19291
-  const tiempoPromedio = '2h 15min'
-  const ingresosPorHora = 10208
-  
-  const breakdown = [
-    { tipo: 'Automóvil', cantidad: 68, ingresos: 1428000, porcentaje: 58 },
-    { tipo: 'Camioneta', cantidad: 24, ingresos: 576000, porcentaje: 24 },
-    { tipo: 'Motocicleta', cantidad: 28, ingresos: 336000, porcentaje: 14 },
-    { tipo: 'Bicicleta', cantidad: 7, ingresos: 70000, porcentaje: 4 },
-  ]
-  
-  const rows = [
-    { placa: 'ABC123', tipo: 'Automóvil', ingreso: '07:30 a.m.', salida: '09:45 a.m.', duracion: '2h 15min', tarifa: '$38.500', pago: 'ePayco', conductor: 'Juan Pérez' },
-    { placa: 'DEF456', tipo: 'Camioneta', ingreso: '08:15 a.m.', salida: '12:30 p.m.', duracion: '4h 15min', tarifa: '$68.000', pago: 'Nequi', conductor: 'María García' },
-    { placa: 'GHI789', tipo: 'Motocicleta', ingreso: '09:00 a.m.', salida: '11:00 a.m.', duracion: '2h 00min', tarifa: '$15.000', pago: 'Efectivo', conductor: 'Carlos López' },
-    { placa: 'JKL012', tipo: 'Automóvil', ingreso: '10:30 a.m.', salida: '02:45 p.m.', duracion: '4h 15min', tarifa: '$57.500', pago: 'Daviplata', conductor: 'Ana Martínez' },
-    { placa: 'MNO345', tipo: 'Bicicleta', ingreso: '11:00 a.m.', salida: '01:00 p.m.', duracion: '2h 00min', tarifa: '$5.000', pago: 'Transferencia', conductor: 'Luis Torres' },
-    { placa: 'PQR678', tipo: 'Automóvil', ingreso: '12:15 p.m.', salida: '03:30 p.m.', duracion: '3h 15min', tarifa: '$48.750', pago: 'ePayco', conductor: 'Sofia Ramírez' },
-    { placa: 'STU901', tipo: 'Camioneta', ingreso: '01:00 p.m.', salida: '05:15 p.m.', duracion: '4h 15min', tarifa: '$72.000', pago: 'POS', conductor: 'Diego Herrera' },
-    { placa: 'VWX234', tipo: 'Motocicleta', ingreso: '02:30 p.m.', salida: '04:00 p.m.', duracion: '1h 30min', tarifa: '$11.250', pago: 'Efectivo', conductor: 'Laura Castro' },
-  ]
-  
-  return {
-    meta: {
-      title: 'Análisis Financiero — Punto Park U',
-      subtitle: 'Reporte de operación',
-      generatedAt,
-      period: `${periodLabel} · Desde inauguración (15 días operando)`,
-    },
-    summary: {
-      totalIngresos,
-      totalVehiculos,
-      tasaOcupacion,
-      ticketPromedio,
-      tiempoPromedio,
-      ingresosPorHora,
-    },
-    breakdown,
-    kpis: [],
-    rows,
-  }
-}
-
-/**
- * Get an empty report content object for disabled export states.
- */
-function getEmptyReportContent(filters: ReportFilters): ReportContent {
-  return getDemoReportContent(filters)
 }
