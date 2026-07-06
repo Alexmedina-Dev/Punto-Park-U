@@ -144,7 +144,15 @@ async function seedDemoUsers() {
 async function seedDemoSpots() {
   const existingCount = await ParkingSpot.countDocuments();
   if (existingCount >= 25) {
-    console.log(`[seeder] ${existingCount} parking spots already exist, skipping spot generation`);
+    console.log(`[seeder] ${existingCount} parking spots already exist, updating statuses for demo`);
+    const spots = await ParkingSpot.find().lean();
+    // Randomize statuses for demo realism
+    const demoStatuses = ['available', 'available', 'available', 'available', 'occupied', 'occupied', 'reserved'];
+    for (const spot of spots) {
+      const newStatus = randomItem(demoStatuses);
+      await ParkingSpot.updateOne({ _id: spot._id }, { status: newStatus });
+    }
+    console.log(`[seeder] Updated ${spots.length} spot statuses`);
     return ParkingSpot.find().lean();
   }
 
