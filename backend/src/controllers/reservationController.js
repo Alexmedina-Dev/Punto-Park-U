@@ -202,6 +202,18 @@ const createReservation = async (req, res, next) => {
       }
     }
 
+    // Auto-expire stale pending reservations (older than 24h with no activity)
+    const staleDeadline = new Date();
+    staleDeadline.setHours(staleDeadline.getHours() - 24);
+    await Reservation.updateMany(
+      {
+        user: req.user.id,
+        status: 'pending',
+        createdAt: { $lt: staleDeadline },
+      },
+      { status: 'cancelled' }
+    );
+
     // Check active reservation limit
     const activeReservation = await Reservation.findOne({
       user: req.user.id,

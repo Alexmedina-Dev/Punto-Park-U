@@ -261,7 +261,11 @@ export function UserDashboard() {
 
   const handleCancelReservation = async (id: string) => {
     if (window.confirm('¿Estás seguro de cancelar esta reserva?')) {
-      await cancelReservation(id)
+      const ok = await cancelReservation(id)
+      if (ok) {
+        await fetchReservations()
+        await fetchReservationStats()
+      }
     }
   }
 
