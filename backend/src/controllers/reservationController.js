@@ -163,7 +163,8 @@ const getReservation = async (req, res, next) => {
 // ── POST /api/reservations ────────────────────────────────────────────
 const createReservation = async (req, res, next) => {
   try {
-    const { vehicle, spot, entryTime, exitTime, date, startTime, endTime, notes } = req.body;
+    const { vehicle, spot, spotId, entryTime, exitTime, date, startTime, endTime, notes } = req.body;
+    const assignedSpot = spot || spotId || null;
 
     // Validate future date
     if (date) {
@@ -213,7 +214,7 @@ const createReservation = async (req, res, next) => {
     const reservation = await Reservation.create({
       user: req.user.id,
       vehicle,
-      spot,
+      spot: assignedSpot,
       entryTime: entryTime || null,
       exitTime: exitTime || null,
       date: date || null,
@@ -227,6 +228,11 @@ const createReservation = async (req, res, next) => {
       .populate('user', 'name email')
       .populate('vehicle', 'plate type')
       .populate('spot', 'code zone');
+
+    // Update spot status to reserved
+    if (assignedSpot) {
+      await ParkingSpot.findByIdAndUpdate(assignedSpot, { status: 'reserved' });
+    }
 
     // Log activity
     logActivity(req.user.id, 'Reservation created', 'reservation', {
@@ -334,6 +340,11 @@ const deleteReservation = async (req, res, next) => {
     } else {
       reservation.status = 'cancelled';
       await reservation.save();
+    }
+
+    // Free the spot when reservation is cancelled
+    if (reservation.spot) {
+      await ParkingSpot.findByIdAndUpdate(reservation.spot, { status: 'available' });
     }
 
     // Log activity
