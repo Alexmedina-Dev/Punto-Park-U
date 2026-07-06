@@ -260,6 +260,7 @@ const getParkingSpots = async (req, res, next) => {
       // Otherwise: DB status or demo overlay
       const dbStatus = STATUS_MAP[s.status] || s.status;
       const demoStatus = getDemoOverlayStatus(s.code);
+      const effectiveStatus = dbStatus === 'libre' && demoStatus ? demoStatus : dbStatus;
       return {
         id: s._id.toString(),
         code: s.code,
@@ -267,9 +268,44 @@ const getParkingSpots = async (req, res, next) => {
         type: s.type,
         floor: s.floor || null,
         accessible: s.accessible || false,
-        status: dbStatus === 'libre' && demoStatus ? demoStatus : dbStatus,
+        status: effectiveStatus,
       };
     });
+
+    // Enrich occupied/reserved spots with vehicle data from active reservations
+    const occupiedSpotIds = data
+      .filter((s) => s.status === 'ocupado' || s.status === 'reservado')
+      .map((s) => s.id);
+
+    if (occupiedSpotIds.length > 0) {
+      const activeReservations = await Reservation.find({
+        spot: { $in: occupiedSpotIds },
+        status: { $in: ['pending', 'active'] },
+      })
+        .populate('vehicle', 'plate brand model color type')
+        .select('spot vehicle')
+        .lean();
+
+      const spotVehicleMap = {};
+      for (const r of activeReservations) {
+        const spotId = r.spot?.toString();
+        if (spotId && r.vehicle) {
+          spotVehicleMap[spotId] = {
+            plate: r.vehicle.plate,
+            brand: r.vehicle.brand,
+            model: r.vehicle.model,
+            color: r.vehicle.color,
+            type: r.vehicle.type,
+          };
+        }
+      }
+
+      for (const spot of data) {
+        if (spotVehicleMap[spot.id]) {
+          spot.vehicle = spotVehicleMap[spot.id];
+        }
+      }
+    }
 
     res.json({ success: true, data });
   } catch (err) {

@@ -56,6 +56,7 @@ export function ParkingMap() {
             ...updated[index],
             status: update.status,
             plate: update.plate,
+            vehicle: update.vehicle,
           }
         } else {
           // Add new spot — use code from update if available, otherwise generate
@@ -66,6 +67,7 @@ export function ParkingMap() {
             type: (update.vehicleType as 'car' | 'moto' | 'camioneta' | 'bike') || 'car',
             status: update.status,
             plate: update.plate,
+            vehicle: update.vehicle,
           })
         }
 

@@ -195,6 +195,13 @@ export interface ParkingSpot {
   floor?: number | null
   accessible?: boolean
   plate?: string
+  vehicle?: {
+    plate?: string
+    brand?: string
+    model?: string
+    color?: string
+    type?: string
+  }
 }
 
 export interface ParkingStats {
@@ -461,6 +468,13 @@ export interface WsSpotUpdate {
   status: 'libre' | 'ocupado' | 'reservado'
   vehicleType?: string
   plate?: string
+  vehicle?: {
+    plate?: string
+    brand?: string
+    model?: string
+    color?: string
+    type?: string
+  }
 }
 
 export interface WsAlertEvent {
