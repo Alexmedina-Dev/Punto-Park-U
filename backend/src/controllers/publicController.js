@@ -333,8 +333,11 @@ const getParkingSpots = async (req, res, next) => {
         };
       }
       // Otherwise: DB status or demo overlay
+      // Only apply demo overlay when NOT checking availability for a specific date/time
+      // (i.e., when viewing the admin map or landing page, not when selecting a spot to reserve)
       const dbStatus = STATUS_MAP[s.status] || s.status;
-      const demoStatus = getDemoOverlayStatus(s.code, s.zone);
+      const useDemoOverlay = !(date && startTime && endTime);
+      const demoStatus = useDemoOverlay ? getDemoOverlayStatus(s.code, s.zone) : null;
       const effectiveStatus = dbStatus === 'libre' && demoStatus ? demoStatus : dbStatus;
       return {
         id: s._id.toString(),
@@ -382,11 +385,13 @@ const getParkingSpots = async (req, res, next) => {
       }
     }
 
-    // Add fake vehicle data for demo overlay spots that don't have real reservations
-    for (const spot of data) {
-      if ((spot.status === 'ocupado' || spot.status === 'reservado') && !spot.vehicle) {
-        const fakeVehicle = getDemoVehicle(spot.code, spot.zone);
-        if (fakeVehicle) spot.vehicle = fakeVehicle;
+    // Add fake vehicle data for demo overlay spots (only when not checking specific availability)
+    if (!(date && startTime && endTime)) {
+      for (const spot of data) {
+        if ((spot.status === 'ocupado' || spot.status === 'reservado') && !spot.vehicle) {
+          const fakeVehicle = getDemoVehicle(spot.code, spot.zone);
+          if (fakeVehicle) spot.vehicle = fakeVehicle;
+        }
       }
     }
 
