@@ -456,6 +456,7 @@ export interface SessionStats {
 
 export interface WsSpotUpdate {
   id: string
+  code?: string
   zone: string
   status: 'libre' | 'ocupado' | 'reservado'
   vehicleType?: string

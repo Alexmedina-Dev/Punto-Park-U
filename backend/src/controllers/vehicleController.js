@@ -150,6 +150,7 @@ const createVehicle = async (req, res, next) => {
     // Emit spot update (vehicle entry implies a spot was occupied)
     emitSpotUpdate({
       id: vehicle.plate,
+      code: vehicle.plate,
       zone: req.body.zone || 'A',
       status: 'ocupado',
       vehicleType: vehicle.type,

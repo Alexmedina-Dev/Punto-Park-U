@@ -58,10 +58,10 @@ export function ParkingMap() {
             plate: update.plate,
           }
         } else {
-          // Add new spot
+          // Add new spot — use code from update if available, otherwise generate
           updated.push({
             id: update.id,
-            code: update.id,
+            code: update.code || update.id,
             zone: update.zone as 'A' | 'B' | 'C',
             type: (update.vehicleType as 'car' | 'moto' | 'camioneta' | 'bike') || 'car',
             status: update.status,

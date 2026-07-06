@@ -159,6 +159,7 @@ const validateEntry = async (req, res, next) => {
         // Emit WebSocket event for real-time UI update
         emitSpotUpdate({
           id: spot._id.toString(),
+          code: spot.code,
           zone: spot.zone,
           status: 'occupied',
           vehicleType: reservation.vehicle?.type || 'car',
@@ -329,6 +330,7 @@ const processExit = async (req, res, next) => {
         // Emit WebSocket event
         emitSpotUpdate({
           id: spot._id.toString(),
+          code: spot.code,
           zone: spot.zone,
           status: 'available',
           vehicleType: reservation.vehicle?.type || 'car',

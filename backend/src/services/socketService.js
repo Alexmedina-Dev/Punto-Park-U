@@ -108,7 +108,7 @@ const getIO = () => {
 
 /**
  * Emit a parking spot update to all users in the parking:spots room.
- * @param {Object} spot - { id, zone, status, vehicleType?, plate? }
+ * @param {Object} spot - { id, code, zone, status, vehicleType?, plate? }
  */
 const emitSpotUpdate = (spot) => {
   try {

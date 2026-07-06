@@ -27,7 +27,7 @@ export function ParkingSpot({ spot, onClick }: ParkingSpotProps) {
     <button
       onClick={() => onClick?.(spot)}
       disabled={!isClickable}
-      title={`${spot.id} — ${STATUS_LABELS[status]}`}
+      title={`${spot.code || spot.id} — ${STATUS_LABELS[status]}`}
       className={`
         w-full aspect-square rounded-lg border-2 flex items-center justify-center
         text-xs font-bold transition-all duration-200
@@ -37,7 +37,7 @@ export function ParkingSpot({ spot, onClick }: ParkingSpotProps) {
       `}
       data-testid={`parking-spot-${spot.id}`}
     >
-      <span className="leading-none">{spot.id}</span>
+      <span className="leading-none">{spot.code || spot.id}</span>
     </button>
   )
 }

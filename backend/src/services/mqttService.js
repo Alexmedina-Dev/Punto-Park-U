@@ -87,6 +87,7 @@ async function handleSensorMessage(topic, message) {
       // Emit real-time update via WebSocket
       emitSpotUpdate({
         id: spot._id.toString(),
+        code: spot.code,
         zone: spot.zone,
         status: spot.status,
         hardwareId: spot.hardwareId,
