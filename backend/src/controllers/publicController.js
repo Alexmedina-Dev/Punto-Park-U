@@ -30,10 +30,13 @@ const STATUS_MAP = {
 /**
  * Deterministic demo overlay — makes the parking lot always look active.
  * Uses spot code as a seed so the same spots appear occupied every day.
- * ~40% occupied, ~15% reserved, ~45% available.
+ * Zone-aware thresholds:
+ *   A (carros, 20 spots): 7 libre → 65% non-libre
+ *   B (motos, 20 spots):  ~45% non-libre (keep as-is)
+ *   C (bikes, 10 spots):  3 libre → 70% non-libre
  * Real reservations take priority over this overlay.
  */
-function getDemoOverlayStatus(code) {
+function getDemoOverlayStatus(code, zone) {
   if (!code) return null;
   // Simple hash from code string → consistent per spot
   let hash = 0;
@@ -41,9 +44,20 @@ function getDemoOverlayStatus(code) {
     hash = ((hash << 5) - hash + code.charCodeAt(i)) | 0;
   }
   const bucket = Math.abs(hash) % 100;
-  if (bucket < 40) return 'ocupado';   // 40% occupied
-  if (bucket < 55) return 'reservado'; // 15% reserved
-  return null; // 45% stays available
+
+  // Zone-aware thresholds for non-libre percentage
+  const thresholds = {
+    A: 65, // 13/20 non-libre → 7 libre
+    B: 55, // 11/20 non-libre → 9 libre
+    C: 70, // 7/10 non-libre → 3 libre
+    D: 40, // 2/5 non-libre → 3 libre
+  };
+  const nonLibreThreshold = thresholds[zone] || 55;
+  const reservedPortion = 15; // ~15% reserved, rest occupied
+
+  if (bucket < nonLibreThreshold - reservedPortion) return 'ocupado';
+  if (bucket < nonLibreThreshold) return 'reservado';
+  return null; // libre
 }
 
 /**
@@ -163,7 +177,7 @@ const getAvailability = async (req, res, next) => {
       const typeKey = s.type === 'car' ? 'cars' : s.type === 'moto' ? 'motos' : s.type === 'bike' ? 'bikes' : s.type;
       // Determine effective status: real DB status or demo overlay
       const dbStatus = STATUS_MAP[s.status] || s.status;
-      const demoStatus = getDemoOverlayStatus(s.code);
+      const demoStatus = getDemoOverlayStatus(s.code, s.zone);
       const effectiveStatus = dbStatus === 'libre' && demoStatus ? demoStatus : dbStatus;
       const isUsed = effectiveStatus === 'ocupado' || effectiveStatus === 'reservado';
 
@@ -260,7 +274,7 @@ const getParkingSpots = async (req, res, next) => {
       }
       // Otherwise: DB status or demo overlay
       const dbStatus = STATUS_MAP[s.status] || s.status;
-      const demoStatus = getDemoOverlayStatus(s.code);
+      const demoStatus = getDemoOverlayStatus(s.code, s.zone);
       const effectiveStatus = dbStatus === 'libre' && demoStatus ? demoStatus : dbStatus;
       return {
         id: s._id.toString(),
