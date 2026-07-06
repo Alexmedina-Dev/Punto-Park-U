@@ -29,34 +29,29 @@ const STATUS_MAP = {
 
 /**
  * Deterministic demo overlay — makes the parking lot always look active.
- * Uses spot code as a seed so the same spots appear occupied every day.
+ * Uses the numeric part of the spot code for exact counts.
  * Zone-aware thresholds:
- *   A (carros, 20 spots): 7 libre → 65% non-libre
- *   B (motos, 20 spots):  ~45% non-libre (keep as-is)
- *   C (bikes, 10 spots):  3 libre → 70% non-libre
+ *   A (carros, 20 spots): 13 non-libre → 7 libre
+ *   B (motos, 20 spots):  11 non-libre → 9 libre
+ *   C (bikes, 10 spots):  7 non-libre → 3 libre
+ *   D (camionetas, 5):    2 non-libre → 3 libre
  * Real reservations take priority over this overlay.
  */
 function getDemoOverlayStatus(code, zone) {
   if (!code) return null;
-  // Simple hash from code string → consistent per spot
-  let hash = 0;
-  for (let i = 0; i < code.length; i++) {
-    hash = ((hash << 5) - hash + code.charCodeAt(i)) | 0;
-  }
-  const bucket = Math.abs(hash) % 100;
+  // Extract numeric part: "A01" → 1, "B12" → 12, "C03" → 3
+  const num = parseInt(code.replace(/[^0-9]/g, ''), 10);
+  if (isNaN(num)) return null;
 
-  // Zone-aware thresholds for non-libre percentage
-  const thresholds = {
-    A: 65, // 13/20 non-libre → 7 libre
-    B: 55, // 11/20 non-libre → 9 libre
-    C: 70, // 7/10 non-libre → 3 libre
-    D: 40, // 2/5 non-libre → 3 libre
-  };
-  const nonLibreThreshold = thresholds[zone] || 55;
-  const reservedPortion = 15; // ~15% reserved, rest occupied
+  // Exact thresholds per zone (non-libre count)
+  const occupiedCounts = { A: 9, B: 7, C: 5, D: 1 };  // first N → ocupado
+  const reservedCounts = { A: 4, B: 4, C: 2, D: 1 };  // next M → reservado
 
-  if (bucket < nonLibreThreshold - reservedPortion) return 'ocupado';
-  if (bucket < nonLibreThreshold) return 'reservado';
+  const occ = occupiedCounts[zone] || 0;
+  const res = reservedCounts[zone] || 0;
+
+  if (num <= occ) return 'ocupado';
+  if (num <= occ + res) return 'reservado';
   return null; // libre
 }
 

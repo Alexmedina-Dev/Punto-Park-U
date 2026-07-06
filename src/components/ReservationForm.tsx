@@ -91,7 +91,9 @@ export function ReservationForm({
     if (!form.date) {
       newErrors.date = 'Selecciona una fecha'
     } else {
-      const selected = new Date(form.date)
+      // Parse date components to avoid timezone offset issues
+      const [year, month, day] = form.date.split('-').map(Number)
+      const selected = new Date(year, month - 1, day)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       const tomorrow = new Date(today)
