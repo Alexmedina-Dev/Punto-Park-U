@@ -202,17 +202,38 @@ const createReservation = async (req, res, next) => {
       }
     }
 
-    // Auto-expire stale pending reservations (older than 24h with no activity)
-    const staleDeadline = new Date();
-    staleDeadline.setHours(staleDeadline.getHours() - 24);
-    await Reservation.updateMany(
-      {
-        user: req.user.id,
-        status: 'pending',
-        createdAt: { $lt: staleDeadline },
-      },
-      { status: 'cancelled' }
-    );
+    // Auto-expire stale pending reservations:
+    // If a reservation has a date+startTime and 15+ minutes have passed since start,
+    // cancel it automatically (user never showed up / scanned QR)
+    const now = new Date();
+    const staleReservations = await Reservation.find({
+      user: req.user.id,
+      status: 'pending',
+      date: { $ne: null },
+      startTime: { $ne: null },
+    });
+
+    for (const r of staleReservations) {
+      // Build the reservation start datetime
+      const resDate = new Date(r.date);
+      const [startH, startM] = r.startTime.split(':').map(Number);
+      const resStart = new Date(resDate);
+      resStart.setHours(startH, startM, 0, 0);
+
+      // Add 15 minutes of grace period
+      const graceEnd = new Date(resStart);
+      graceEnd.setMinutes(graceEnd.getMinutes() + 15);
+
+      // If current time is past the grace period, auto-cancel
+      if (now > graceEnd) {
+        r.status = 'cancelled';
+        await r.save();
+        // Free the spot
+        if (r.spot) {
+          await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
+        }
+      }
+    }
 
     // Check active reservation limit
     const activeReservation = await Reservation.findOne({
