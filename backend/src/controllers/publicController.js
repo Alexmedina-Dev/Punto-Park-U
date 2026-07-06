@@ -160,9 +160,15 @@ const getAvailability = async (req, res, next) => {
 
     const mappedSpots = spots.map((s) => {
       const typeKey = s.type;
+      // Determine effective status: real DB status or demo overlay
+      const dbStatus = STATUS_MAP[s.status] || s.status;
+      const demoStatus = getDemoOverlayStatus(s.code);
+      const effectiveStatus = dbStatus === 'libre' && demoStatus ? demoStatus : dbStatus;
+      const isUsed = effectiveStatus === 'ocupado' || effectiveStatus === 'reservado';
+
       if (stats[typeKey]) {
         stats[typeKey].total++;
-        if (s.status === 'occupied' || s.status === 'reserved') {
+        if (isUsed) {
           stats[typeKey].used++;
         }
       }
@@ -170,7 +176,7 @@ const getAvailability = async (req, res, next) => {
       return {
         id: s.code,
         zone: s.zone,
-        status: STATUS_MAP[s.status] || s.status,
+        status: effectiveStatus,
       };
     });
 
