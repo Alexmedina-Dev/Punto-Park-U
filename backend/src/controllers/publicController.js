@@ -159,7 +159,8 @@ const getAvailability = async (req, res, next) => {
     };
 
     const mappedSpots = spots.map((s) => {
-      const typeKey = s.type;
+      // Map DB type to stats key: 'car' → 'cars', 'moto' → 'motos', 'bike' → 'bikes'
+      const typeKey = s.type === 'car' ? 'cars' : s.type === 'moto' ? 'motos' : s.type === 'bike' ? 'bikes' : s.type;
       // Determine effective status: real DB status or demo overlay
       const dbStatus = STATUS_MAP[s.status] || s.status;
       const demoStatus = getDemoOverlayStatus(s.code);
