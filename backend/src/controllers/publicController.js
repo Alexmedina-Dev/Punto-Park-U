@@ -98,16 +98,19 @@ function getDemoVehicle(code, zone) {
   const brands = zone === 'A' ? CAR_BRANDS : zone === 'B' ? MOTO_BRANDS : zone === 'C' ? BIKE_BRANDS : CAMIONETA_BRANDS;
   const num = parseInt(code.replace(/[^0-9]/g, ''), 10) || 1;
 
-  // Colombian plate formats: ABC123 (car), ABC12D (moto), AB1234 (older)
-  const letters = ['ABC', 'DEF', 'GHI', 'JKL', 'MNO', 'PQR', 'STU', 'VWX', 'BCD', 'EFG'];
-  const plateNum = ((num * 7 + 123) % 999) + 1;
+  // Colombian plates: ALL vehicles use 3 letters + 3 numbers (ABC123)
+  // Bicycles don't have plates in Colombia
+  const LETTERS = ['ABC', 'DEF', 'GHI', 'JKL', 'MNO', 'PQR', 'STU', 'VWX', 'BCD', 'EFG', 'HIJ', 'KLM'];
+  const plateNum = ((num * 7 + 123) % 900) + 100; // 100-999
+  const plateLetters = LETTERS[num % LETTERS.length];
+
   let plate;
-  if (zone === 'B') {
-    plate = `${letters[num % letters.length]}${plateNum}${String.fromCharCode(65 + (num % 26))}`;
-  } else if (zone === 'C') {
-    plate = `${letters[num % letters.length].slice(0, 2)}${String.fromCharCode(65 + (num % 26))}${plateNum}`;
+  if (zone === 'C') {
+    // Bicicletas no tienen placa en Colombia
+    plate = null;
   } else {
-    plate = `${letters[num % letters.length]}${plateNum}`;
+    // Carros, motos, camionetas: mismo formato ABC123
+    plate = `${plateLetters}${plateNum}`;
   }
 
   const v = brands[(num - 1) % brands.length];
