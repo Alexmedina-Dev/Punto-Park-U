@@ -28,6 +28,25 @@ const STATUS_MAP = {
 };
 
 /**
+ * Deterministic demo overlay — makes the parking lot always look active.
+ * Uses spot code as a seed so the same spots appear occupied every day.
+ * ~40% occupied, ~15% reserved, ~45% available.
+ * Real reservations take priority over this overlay.
+ */
+function getDemoOverlayStatus(code) {
+  if (!code) return null;
+  // Simple hash from code string → consistent per spot
+  let hash = 0;
+  for (let i = 0; i < code.length; i++) {
+    hash = ((hash << 5) - hash + code.charCodeAt(i)) | 0;
+  }
+  const bucket = Math.abs(hash) % 100;
+  if (bucket < 40) return 'ocupado';   // 40% occupied
+  if (bucket < 55) return 'reservado'; // 15% reserved
+  return null; // 45% stays available
+}
+
+/**
  * Generate default parking spots when DB is empty.
  * Distributes: Zone A (7 car, 7 moto, 3 bike), B (7, 7, 3), C (6, 6, 4)
  */
@@ -219,15 +238,32 @@ const getParkingSpots = async (req, res, next) => {
       excludedSpotIds = new Set(overlapping.map((r) => r.spot?.toString()).filter(Boolean));
     }
 
-    const data = spots.map((s) => ({
-      id: s._id.toString(),
-      code: s.code,
-      zone: s.zone,
-      type: s.type,
-      floor: s.floor || null,
-      accessible: s.accessible || false,
-      status: excludedSpotIds.has(s._id.toString()) ? 'reserved' : (STATUS_MAP[s.status] || s.status),
-    }));
+    const data = spots.map((s) => {
+      // Real reservation status takes priority
+      if (excludedSpotIds.has(s._id.toString())) {
+        return {
+          id: s._id.toString(),
+          code: s.code,
+          zone: s.zone,
+          type: s.type,
+          floor: s.floor || null,
+          accessible: s.accessible || false,
+          status: 'reservado',
+        };
+      }
+      // Otherwise: DB status or demo overlay
+      const dbStatus = STATUS_MAP[s.status] || s.status;
+      const demoStatus = getDemoOverlayStatus(s.code);
+      return {
+        id: s._id.toString(),
+        code: s.code,
+        zone: s.zone,
+        type: s.type,
+        floor: s.floor || null,
+        accessible: s.accessible || false,
+        status: dbStatus === 'libre' && demoStatus ? demoStatus : dbStatus,
+      };
+    });
 
     res.json({ success: true, data });
   } catch (err) {
