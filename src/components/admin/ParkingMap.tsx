@@ -92,7 +92,9 @@ export function ParkingMap() {
     // Try to show spots from API first, or generate placeholder ones
     const zoneSpots = spots.filter((s) => s.zone === zone)
     const config = ZONES[zone]
-    if (zoneSpots.length >= config.spotCount) return zoneSpots
+    if (zoneSpots.length >= config.spotCount) {
+      return zoneSpots.sort((a, b) => (a.code || '').localeCompare(b.code || ''))
+    }
 
     // Fill missing spots with placeholders
     const filled: ParkingSpotType[] = [...zoneSpots]
@@ -106,7 +108,7 @@ export function ParkingMap() {
         status: 'libre',
       })
     }
-    return filled
+    return filled.sort((a, b) => (a.code || '').localeCompare(b.code || ''))
   }
 
   const getStats = () => {
