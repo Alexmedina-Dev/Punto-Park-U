@@ -39,20 +39,79 @@ const STATUS_MAP = {
  */
 function getDemoOverlayStatus(code, zone) {
   if (!code) return null;
-  // Extract numeric part: "A01" → 1, "B12" → 12, "C03" → 3
   const num = parseInt(code.replace(/[^0-9]/g, ''), 10);
   if (isNaN(num)) return null;
 
-  // Exact thresholds per zone (non-libre count)
-  const occupiedCounts = { A: 9, B: 7, C: 5, D: 1 };  // first N → ocupado
-  const reservedCounts = { A: 4, B: 4, C: 2, D: 1 };  // next M → reservado
+  const occupiedCounts = { A: 9, B: 7, C: 5, D: 1 };
+  const reservedCounts = { A: 4, B: 4, C: 2, D: 1 };
 
   const occ = occupiedCounts[zone] || 0;
   const res = reservedCounts[zone] || 0;
 
   if (num <= occ) return 'ocupado';
   if (num <= occ + res) return 'reservado';
-  return null; // libre
+  return null;
+}
+
+/**
+ * Fake vehicle data for demo overlay spots.
+ * Deterministic per spot code — same vehicle always appears on the same spot.
+ */
+function getDemoVehicle(code, zone) {
+  if (!code) return null;
+
+  const CAR_BRANDS = [
+    { brand: 'Toyota', model: 'Corolla', color: 'Blanco' },
+    { brand: 'Chevrolet', model: 'Spark GT', color: 'Gris' },
+    { brand: 'Mazda', model: 'Mazda3', color: 'Negro' },
+    { brand: 'Hyundai', model: 'Accent', color: 'Plata' },
+    { brand: 'Kia', model: 'Picanto', color: 'Rojo' },
+    { brand: 'Nissan', model: 'Versa', color: 'Azul' },
+    { brand: 'Renault', model: 'Logan', color: 'Blanco' },
+    { brand: 'Suzuki', model: 'Swift', color: 'Verde' },
+    { brand: 'Ford', model: 'Fiesta', color: 'Negro' },
+    { brand: 'Volkswagen', model: 'Gol', color: 'Plata' },
+  ];
+  const MOTO_BRANDS = [
+    { brand: 'Yamaha', model: 'FZ 2.0', color: 'Negro' },
+    { brand: 'Honda', model: 'CB190R', color: 'Rojo' },
+    { brand: 'Suzuki', model: 'Gixxer', color: 'Azul' },
+    { brand: 'Bajaj', model: 'Pulsar NS200', color: 'Negro' },
+    { brand: 'TVS', model: 'Apache RTR', color: 'Rojo' },
+    { brand: 'Yamaha', model: 'MT-03', color: 'Azul' },
+    { brand: 'Honda', model: 'CRF 150L', color: 'Rojo' },
+  ];
+  const BIKE_BRANDS = [
+    { brand: 'GW', model: 'Mountain Pro', color: 'Negro' },
+    { brand: 'Scott', model: 'Aspect 920', color: 'Azul' },
+    { brand: 'Trek', model: 'Marlin 7', color: 'Rojo' },
+    { brand: 'GT', model: 'Aggressor 3', color: 'Verde' },
+    { brand: 'Specialized', model: 'Rockhopper', color: 'Negro' },
+  ];
+  const CAMIONETA_BRANDS = [
+    { brand: 'Chevrolet', model: 'D-Max', color: 'Blanco' },
+    { brand: 'Mitsubishi', model: 'L200', color: 'Negro' },
+    { brand: 'Toyota', model: 'Hilux', color: 'Plata' },
+    { brand: 'Ford', model: 'Ranger', color: 'Azul' },
+  ];
+
+  const brands = zone === 'A' ? CAR_BRANDS : zone === 'B' ? MOTO_BRANDS : zone === 'C' ? BIKE_BRANDS : CAMIONETA_BRANDS;
+  const num = parseInt(code.replace(/[^0-9]/g, ''), 10) || 1;
+
+  // Colombian plate formats: ABC123 (car), ABC12D (moto), AB1234 (older)
+  const letters = ['ABC', 'DEF', 'GHI', 'JKL', 'MNO', 'PQR', 'STU', 'VWX', 'BCD', 'EFG'];
+  const plateNum = ((num * 7 + 123) % 999) + 1;
+  let plate;
+  if (zone === 'B') {
+    plate = `${letters[num % letters.length]}${plateNum}${String.fromCharCode(65 + (num % 26))}`;
+  } else if (zone === 'C') {
+    plate = `${letters[num % letters.length].slice(0, 2)}${String.fromCharCode(65 + (num % 26))}${plateNum}`;
+  } else {
+    plate = `${letters[num % letters.length]}${plateNum}`;
+  }
+
+  const v = brands[(num - 1) % brands.length];
+  return { plate, brand: v.brand, model: v.model, color: v.color };
 }
 
 /**
@@ -314,6 +373,14 @@ const getParkingSpots = async (req, res, next) => {
         if (spotVehicleMap[spot.id]) {
           spot.vehicle = spotVehicleMap[spot.id];
         }
+      }
+    }
+
+    // Add fake vehicle data for demo overlay spots that don't have real reservations
+    for (const spot of data) {
+      if ((spot.status === 'ocupado' || spot.status === 'reservado') && !spot.vehicle) {
+        const fakeVehicle = getDemoVehicle(spot.code, spot.zone);
+        if (fakeVehicle) spot.vehicle = fakeVehicle;
       }
     }
 
