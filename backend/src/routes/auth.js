@@ -39,6 +39,26 @@ const registerValidation = [
     .optional({ values: 'falsy' })
     .matches(/^3\d{9}$/)
     .withMessage('Phone must be a valid Colombian number (e.g., 3001234567)'),
+  body('fechaNacimiento')
+    .optional({ values: 'falsy' })
+    .isISO8601()
+    .withMessage('Fecha de nacimiento must be a valid date')
+    .custom((value) => {
+      const birthDate = new Date(value);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      if (age < 18) {
+        throw new Error('Debes ser mayor de 18 años');
+      }
+      if (age > 85) {
+        throw new Error('La edad máxima permitida es 85 años');
+      }
+      return true;
+    }),
   body().custom((_, { req }) => {
     if (!req.body.name && !req.body.nombres) {
       throw new Error('Either name or nombres is required');
@@ -114,6 +134,7 @@ router.post('/login', loginValidation, authController.login);
 router.post('/admin/login', loginValidation, authController.adminLogin);
 router.get('/me', requireAuth, authController.me);
 router.get('/profile', requireAuth, authController.me);
+router.delete('/me', requireAuth, authController.deleteAccount);
 router.post('/refresh', authController.refresh);
 router.post('/logout', requireAuth, authController.logout);
 

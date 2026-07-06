@@ -306,6 +306,15 @@ export interface Reservation {
   userId: string
   vehicleId: string
   spotId: string
+  // Populated data for display
+  userName?: string
+  vehiclePlate?: string
+  vehicleType?: string
+  vehicleBrand?: string
+  vehicleModel?: string
+  vehicleColor?: string
+  spotCode?: string
+  spotZone?: string
   entryTime: string
   exitTime?: string
   billingAmount?: number

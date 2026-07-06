@@ -7,6 +7,7 @@ const { startAnomalyCheckJob } = require('./jobs/anomalyCheckJob');
 const { configureVapid } = require('./services/notificationService');
 const { initSocketIO } = require('./services/socketService');
 const { connectMQTT, disconnectMQTT } = require('./services/mqttService');
+const { startInactiveUserCleanupJob } = require('./utils/cleanupInactiveUsers');
 
 const startServer = async () => {
   // Attempt MongoDB connection (graceful on failure)
@@ -20,6 +21,9 @@ const startServer = async () => {
 
   // Start anomaly detection job (PR 2 - Phase 6)
   startAnomalyCheckJob();
+
+  // Start inactive user cleanup job (deletes users with 6+ months inactivity)
+  startInactiveUserCleanupJob();
 
   // Configure VAPID for push notifications
   configureVapid();

@@ -32,4 +32,5 @@ export {
   updateUserRoleService,
   deleteUserService,
   getUserStatsService,
+  deleteOwnAccountService,
 } from '@punto-park-u/shared-api'

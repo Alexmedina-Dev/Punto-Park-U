@@ -37,6 +37,7 @@ export {
   verifySetup2FAService,
   disable2FAService,
   generateBackupCodesService,
+  deleteOwnAccountService,
 } from './auth.service.js'
 
 export {

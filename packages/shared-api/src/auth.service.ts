@@ -328,3 +328,9 @@ export async function getUserStatsService(): Promise<{ admin: number; operator: 
   }
   throw new Error('Failed to get user stats')
 }
+
+export async function deleteOwnAccountService(): Promise<{ success: boolean; message: string }> {
+  const api = getApiClient()
+  const { data } = await api.delete('/auth/me')
+  return data as { success: boolean; message: string }
+}

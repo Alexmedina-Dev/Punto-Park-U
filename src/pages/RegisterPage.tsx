@@ -63,6 +63,8 @@ export function RegisterPage() {
       }
       if (age < 18) {
         newErrors.fechaNacimiento = 'Debes ser mayor de 18 años'
+      } else if (age > 85) {
+        newErrors.fechaNacimiento = 'La edad máxima permitida es 85 años'
       }
     }
     if (!formData.email || !/^\S+@\S+\.\S+$/.test(formData.email)) {

@@ -7,9 +7,40 @@ const { notifyUser } = require('../services/notificationService');
 
 const formatReservationResponse = (reservation) => ({
   id: reservation._id,
-  userId: reservation.user,
-  vehicleId: reservation.vehicle,
-  spotId: reservation.spot,
+  userId: typeof reservation.user === 'object' && reservation.user !== null
+    ? (reservation.user._id || reservation.user).toString()
+    : reservation.user?.toString() || '',
+  vehicleId: typeof reservation.vehicle === 'object' && reservation.vehicle !== null
+    ? (reservation.vehicle._id || reservation.vehicle).toString()
+    : reservation.vehicle?.toString() || '',
+  spotId: typeof reservation.spot === 'object' && reservation.spot !== null
+    ? (reservation.spot._id || reservation.spot).toString()
+    : reservation.spot?.toString() || '',
+  // Populated data for display
+  userName: typeof reservation.user === 'object' && reservation.user !== null
+    ? reservation.user.name || reservation.user.nombres || reservation.user.email || ''
+    : '',
+  vehiclePlate: typeof reservation.vehicle === 'object' && reservation.vehicle !== null
+    ? reservation.vehicle.plate || ''
+    : '',
+  vehicleType: typeof reservation.vehicle === 'object' && reservation.vehicle !== null
+    ? reservation.vehicle.type || ''
+    : '',
+  vehicleBrand: typeof reservation.vehicle === 'object' && reservation.vehicle !== null
+    ? reservation.vehicle.brand || ''
+    : '',
+  vehicleModel: typeof reservation.vehicle === 'object' && reservation.vehicle !== null
+    ? reservation.vehicle.model || ''
+    : '',
+  vehicleColor: typeof reservation.vehicle === 'object' && reservation.vehicle !== null
+    ? reservation.vehicle.color || ''
+    : '',
+  spotCode: typeof reservation.spot === 'object' && reservation.spot !== null
+    ? reservation.spot.code || ''
+    : '',
+  spotZone: typeof reservation.spot === 'object' && reservation.spot !== null
+    ? reservation.spot.zone || ''
+    : '',
   entryTime: reservation.entryTime,
   exitTime: reservation.exitTime,
   billingAmount: reservation.billingAmount,

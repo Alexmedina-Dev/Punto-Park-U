@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const Session = require('../models/Session');
+const User = require('../models/User');
 
 const SESSION_TIMEOUT_MS = (config.sessionTimeout || 30) * 60 * 1000;
 
@@ -63,6 +64,11 @@ const requireAuth = async (req, res, next) => {
     session.lastActiveAt = new Date();
     session.save().catch((err) => {
       console.error('[requireAuth] Failed to update session activity:', err.message);
+    });
+
+    // Update user lastActivity asynchronously (fire-and-forget)
+    User.updateOne({ _id: decoded.id }, { lastActivity: new Date() }).catch((err) => {
+      console.error('[requireAuth] Failed to update user lastActivity:', err.message);
     });
 
     next();

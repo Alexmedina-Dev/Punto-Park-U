@@ -3,6 +3,10 @@ const { validationResult } = require('express-validator');
 const config = require('../config');
 const User = require('../models/User');
 const Session = require('../models/Session');
+const Vehicle = require('../models/Vehicle');
+const Reservation = require('../models/Reservation');
+const Payment = require('../models/Payment');
+const PushToken = require('../models/PushToken');
 const { createSession } = require('./sessionController');
 const emailService = require('../services/emailService');
 
@@ -72,9 +76,27 @@ const register = async (req, res, next) => {
     const cedula = req.body.cedula;
     const password = req.body.password;
     const phone = req.body.phone || '';
+    const fechaNacimiento = req.body.fechaNacimiento || null;
 
     if (!email) {
       return res.status(400).json({ error: 'Validation error', details: [{ field: 'email', message: 'Email is required' }] });
+    }
+
+    // Validate age if fechaNacimiento provided
+    if (fechaNacimiento) {
+      const birthDate = new Date(fechaNacimiento);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      if (age < 18) {
+        return res.status(400).json({ error: 'Validation error', details: [{ field: 'fechaNacimiento', message: 'Debes ser mayor de 18 años' }] });
+      }
+      if (age > 85) {
+        return res.status(400).json({ error: 'Validation error', details: [{ field: 'fechaNacimiento', message: 'La edad máxima permitida es 85 años' }] });
+      }
     }
 
     // Check duplicate username first (more user-friendly error)
@@ -105,6 +127,7 @@ const register = async (req, res, next) => {
       cedula,
       password,
       phone,
+      fechaNacimiento,
       role: 'user',
     });
 
@@ -554,6 +577,37 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+// ── DELETE /api/auth/me — Delete own account ────────────────────────
+
+const deleteAccount = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    // Prevent admin self-deletion
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (user.role === 'admin' || user.role === 'operator') {
+      return res.status(403).json({ error: 'Los administradores no pueden eliminar su cuenta desde el panel de usuario' });
+    }
+
+    // Delete related data
+    await Vehicle.deleteMany({ user: userId });
+    await Reservation.deleteMany({ user: userId });
+    await Payment.deleteMany({ user: userId });
+    await Session.deleteMany({ user: userId });
+    await PushToken.deleteMany({ user: userId });
+
+    // Delete user
+    await User.findByIdAndDelete(userId);
+
+    res.status(200).json({ success: true, message: 'Cuenta eliminada correctamente' });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -566,4 +620,5 @@ module.exports = {
   resendVerification,
   forgotPassword,
   resetPassword,
+  deleteAccount,
 };

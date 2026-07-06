@@ -17,7 +17,7 @@ import { useSessionActivity } from '@/hooks/useSessionActivity'
 import { useVehicleStore } from '@/stores/vehicleStore'
 import { useReservationStore } from '@/stores/reservationStore'
 import { usePaymentStore } from '@/stores/paymentStore'
-import { get2FAStatusService, updateUserService } from '@/services/auth.service'
+import { get2FAStatusService, updateUserService, deleteOwnAccountService } from '@/services/auth.service'
 import { formatDate, formatDateTime, formatCurrency, getVehicleLabel, getStatusLabel } from '@/utils/formatters'
 import { showErrorToast, showSuccessToast } from '@/utils/errorHandler'
 
@@ -82,6 +82,10 @@ export function UserDashboard() {
   const [profileForm, setProfileForm] = useState({ nombres: '', apellidos: '', email: '', phone: '', cedula: '', fechaNacimiento: '' })
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({})
   const [profileSaving, setProfileSaving] = useState(false)
+
+  // Delete account
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   // Vehicle modals
   const [showVehicleModal, setShowVehicleModal] = useState(false)
@@ -190,6 +194,20 @@ export function UserDashboard() {
       showErrorToast(error)
     } finally {
       setProfileSaving(false)
+    }
+  }
+
+  // ── Delete Account Handler ─────────────────────────────────────────
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true)
+    try {
+      await deleteOwnAccountService()
+      showSuccessToast('Cuenta eliminada correctamente')
+      logout()
+      navigate('/')
+    } catch (error) {
+      showErrorToast(error)
+      setDeleteLoading(false)
     }
   }
 
@@ -303,10 +321,6 @@ export function UserDashboard() {
               Bienvenido, {user?.nombres || user?.username || 'Usuario'}
             </p>
           </div>
-          <Button variant="ghost" onClick={logout} loading={authLoading}>
-            <span className="material-symbols-outlined text-base">logout</span>
-            Cerrar Sesión
-          </Button>
         </div>
 
 
@@ -606,9 +620,24 @@ export function UserDashboard() {
                           <p className="text-sm text-on-surface-var mt-0.5">
                             {r.startTime || r.entryTime?.slice(11, 16) || '--:--'} — {r.endTime || '--:--'}
                           </p>
-                          <p className="text-xs text-on-surface-var mt-0.5">
-                            Espacio: {r.spotId}
-                          </p>
+                          <div className="flex items-center gap-2 text-xs text-on-surface-var mt-0.5 flex-wrap">
+                            {r.vehiclePlate && (
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-xs">directions_car</span>
+                                {r.vehiclePlate}
+                                {r.vehicleType && ` (${r.vehicleType})`}
+                              </span>
+                            )}
+                            {r.spotCode && (
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-xs">local_parking</span>
+                                {r.spotCode}
+                              </span>
+                            )}
+                            {!r.vehiclePlate && !r.spotCode && r.spotId && (
+                              <span>Espacio: {r.spotId}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -878,10 +907,14 @@ export function UserDashboard() {
                       </div>
                     )}
                   </div>
-                  <div className="mt-4 pt-4 border-t border-outline/10">
+                  <div className="mt-4 pt-4 border-t border-outline/10 flex items-center gap-3">
                     <Button variant="secondary" size="sm" onClick={startEditProfile}>
                       <span className="material-symbols-outlined text-sm">edit</span>
                       Editar Perfil
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-red-400 hover:bg-red-400/10 ml-auto" onClick={() => setShowDeleteModal(true)}>
+                      <span className="material-symbols-outlined text-sm">delete</span>
+                      Eliminar Cuenta
                     </Button>
                   </div>
                 </>
@@ -982,6 +1015,39 @@ export function UserDashboard() {
             />
           </Modal>
         )}
+
+        {/* ── Delete Account Confirmation Modal ──────────────────────── */}
+        <Modal
+          open={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          title="Eliminar Cuenta"
+        >
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-4 bg-red-400/10 border border-red-400/30 rounded-lg">
+              <span className="material-symbols-outlined text-red-400 text-xl mt-0.5">warning</span>
+              <div>
+                <p className="font-medium text-on-bg">¿Estás seguro?</p>
+                <p className="text-sm text-on-surface-var mt-1">
+                  Esta acción no se puede deshacer. Se eliminarán permanentemente todos tus datos, vehículos, reservas, pagos y sesiones.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setShowDeleteModal(false)} disabled={deleteLoading}>
+                Cancelar
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={handleDeleteAccount}
+                loading={deleteLoading}
+                className="text-red-400 hover:bg-red-400/10 border border-red-400/30"
+              >
+                <span className="material-symbols-outlined text-sm">delete</span>
+                Eliminar Permanentemente
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </UserLayout>
   )

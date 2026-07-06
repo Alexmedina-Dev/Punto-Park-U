@@ -86,6 +86,11 @@ const userSchema = new mongoose.Schema(
     verificationTokenExpiry: {
       type: Date,
     },
+    // ── Activity tracking ───────────────────────────────────────────
+    lastActivity: {
+      type: Date,
+      default: Date.now,
+    },
     // ── Password Reset fields ─────────────────────────────────────
     resetToken: {
       type: String,

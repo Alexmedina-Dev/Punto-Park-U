@@ -86,10 +86,6 @@ export function AdminDashboard() {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <Badge variant="info">Admin</Badge>
-            <Button variant="ghost" onClick={logout} loading={authLoading}>
-              <span className="material-symbols-outlined text-base">logout</span>
-              <span className="hidden sm:inline">Cerrar Sesión</span>
-            </Button>
           </div>
         </div>
 
