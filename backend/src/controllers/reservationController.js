@@ -101,6 +101,32 @@ const getReservations = async (req, res, next) => {
   try {
     const filter = buildReservationFilter(req.query, req.user.id, req.user.role);
 
+    // Auto-expire stale pending reservations before listing
+    const now = new Date();
+    const staleReservations = await Reservation.find({
+      ...filter,
+      status: 'pending',
+      date: { $ne: null },
+      startTime: { $ne: null },
+    });
+
+    for (const r of staleReservations) {
+      const resDate = new Date(r.date);
+      const [startH, startM] = r.startTime.split(':').map(Number);
+      const resStart = new Date(resDate);
+      resStart.setHours(startH, startM, 0, 0);
+      const graceEnd = new Date(resStart);
+      graceEnd.setMinutes(graceEnd.getMinutes() + 15);
+
+      if (now > graceEnd) {
+        r.status = 'cancelled';
+        await r.save();
+        if (r.spot) {
+          await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
+        }
+      }
+    }
+
     // Pagination
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
