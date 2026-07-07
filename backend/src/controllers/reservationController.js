@@ -102,43 +102,22 @@ const getReservations = async (req, res, next) => {
     const filter = buildReservationFilter(req.query, req.user.id, req.user.role);
 
     // Auto-expire stale pending reservations before listing
+    // Simple rule: any pending reservation older than 2 hours is auto-cancelled
     const now = new Date();
-    const oneHourAgo = new Date();
-    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
-
-    // Catch-all: cancel ANY pending reservation older than 1 hour
-    await Reservation.updateMany(
-      {
-        ...filter,
-        status: 'pending',
-        createdAt: { $lt: oneHourAgo },
-      },
-      { status: 'cancelled' }
-    );
-
-    // Also handle reservations with date+startTime (15min grace period)
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    
     const staleReservations = await Reservation.find({
       ...filter,
       status: 'pending',
-      date: { $ne: null },
-      startTime: { $ne: null },
+      createdAt: { $lt: twoHoursAgo },
     });
 
     for (const r of staleReservations) {
-      const resDate = new Date(r.date);
-      const [startH, startM] = r.startTime.split(':').map(Number);
-      const resStart = new Date(resDate);
-      resStart.setHours(startH, startM, 0, 0);
-      const graceEnd = new Date(resStart);
-      graceEnd.setMinutes(graceEnd.getMinutes() + 15);
-
-      if (now > graceEnd) {
-        r.status = 'cancelled';
-        await r.save();
-        if (r.spot) {
-          await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
-        }
+      if (r.spot) {
+        await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
       }
+      r.status = 'cancelled';
+      await r.save();
     }
 
     // Pagination
@@ -243,70 +222,26 @@ const createReservation = async (req, res, next) => {
     }
 
     // Auto-expire stale pending reservations:
-    // If a reservation has a date+startTime and 15+ minutes have passed since start,
-    // cancel it automatically (user never showed up / scanned QR)
+    // Simple rule: any pending reservation older than 2 hours is auto-cancelled
+    // This handles ALL cases regardless of timezone or missing fields
     const now = new Date();
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    
     const staleReservations = await Reservation.find({
       user: req.user.id,
       status: 'pending',
-      date: { $ne: null },
-      startTime: { $ne: null },
+      createdAt: { $lt: twoHoursAgo },
     });
 
     for (const r of staleReservations) {
-      const resDate = new Date(r.date);
-      const [startH, startM] = r.startTime.split(':').map(Number);
-      const resStart = new Date(resDate);
-      resStart.setHours(startH, startM, 0, 0);
-      const graceEnd = new Date(resStart);
-      graceEnd.setMinutes(graceEnd.getMinutes() + 15);
-
-      if (now > graceEnd) {
-        r.status = 'cancelled';
-        await r.save();
-        if (r.spot) {
-          await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
-        }
+      if (r.spot) {
+        await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
       }
-    }
-
-    // Also auto-cancel legacy reservations that only have entryTime (no date/startTime)
-    // If entryTime is more than 30 minutes in the past and still pending
-    const legacyStale = await Reservation.find({
-      user: req.user.id,
-      status: 'pending',
-      date: null,
-      startTime: null,
-      entryTime: { $ne: null },
-    });
-
-    for (const r of legacyStale) {
-      const entryTimeDate = new Date(r.entryTime);
-      const graceEnd = new Date(entryTimeDate);
-      graceEnd.setMinutes(graceEnd.getMinutes() + 30);
-
-      if (now > graceEnd) {
-        r.status = 'cancelled';
-        await r.save();
-        if (r.spot) {
-          await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
-        }
-      }
+      r.status = 'cancelled';
+      await r.save();
     }
 
     // Check active reservation limit
-    // First, auto-cancel ANY pending reservation older than 1 hour (catch-all for stuck reservations)
-    const oneHourAgo = new Date();
-    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
-    await Reservation.updateMany(
-      {
-        user: req.user.id,
-        status: 'pending',
-        createdAt: { $lt: oneHourAgo },
-      },
-      { status: 'cancelled' }
-    );
-
     const activeReservation = await Reservation.findOne({
       user: req.user.id,
       status: { $in: ['pending', 'active'] },
