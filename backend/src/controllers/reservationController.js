@@ -240,21 +240,40 @@ const createReservation = async (req, res, next) => {
     });
 
     for (const r of staleReservations) {
-      // Build the reservation start datetime
       const resDate = new Date(r.date);
       const [startH, startM] = r.startTime.split(':').map(Number);
       const resStart = new Date(resDate);
       resStart.setHours(startH, startM, 0, 0);
-
-      // Add 15 minutes of grace period
       const graceEnd = new Date(resStart);
       graceEnd.setMinutes(graceEnd.getMinutes() + 15);
 
-      // If current time is past the grace period, auto-cancel
       if (now > graceEnd) {
         r.status = 'cancelled';
         await r.save();
-        // Free the spot
+        if (r.spot) {
+          await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
+        }
+      }
+    }
+
+    // Also auto-cancel legacy reservations that only have entryTime (no date/startTime)
+    // If entryTime is more than 30 minutes in the past and still pending
+    const legacyStale = await Reservation.find({
+      user: req.user.id,
+      status: 'pending',
+      date: null,
+      startTime: null,
+      entryTime: { $ne: null },
+    });
+
+    for (const r of legacyStale) {
+      const entryTimeDate = new Date(r.entryTime);
+      const graceEnd = new Date(entryTimeDate);
+      graceEnd.setMinutes(graceEnd.getMinutes() + 30);
+
+      if (now > graceEnd) {
+        r.status = 'cancelled';
+        await r.save();
         if (r.spot) {
           await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
         }

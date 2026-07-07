@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { toast } from 'sonner'
 import { UserLayout } from '@/components/layout'
 import { Card, Button, Badge, Modal, Input } from '@/components/ui'
 import { VehicleForm } from '@/components/VehicleForm'
@@ -255,7 +256,14 @@ export function UserDashboard() {
     notes?: string
   }) => {
     const ok = await createReservation(data)
-    if (ok) setShowReservationModal(false)
+    if (ok) {
+      toast.success('Reserva creada exitosamente')
+      setShowReservationModal(false)
+      await fetchReservations()
+      await fetchReservationStats()
+    } else {
+      toast.error(reservationError || 'Error al crear la reserva')
+    }
     return ok
   }
 
@@ -263,8 +271,11 @@ export function UserDashboard() {
     if (window.confirm('¿Estás seguro de cancelar esta reserva?')) {
       const ok = await cancelReservation(id)
       if (ok) {
+        toast.success('Reserva cancelada correctamente')
         await fetchReservations()
         await fetchReservationStats()
+      } else {
+        toast.error('No se pudo cancelar la reserva. Intenta de nuevo.')
       }
     }
   }
