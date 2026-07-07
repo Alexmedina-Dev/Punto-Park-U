@@ -241,13 +241,9 @@ const createReservation = async (req, res, next) => {
       await r.save();
     }
 
-    // Check active reservation limit
-    const activeReservation = await Reservation.findOne({
-      user: req.user.id,
-      status: { $in: ['pending', 'active'] },
-    });
-    if (activeReservation) {
-      return res.status(409).json({ error: 'You already have an active or pending reservation' });
+    // Update spot status to reserved
+    if (assignedSpot) {
+      await ParkingSpot.findByIdAndUpdate(assignedSpot, { status: 'reserved' });
     }
 
     const reservation = await Reservation.create({
