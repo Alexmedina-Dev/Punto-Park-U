@@ -356,15 +356,20 @@ const updateReservation = async (req, res, next) => {
 const deleteReservation = async (req, res, next) => {
   try {
     const { id } = req.params;
+    console.log('[cancel] Attempting to cancel reservation:', id, 'User:', req.user.id, 'Role:', req.user.role);
 
     const reservation = await Reservation.findById(id);
     if (!reservation) {
+      console.log('[cancel] Reservation not found:', id);
       return res.status(404).json({ error: 'Reservation not found' });
     }
+
+    console.log('[cancel] Found reservation:', reservation._id.toString(), 'Status:', reservation.status, 'Owner:', reservation.user.toString());
 
     // Non-admin users can only cancel their own reservations
     if (req.user.role !== 'admin') {
       if (reservation.user.toString() !== req.user.id) {
+        console.log('[cancel] Forbidden: user', req.user.id, 'does not own reservation', reservation.user.toString());
         return res.status(403).json({ error: 'You can only cancel your own reservations' });
       }
     }
@@ -382,6 +387,8 @@ const deleteReservation = async (req, res, next) => {
       await ParkingSpot.findByIdAndUpdate(reservation.spot, { status: 'available' });
     }
 
+    console.log('[cancel] Successfully cancelled reservation:', id);
+
     // Log activity
     logActivity(req.user.id, 'Reservation cancelled', 'reservation', {
       reservationId: id,
@@ -389,6 +396,7 @@ const deleteReservation = async (req, res, next) => {
 
     res.status(200).json({ success: true, message: 'Reservation cancelled successfully' });
   } catch (err) {
+    console.error('[cancel] Error cancelling reservation:', err.message);
     next(err);
   }
 };

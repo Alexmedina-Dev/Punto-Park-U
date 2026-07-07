@@ -268,14 +268,21 @@ export function UserDashboard() {
   }
 
   const handleCancelReservation = async (id: string) => {
+    console.log('[frontend] Attempting to cancel reservation:', id)
     if (window.confirm('¿Estás seguro de cancelar esta reserva?')) {
-      const ok = await cancelReservation(id)
-      if (ok) {
-        toast.success('Reserva cancelada correctamente')
-        await fetchReservations()
-        await fetchReservationStats()
-      } else {
-        toast.error('No se pudo cancelar la reserva. Intenta de nuevo.')
+      try {
+        const ok = await cancelReservation(id)
+        console.log('[frontend] Cancel result:', ok)
+        if (ok) {
+          toast.success('Reserva cancelada correctamente')
+          await fetchReservations()
+          await fetchReservationStats()
+        } else {
+          toast.error('No se pudo cancelar la reserva. Intenta de nuevo.')
+        }
+      } catch (error) {
+        console.error('[frontend] Cancel error:', error)
+        toast.error('Error al cancelar la reserva')
       }
     }
   }
