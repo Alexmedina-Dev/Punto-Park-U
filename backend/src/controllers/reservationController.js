@@ -1,4 +1,5 @@
 const Reservation = require('../models/Reservation');
+const ParkingSpot = require('../models/ParkingSpot');
 const Schedule = require('../models/Schedule');
 const ActivityLog = require('../models/ActivityLog');
 const { notifyUser } = require('../services/notificationService');
