@@ -103,6 +103,20 @@ const getReservations = async (req, res, next) => {
 
     // Auto-expire stale pending reservations before listing
     const now = new Date();
+    const oneHourAgo = new Date();
+    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+
+    // Catch-all: cancel ANY pending reservation older than 1 hour
+    await Reservation.updateMany(
+      {
+        ...filter,
+        status: 'pending',
+        createdAt: { $lt: oneHourAgo },
+      },
+      { status: 'cancelled' }
+    );
+
+    // Also handle reservations with date+startTime (15min grace period)
     const staleReservations = await Reservation.find({
       ...filter,
       status: 'pending',
@@ -281,6 +295,18 @@ const createReservation = async (req, res, next) => {
     }
 
     // Check active reservation limit
+    // First, auto-cancel ANY pending reservation older than 1 hour (catch-all for stuck reservations)
+    const oneHourAgo = new Date();
+    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+    await Reservation.updateMany(
+      {
+        user: req.user.id,
+        status: 'pending',
+        createdAt: { $lt: oneHourAgo },
+      },
+      { status: 'cancelled' }
+    );
+
     const activeReservation = await Reservation.findOne({
       user: req.user.id,
       status: { $in: ['pending', 'active'] },
