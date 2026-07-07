@@ -42,14 +42,16 @@ Aplicativo Web para la gestión de parqueadero. Creado para la visualización de
 ## 🚀 Características
 
 ### Frontend
-- Landing page con diseño glassmorphism/neumorphism
-- Panel de usuario con dashboard, vehículos, reservas, perfil
-- Panel de administración con reportes, tarifas, usuarios
-- Diseño responsive (mobile-first)
-- Modo oscuro
+- Landing page con diseño glassmorphism/neumorphism + disponibilidad en tiempo real
+- Panel de usuario: dashboard, vehículos, reservas, pagos, perfil, historial
+- Panel de administración: mapa del parqueadero, reportes, tarifas, usuarios, Prophet AI
+- Reservas con selección visual de espacio (SpotSelector) y código QR
+- Diseño responsive (mobile-first) + PWA para modo offline
+- Tooltip en mapa admin con info del vehículo (placa, marca, modelo, color)
+- Notificaciones push web
 
 ### Backend
-- API REST con Express.js
+- API REST con Express.js + paginación
 - Autenticación JWT (access + refresh tokens)
 - **Google OAuth 2.0** — Inicio de sesión con Google
 - **Recuperación de contraseña** — Tokens con expiración de 1 hora
@@ -57,8 +59,20 @@ Aplicativo Web para la gestión de parqueadero. Creado para la visualización de
 - **2FA TOTP** — Autenticación de dos factores con códigos de respaldo
 - **Gestión de sesiones** — Listar, revocar, heartbeat de actividad
 - **RBAC** — Roles: admin, operator, user, guest con jerarquía
+- **WebSocket** — Actualizaciones en tiempo real de espacios y actividad
+- **Prophet AI** — Análisis predictivo de ocupación (7 días)
+- **Demo overlay** — Mapa siempre creíble con ocupación simulada
+- **Auto-cleanup** — Usuarios inactivos 6+ meses eliminados automáticamente
+- **Auto-cancel** — Reservas pending canceladas 15min después de la hora programada
 - Rate limiting en endpoints sensibles
 - MongoDB con Mongoose
+
+### Parking & Reservas
+- 55 espacios: Zona A (20 carros), B (20 motos), C (10 bicis), D (5 camionetas)
+- Tarifas por tipo de vehículo: Hora, Día, Mes
+- Métodos de pago: Efectivo, Datáfono (POS), PSE (ePayco), Transferencia
+- Placas según norma Colombia: Carros ABC123, Motos ABC12D, Bicis sin placa (serial 7 dígitos)
+- Reportes exportables a Excel (5 hojas) y PDF
 
 ---
 
@@ -536,6 +550,30 @@ NODE_ENV=production npm start
 ```
 
 Para despliegue en Vercel + Railway / Render, consultar la documentación específica de cada plataforma.
+
+---
+
+## 🎭 Datos de Demo
+
+El mapa del parqueadero administra dos capas de datos:
+
+1. **Reservas reales** — usuarios que reservaron espacio para una fecha/hora específica
+2. **Demo overlay** — espacios simulados como ocupados/reservados para que el mapa siempre se vea activo
+
+El overlay se aplica **solo** en el mapa de admin y la landing page. Al seleccionar un espacio para reservar, solo se muestran reservas reales.
+
+| Zona | Tipo | Total | Libre | Ocupado | Reservado |
+|------|------|-------|-------|---------|-----------|
+| A | Carros | 20 | 7 | 9 | 4 |
+| B | Motos | 20 | 9 | 7 | 4 |
+| C | Bicicletas | 10 | 3 | 5 | 2 |
+| D | Camionetas | 5 | 3 | 1 | 1 |
+
+---
+
+## 🔐 Nota sobre Google OAuth
+
+Al usar Google OAuth en modo **Testing** (entorno de prueba), Google muestra el dominio real del backend (`onrender.com`) en la pantalla de consentimiento como medida anti-phishing. Esto es comportamiento esperado del protocolo OAuth 2.0 para aplicaciones no verificadas comercialmente. Para mostrar el nombre de la app ("Punto Park U") se requiere: dominio propio, verificación en Google Search Console y auditoría de Google.
 
 ---
 
