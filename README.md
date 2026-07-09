@@ -63,7 +63,8 @@ Aplicativo Web para la gestión de parqueadero. Creado para la visualización de
 - **Prophet AI** — Análisis predictivo de ocupación (7 días)
 - **Demo overlay** — Mapa siempre creíble con ocupación simulada
 - **Auto-cleanup** — Usuarios inactivos 6+ meses eliminados automáticamente
-- **Auto-cancel** — Reservas pending canceladas 15min después de la hora programada
+- **Auto-cancel** — Reservas pending canceladas 2h después de la creación
+- **Sin límite de reservas** — Un usuario puede crear múltiples reservas simultáneas
 - Rate limiting en endpoints sensibles
 - MongoDB con Mongoose
 
