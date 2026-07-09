@@ -63,7 +63,7 @@ Aplicativo Web para la gestión de parqueadero. Creado para la visualización de
 - **Prophet AI** — Análisis predictivo de ocupación (7 días)
 - **Demo overlay** — Mapa siempre creíble con ocupación simulada
 - **Auto-cleanup** — Usuarios inactivos 6+ meses eliminados automáticamente
-- **Auto-cancel** — Reservas pending canceladas 2h después de la creación
+- **Auto-cancel** — Reservas pending canceladas 15min después de la hora programada (si el usuario no llega, se libera el espacio)
 - **Sin límite de reservas** — Un usuario puede crear múltiples reservas simultáneas
 - Rate limiting en endpoints sensibles
 - MongoDB con Mongoose
@@ -74,6 +74,20 @@ Aplicativo Web para la gestión de parqueadero. Creado para la visualización de
 - Métodos de pago: Efectivo, Datáfono (POS), PSE (ePayco), Transferencia
 - Placas según norma Colombia: Carros ABC123, Motos ABC12D, Bicis sin placa (serial 7 dígitos)
 - Reportes exportables a Excel (5 hojas) y PDF
+
+### Flux AI — Inteligencia Artificial
+- **Visión Computacional** — Reconocimiento de placas colombianas, detección de marca/modelo/color
+- **Asignación Inteligente** — Optimización de espacios según ocupación, tamaño del vehículo y duración
+- **Analítica Predictiva** — Predicción de ocupación, detección de anomalías, anticipación de horas pico
+- Latencia: < 1 segundo por captura
+
+### Hardware (Plan Premium — Fase 7)
+- Cámaras inteligentes con IA para verificación automática de placas (Python FastAPI + OpenCV + EasyOCR + YOLOv8)
+- Pantallas LED 46" para mostrar disponibilidad en tiempo real
+- Terminal de pago inteligente (datáfono, QR Nequi/Daviplata, efectivo)
+- Sistema de audio IA para reconocimiento de voz
+- Sensores de ocupación MQTT
+- Barreras automáticas con control remoto
 
 ---
 
@@ -583,3 +597,29 @@ Al usar Google OAuth en modo **Testing** (entorno de prueba), Google muestra el 
 MIT — Proyecto educativo SENA.
 
 **Autores:** Alexander Medina & Miguel Palacio
+
+---
+
+## 📋 Propuesta Original — CCS S.A.S.
+
+Basado en: Propuesta Técnica y Económica GA2-220501094-AA3-EV02  
+**Empresa:** Soluciones de Software S.A.S. | **Ficha SENA:** 3118301  
+**Inversión Plan Premium:** $77.390.000 COP iniciales + $16.444.000 COP anuales
+
+### Estado de Implementación
+
+| Módulo | Estado | Detalle |
+|--------|--------|---------|
+| Auth (JWT, OAuth, 2FA, RBAC) | ✅ Completo | 6 módulos integrados |
+| Panel Admin (dashboard, reportes, tarifas) | ✅ Completo | Excel + PDF export |
+| Panel Usuario (reservas, vehículos, pagos) | ✅ Completo | QR, selección visual de espacio |
+| WebSocket tiempo real | ✅ Completo | Spots, actividad, alertas |
+| Demo overlay (mapa siempre activo) | ✅ Completo | Determinístico por zona |
+| PWA + Responsive | ✅ Completo | Offline fallback, mobile-first |
+| Flux AI — Analítica Predictiva | 🔲 Pendiente | Reemplazar mocks con datos reales |
+| Flux AI — Detección de Anomalías | 🔲 Pendiente | Z-score, alertas automáticas |
+| Flux AI — Asignación Inteligente | 🔲 Pendiente | Pricing dinámico, sugerencia de espacio |
+| OCR de placas (Python + OpenCV) | 🔲 Pendiente | Fase 7 — hardware requiere cámaras físicas |
+| SMS/Twilio | 🔲 Pendiente | Notificaciones de ingreso, pago, proximidad |
+| Pago multi-modal (Nequi, Daviplata) | 🔲 Pendiente | QR + datáfono + efectivo |
+| Hardware físico (cámaras, LED, barreras) | 🔲 Pendiente | Fase 7 — $25M COP estimados |

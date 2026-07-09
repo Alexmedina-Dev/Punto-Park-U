@@ -6,6 +6,35 @@ const { notifyUser } = require('../services/notificationService');
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
+/**
+ * Auto-cancel pending reservations where scheduled time + 15min grace has passed.
+ * e.g. reserved for 10:00 AM → cancelled at 10:15 AM if not checked in.
+ */
+const autoCancelStalePending = async (filter = {}) => {
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
+  const pending = await Reservation.find({ ...filter, status: 'pending' });
+
+  for (const r of pending) {
+    if (!r.date || !r.startTime) continue;
+
+    // Parse date+time as local (same as frontend validation)
+    const [y, m, d] = r.date.split('-').map(Number);
+    const [hh, mm] = r.startTime.split(':').map(Number);
+    const scheduledStart = new Date(y, m - 1, d, hh, mm);
+    const graceEnd = new Date(scheduledStart.getTime() + 15 * 60 * 1000);
+
+    if (now > graceEnd) {
+      if (r.spot) {
+        await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
+      }
+      r.status = 'cancelled';
+      await r.save();
+    }
+  }
+};
+
 const formatReservationResponse = (reservation) => ({
   id: reservation._id,
   userId: typeof reservation.user === 'object' && reservation.user !== null
@@ -102,24 +131,8 @@ const getReservations = async (req, res, next) => {
   try {
     const filter = buildReservationFilter(req.query, req.user.id, req.user.role);
 
-    // Auto-expire stale pending reservations before listing
-    // Simple rule: any pending reservation older than 2 hours is auto-cancelled
-    const now = new Date();
-    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-    
-    const staleReservations = await Reservation.find({
-      ...filter,
-      status: 'pending',
-      createdAt: { $lt: twoHoursAgo },
-    });
-
-    for (const r of staleReservations) {
-      if (r.spot) {
-        await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
-      }
-      r.status = 'cancelled';
-      await r.save();
-    }
+    // Auto-cancel pending reservations past their 15min grace period
+    await autoCancelStalePending(filter);
 
     // Pagination
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
@@ -222,25 +235,8 @@ const createReservation = async (req, res, next) => {
       }
     }
 
-    // Auto-expire stale pending reservations:
-    // Simple rule: any pending reservation older than 2 hours is auto-cancelled
-    // This handles ALL cases regardless of timezone or missing fields
-    const now = new Date();
-    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-    
-    const staleReservations = await Reservation.find({
-      user: req.user.id,
-      status: 'pending',
-      createdAt: { $lt: twoHoursAgo },
-    });
-
-    for (const r of staleReservations) {
-      if (r.spot) {
-        await ParkingSpot.findByIdAndUpdate(r.spot, { status: 'available' });
-      }
-      r.status = 'cancelled';
-      await r.save();
-    }
+    // Auto-cancel user's stale pending reservations past 15min grace
+    await autoCancelStalePending({ user: req.user.id });
 
     // Update spot status to reserved
     if (assignedSpot) {

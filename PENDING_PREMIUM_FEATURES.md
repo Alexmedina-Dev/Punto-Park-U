@@ -116,38 +116,46 @@ El proyecto actual implementa una **versión web del Plan Premium**, pero faltan
 - Gestión de usuarios, sesiones y tarifas
 - Notificaciones en tiempo real vía WebSocket
 - Sistema de reservas y pagos (básico)
-- Diseño responsive (en progreso)
+- Diseño responsive (mobile-first) ✅
 - Código QR para entrada/salida
+- PWA con modo offline ✅
+- Demo overlay — mapa siempre activo con ocupación simulada ✅
+- Auto-cancel — reservas canceladas 15min después de la hora si no llega ✅
+- Selección visual de espacio (SpotSelector) ✅
+- Tooltip en mapa admin con info del vehículo ✅
+- Reportes exportables a Excel (5 hojas) y PDF ✅
+- Placas colombianas: Carros ABC123, Motos ABC12D, Bicis serial 7 dígitos ✅
 
 ### 🔲 Pendiente (Software):
 - Módulo de reconocimiento de voz con IA
-- Integración OCR para lectura de placas
-- Sistema de SMS/Twilio
-- Sistema de pago multi-modal (datáfono, QR, efectivo)
-- Análisis predictivo con IA
-- Backup automático
-- Integración contable
-- Modo offline/contingencia
+- **Integración OCR para lectura de placas** — Requiere cámaras físicas (Fase 7)
+- Sistema de SMS/Twilio (notificaciones de ingreso, pago, proximidad)
+- Sistema de pago multi-modal (Nequi, Daviplata, datáfono, efectivo)
+- **Análisis predictivo con IA** — Reemplazar mocks del dashboard con datos reales (Phase 6)
+- Backup automático continuo
+- Integración con sistemas contables externos
 
-### 🔲 Pendiente (Hardware):
-- Cámaras inteligentes con IA
-- Pantallas LED 46"
-- Terminal de pago inteligente
-- Dispensador de cambio
-- Sistema de audio IA
-- Sensores de ocupación
+### 🔲 Pendiente (Hardware — Fase 7):
+- Cámaras inteligentes con IA ($2.660.000 COP)
+- Pantallas LED 46" ($4.800.000 COP)
+- Terminal de pago inteligente ($3.500.000 COP)
+- Dispensador automático de vueltas
+- Sistema de audio IA ($1.800.000 COP)
+- Sensores de ocupación MQTT
+- Servidor físico ($5.500.000 COP)
+- Red empresarial ($1.260.000 COP)
 
 ---
 
 ## Próximos Pasos Recomendados
 
-1. **Fase 1:** Completar responsive design y fixes de UX (ya en curso)
-2. **Fase 2:** Implementar sistema de SMS y notificaciones push
-3. **Fase 3:** Desarrollar módulo de pago multi-modal (QR primero)
-4. **Fase 4:** Integrar OCR/cámaras para lectura de placas
-5. **Fase 5:** Implementar reconocimiento de voz
-6. **Fase 6:** Análisis predictivo con IA/ML
-7. **Fase 7:** Adquisición e integración de hardware físico
+1. **Fase 1:** ✅ Completar responsive design y fixes de UX
+2. **Fase 2:** Sistema de SMS y notificaciones push (Twilio)
+3. **Fase 3:** Módulo de pago multi-modal (QR Nequi/Daviplata primero)
+4. **Fase 4:** Análisis predictivo con IA — reemplazar mocks del dashboard (Phase 6)
+5. **Fase 5:** Integrar OCR/cámaras para lectura de placas (Fase 7 — requiere hardware)
+6. **Fase 6:** Reconocimiento de voz
+7. **Fase 7:** Adquisición e integración de hardware físico ($25M COP)
 
 ---
 
