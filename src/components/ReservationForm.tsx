@@ -6,7 +6,7 @@ import type { Vehicle, ParkingSpot } from '@/types'
 
 interface ReservationFormData {
   vehicleId: string
-  date: string
+  date: string | Date
   startTime: string
   endTime: string
   spotId: string
@@ -91,9 +91,14 @@ export function ReservationForm({
     if (!form.date) {
       newErrors.date = 'Selecciona una fecha'
     } else {
-      // Parse date components to avoid timezone offset issues
-      const [year, month, day] = form.date.split('-').map(Number)
-      const selected = new Date(year, month - 1, day)
+      // Handle both string (YYYY-MM-DD) and Date objects
+      let selected: Date
+      if (typeof form.date === 'string') {
+        const [year, month, day] = form.date.split('-').map(Number)
+        selected = new Date(year, month - 1, day)
+      } else {
+        selected = new Date(form.date)
+      }
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       const tomorrow = new Date(today)
@@ -129,13 +134,16 @@ export function ReservationForm({
     e.preventDefault()
     if (!validate()) return
 
+    // Normalize date to YYYY-MM-DD string (handles both Date object and string)
+    const dateStr = typeof form.date === 'string' ? form.date : form.date.toISOString().slice(0, 10)
+
     // Build entryTime as ISO string from date + startTime
-    const entryTime = new Date(`${form.date}T${form.startTime}:00`).toISOString()
+    const entryTime = new Date(`${dateStr}T${form.startTime}:00`).toISOString()
 
     const success = await onSubmit({
       vehicle: form.vehicleId,
       entryTime,
-      date: form.date,
+      date: dateStr,
       startTime: form.startTime,
       endTime: form.endTime,
       spotId: form.spotId || undefined,
@@ -210,7 +218,7 @@ export function ReservationForm({
           label="Fecha"
           type="date"
           icon="calendar_month"
-          value={form.date}
+          value={typeof form.date === 'string' ? form.date : form.date.toISOString().slice(0, 10)}
           onChange={(e) => handleChange('date', e.target.value)}
           min={minDateStr}
           error={errors.date}
