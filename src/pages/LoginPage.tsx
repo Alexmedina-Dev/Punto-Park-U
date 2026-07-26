@@ -46,7 +46,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthLayout title="Inicio de sesión usuario" showRegister>
+    <AuthLayout title="Inicio de sesión usuario" showRegister showForgotPassword>
       {/* Server error */}
       {error && (
         <div

@@ -6,6 +6,7 @@ interface AuthLayoutProps {
   children: React.ReactNode
   title: string
   showRegister?: boolean
+  showForgotPassword?: boolean
 }
 
 /**
@@ -15,7 +16,7 @@ interface AuthLayoutProps {
  *
  * Vanilla mobile breakpoint: 767px (not Tailwind's sm:640)
  */
-export function AuthLayout({ children, title, showRegister = false }: AuthLayoutProps) {
+export function AuthLayout({ children, title, showRegister = false, showForgotPassword = false }: AuthLayoutProps) {
   // Wake-up ping for Render free tier (cold start)
   useEffect(() => {
     fetch(`${API_BASE_URL}/health`, { method: 'GET', cache: 'no-store' }).catch(() => {
@@ -49,16 +50,27 @@ export function AuthLayout({ children, title, showRegister = false }: AuthLayout
             {/* Form slot */}
             {children}
 
-            {/* Register link (only for user login) */}
-            {showRegister && (
-              <div className="text-center pt-4">
-                <Link
-                  to="/register"
-                  className="font-label text-[0.875rem] text-primary hover:text-primary-fixed transition-colors inline-flex items-center gap-2"
-                >
-                  ¿No tienes cuenta?{' '}
-                  <span className="font-bold underline underline-offset-4">Regístrate aquí</span>
-                </Link>
+            {/* Register / Forgot password links */}
+            {(showRegister || showForgotPassword) && (
+              <div className="text-center pt-4 flex flex-col gap-2">
+                {showForgotPassword && (
+                  <Link
+                    to="/forgot-password"
+                    className="font-label text-[0.875rem] text-primary hover:text-primary-fixed transition-colors inline-flex items-center gap-2"
+                  >
+                    ¿Olvidó su contraseña?{' '}
+                    <span className="font-bold underline underline-offset-4">Recuperar aquí</span>
+                  </Link>
+                )}
+                {showRegister && (
+                  <Link
+                    to="/register"
+                    className="font-label text-[0.875rem] text-primary hover:text-primary-fixed transition-colors inline-flex items-center gap-2"
+                  >
+                    ¿No tienes cuenta?{' '}
+                    <span className="font-bold underline underline-offset-4">Regístrate aquí</span>
+                  </Link>
+                )}
               </div>
             )}
           </div>
