@@ -12,15 +12,16 @@ const { notifyUser } = require('../services/notificationService');
  */
 const autoCancelStalePending = async (filter = {}) => {
   const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
 
   const pending = await Reservation.find({ ...filter, status: 'pending' });
 
   for (const r of pending) {
     if (!r.date || !r.startTime) continue;
 
-    // Parse date+time as local (same as frontend validation)
-    const [y, m, d] = r.date.split('-').map(Number);
+    // r.date is a Date object (Mongoose schema type: Date)
+    // Convert to YYYY-MM-DD string first
+    const dateStr = r.date instanceof Date ? r.date.toISOString().slice(0, 10) : r.date;
+    const [y, m, d] = dateStr.split('-').map(Number);
     const [hh, mm] = r.startTime.split(':').map(Number);
     const scheduledStart = new Date(y, m - 1, d, hh, mm);
     const graceEnd = new Date(scheduledStart.getTime() + 15 * 60 * 1000);
