@@ -16,7 +16,7 @@ interface PricingCardData {
 
 const PRICING_CARDS: PricingCardData[] = [
   {
-    image: '/images/Google AI/automovil.png',
+    image: '/images/Google AI/automovil.webp',
     alt: 'Automóvil en parqueadero cubierto',
     title: 'Automóvil',
     priceKey: 'car',
@@ -24,7 +24,7 @@ const PRICING_CARDS: PricingCardData[] = [
     features: ['Parqueo Cubierto', 'Acceso Fácil'],
   },
   {
-    image: '/images/Google AI/motocicleta.png',
+    image: '/images/Google AI/motocicleta.webp',
     alt: 'Motocicleta en zona exclusiva',
     title: 'Motocicleta',
     priceKey: 'moto',
@@ -32,7 +32,7 @@ const PRICING_CARDS: PricingCardData[] = [
     features: ['Zona Exclusiva', 'Ingreso Rápido'],
   },
   {
-    image: '/images/Google AI/camioneta.png',
+    image: '/images/Google AI/camioneta.webp',
     alt: 'Camioneta en espacio amplio',
     title: 'Camioneta / SUV',
     priceKey: 'camioneta',
@@ -40,7 +40,7 @@ const PRICING_CARDS: PricingCardData[] = [
     features: ['Espacios Amplios', 'Alta Comodidad'],
   },
   {
-    image: '/images/Google AI/bicicleta.png',
+    image: '/images/Google AI/bicicleta.webp',
     alt: 'Bicicleta en rack seguro',
     title: 'Bicicleta',
     priceKey: 'bike',

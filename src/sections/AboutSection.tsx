@@ -29,7 +29,7 @@ export function AboutSection() {
           <div className="relative animate-slide-right">
             <div className="absolute -inset-2 bg-primary/20 rounded-xl blur-xl" />
             <img
-              src="/images/Google AI/historia.png"
+              src="/images/Google AI/historia.webp"
               alt="Parqueadero tradicional de Bogotá con gravilla y lámparas amarillas"
               className="relative rounded-xl w-full h-[31.25rem] object-cover hover-scale"
               data-testid="about-image"

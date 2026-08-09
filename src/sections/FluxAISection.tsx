@@ -39,7 +39,7 @@ export function FluxAISection() {
             <div className="absolute -inset-2 bg-primary/10 rounded-2xl blur-xl" />
             <div className="relative glass rounded-2xl p-2 hover-scale">
               <img
-                src="/images/Google AI/ai-security.png"
+                src="/images/Google AI/ai-security.webp"
                 alt="Interfaz de seguridad con inteligencia artificial"
                 className="rounded-xl w-full h-auto"
                 data-testid="flux-ai-image"

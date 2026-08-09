@@ -79,7 +79,7 @@ export function HeroSection() {
         {/* Image wrapper */}
         <div className="hero-img-wrap w-[90%] max-w-[450px] md:w-full md:max-w-none will-change-transform">
           <img
-            src="/images/Google AI/hero-background.png"
+            src="/images/Google AI/hero-background.webp"
             alt="Parqueadero moderno en Bogota con autos, motos y bicicletas en iluminacion neon"
             className="w-full h-auto md:h-full md:object-cover block"
             style={{ objectPosition: 'center right' }}

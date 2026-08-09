@@ -91,7 +91,7 @@ export function LocationSection() {
             <div className="absolute -inset-2 bg-primary/10 rounded-2xl blur-xl" />
             {!mapError ? (
               <img
-                src="/images/Google AI/mapa.png"
+                src="/images/Google AI/mapa.webp"
                 alt="Mapa de ubicación de Punto Park U en Bogotá"
                 className="relative rounded-xl w-full h-full object-cover hover-scale"
                 loading="lazy"
