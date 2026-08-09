@@ -81,7 +81,7 @@ export function AuthLayout({ children, title, showRegister = false, showForgotPa
           {/* Watermark logo */}
           <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.35] pointer-events-none">
             <img
-              src="/images/Logo.png"
+              src="/images/Logo.webp"
               alt=""
               className="w-[80%] drop-shadow-[0_0_30px_rgba(0,116,217,0.5)]"
               aria-hidden="true"

@@ -88,7 +88,7 @@ export function ForgotPasswordPage() {
           <section className="relative flex items-center justify-center bg-surface-low overflow-hidden py-12 min-h-[16rem] order-1 md:min-h-0">
             <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.35] pointer-events-none">
               <img
-                src="/images/Logo.png"
+                src="/images/Logo.webp"
                 alt=""
                 className="w-[80%] drop-shadow-[0_0_30px_rgba(0,116,217,0.5)]"
                 aria-hidden="true"
@@ -215,7 +215,7 @@ export function ForgotPasswordPage() {
         <section className="relative flex items-center justify-center bg-surface-low overflow-hidden py-12 min-h-[16rem] order-1 md:min-h-0">
           <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.35] pointer-events-none">
             <img
-              src="/images/Logo.png"
+              src="/images/Logo.webp"
               alt=""
               className="w-[80%] drop-shadow-[0_0_30px_rgba(0,116,217,0.5)]"
               aria-hidden="true"

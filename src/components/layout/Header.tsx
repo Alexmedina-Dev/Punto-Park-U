@@ -119,7 +119,7 @@ export function Header() {
                 <source srcSet="/images/Logo.avif" type="image/avif" />
                 <source srcSet="/images/Logo.webp" type="image/webp" />
                 <img
-                  src="/images/Logo.png"
+                  src="/images/Logo.webp"
                   alt="Punto Park U"
                   className="h-8 w-auto"
                   loading="lazy"
@@ -260,7 +260,7 @@ export function Header() {
                 <picture className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
                   <source srcSet="/images/Garaje.avif" type="image/avif" />
                   <source srcSet="/images/Garaje.webp" type="image/webp" />
-                  <img src="/images/Garaje.png" alt="" className="w-12 h-12 object-contain" />
+                  <img src="/images/Garaje.webp" alt="" className="w-12 h-12 object-contain" loading="lazy" />
                 </picture>
               )}
 
@@ -311,7 +311,7 @@ export function Header() {
                     <source srcSet="/images/Garaje.avif" type="image/avif" />
                     <source srcSet="/images/Garaje.webp" type="image/webp" />
                     <img
-                      src="/images/Garaje.png"
+                      src="/images/Garaje.webp"
                       alt=""
                       className="w-5 h-5 object-contain"
                     />

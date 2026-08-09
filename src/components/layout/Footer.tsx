@@ -21,7 +21,7 @@ export function Footer() {
             <source srcSet="/images/Logo.avif" type="image/avif" />
             <source srcSet="/images/Logo.webp" type="image/webp" />
             <img
-              src="/images/Logo.png"
+              src="/images/Logo.webp"
               alt="Logo Punto Park U"
               className="w-[180px] mb-4"
               loading="lazy"

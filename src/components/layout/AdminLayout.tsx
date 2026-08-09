@@ -56,7 +56,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <picture>
               <source srcSet="/images/Logo.avif" type="image/avif" />
               <source srcSet="/images/Logo.webp" type="image/webp" />
-              <img src="/images/Logo.png" alt="Punto Park U" className="h-10 w-auto" />
+              <img src="/images/Logo.webp" alt="Punto Park U" className="h-10 w-auto" loading="lazy" />
             </picture>
             <span className="font-headline font-bold text-lg text-primary">Punto Park U</span>
           </Link>
@@ -103,7 +103,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             {/* Same content as desktop sidebar */}
             <div className="p-6 border-b border-outline/10 flex items-center justify-between">
               <Link to="/" className="flex items-center gap-3" onClick={() => setSidebarOpen(false)}>
-                <img src="/images/Logo.png" alt="Punto Park U" className="h-8 w-auto" />
+                <img src="/images/Logo.webp" alt="Punto Park U" className="h-8 w-auto" />
                 <span className="font-headline font-bold text-primary">Punto Park U</span>
               </Link>
               <button onClick={() => setSidebarOpen(false)} className="text-on-surface-var">
